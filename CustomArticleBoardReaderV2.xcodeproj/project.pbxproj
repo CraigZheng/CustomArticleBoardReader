@@ -21,6 +21,10 @@
 		442FFEA518A78A1D001ECDAA /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 442FFE8718A78A1D001ECDAA /* UIKit.framework */; };
 		442FFEAD18A78A1D001ECDAA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 442FFEAB18A78A1D001ECDAA /* InfoPlist.strings */; };
 		442FFEAF18A78A1D001ECDAA /* CustomArticleBoardReaderV2Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 442FFEAE18A78A1D001ECDAA /* CustomArticleBoardReaderV2Tests.m */; };
+		442FFEC018A78B5C001ECDAA /* czzAcUser.m in Sources */ = {isa = PBXBuildFile; fileRef = 442FFEB918A78B5C001ECDAA /* czzAcUser.m */; };
+		442FFEC118A78B5C001ECDAA /* czzArticle.m in Sources */ = {isa = PBXBuildFile; fileRef = 442FFEBB18A78B5C001ECDAA /* czzArticle.m */; };
+		442FFEC218A78B5C001ECDAA /* czzArticleDownloader.m in Sources */ = {isa = PBXBuildFile; fileRef = 442FFEBD18A78B5C001ECDAA /* czzArticleDownloader.m */; };
+		442FFEC318A78B5C001ECDAA /* czzArticleListDownloader.m in Sources */ = {isa = PBXBuildFile; fileRef = 442FFEBF18A78B5C001ECDAA /* czzArticleListDownloader.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +57,14 @@
 		442FFEAA18A78A1D001ECDAA /* CustomArticleBoardReaderV2Tests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "CustomArticleBoardReaderV2Tests-Info.plist"; sourceTree = "<group>"; };
 		442FFEAC18A78A1D001ECDAA /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		442FFEAE18A78A1D001ECDAA /* CustomArticleBoardReaderV2Tests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CustomArticleBoardReaderV2Tests.m; sourceTree = "<group>"; };
+		442FFEB818A78B5C001ECDAA /* czzAcUser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = czzAcUser.h; sourceTree = "<group>"; };
+		442FFEB918A78B5C001ECDAA /* czzAcUser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = czzAcUser.m; sourceTree = "<group>"; };
+		442FFEBA18A78B5C001ECDAA /* czzArticle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = czzArticle.h; sourceTree = "<group>"; };
+		442FFEBB18A78B5C001ECDAA /* czzArticle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = czzArticle.m; sourceTree = "<group>"; };
+		442FFEBC18A78B5C001ECDAA /* czzArticleDownloader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = czzArticleDownloader.h; sourceTree = "<group>"; };
+		442FFEBD18A78B5C001ECDAA /* czzArticleDownloader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = czzArticleDownloader.m; sourceTree = "<group>"; };
+		442FFEBE18A78B5C001ECDAA /* czzArticleListDownloader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = czzArticleListDownloader.h; sourceTree = "<group>"; };
+		442FFEBF18A78B5C001ECDAA /* czzArticleListDownloader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = czzArticleListDownloader.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -117,6 +129,7 @@
 				442FFE9518A78A1D001ECDAA /* Main.storyboard */,
 				442FFE9818A78A1D001ECDAA /* czzViewController.h */,
 				442FFE9918A78A1D001ECDAA /* czzViewController.m */,
+				442FFEC418A78B63001ECDAA /* classes and downloader */,
 				442FFE9B18A78A1D001ECDAA /* Images.xcassets */,
 				442FFE8A18A78A1D001ECDAA /* Supporting Files */,
 			);
@@ -150,6 +163,21 @@
 				442FFEAB18A78A1D001ECDAA /* InfoPlist.strings */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		442FFEC418A78B63001ECDAA /* classes and downloader */ = {
+			isa = PBXGroup;
+			children = (
+				442FFEB818A78B5C001ECDAA /* czzAcUser.h */,
+				442FFEB918A78B5C001ECDAA /* czzAcUser.m */,
+				442FFEBA18A78B5C001ECDAA /* czzArticle.h */,
+				442FFEBB18A78B5C001ECDAA /* czzArticle.m */,
+				442FFEBC18A78B5C001ECDAA /* czzArticleDownloader.h */,
+				442FFEBD18A78B5C001ECDAA /* czzArticleDownloader.m */,
+				442FFEBE18A78B5C001ECDAA /* czzArticleListDownloader.h */,
+				442FFEBF18A78B5C001ECDAA /* czzArticleListDownloader.m */,
+			);
+			name = "classes and downloader";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -250,9 +278,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				442FFEC018A78B5C001ECDAA /* czzAcUser.m in Sources */,
+				442FFEC118A78B5C001ECDAA /* czzArticle.m in Sources */,
 				442FFE9418A78A1D001ECDAA /* czzAppDelegate.m in Sources */,
+				442FFEC318A78B5C001ECDAA /* czzArticleListDownloader.m in Sources */,
 				442FFE9A18A78A1D001ECDAA /* czzViewController.m in Sources */,
 				442FFE9018A78A1D001ECDAA /* main.m in Sources */,
+				442FFEC218A78B5C001ECDAA /* czzArticleDownloader.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
