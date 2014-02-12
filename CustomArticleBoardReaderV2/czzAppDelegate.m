@@ -7,6 +7,7 @@
 //
 
 #import "czzAppDelegate.h"
+#import "Toast+UIView.h"
 
 @implementation czzAppDelegate
 
@@ -31,11 +32,22 @@
 - (void)applicationWillEnterForeground:(UIApplication *)application
 {
     // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
+
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+    NSString* basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString* imgFolder = [basePath
+                           stringByAppendingPathComponent:@"Images"];
+    NSString* favirouteFolder = [basePath stringByAppendingPathComponent:@"Faviroutes"];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:imgFolder]){
+        [[NSFileManager defaultManager] createDirectoryAtPath:imgFolder withIntermediateDirectories:NO attributes:nil error:nil];
+    }
+    if (![[NSFileManager defaultManager] fileExistsAtPath:favirouteFolder]){
+        [[NSFileManager defaultManager] createDirectoryAtPath:favirouteFolder withIntermediateDirectories:NO attributes:nil error:nil];
+    }
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application
@@ -43,4 +55,12 @@
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
 
+#pragma mark access to app delegate etc.
++ (czzAppDelegate*) sharedAppDelegate{
+    return (czzAppDelegate*)[[UIApplication sharedApplication] delegate];
+}
+
+-(void)showToast:(NSString *)string{
+    [[[[[UIApplication sharedApplication] keyWindow] subviews] lastObject] makeToast:string];
+}
 @end

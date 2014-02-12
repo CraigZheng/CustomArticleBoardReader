@@ -12,4 +12,7 @@
 
 @property (strong, nonatomic) UIWindow *window;
 
+-(void)showToast:(NSString*)string;
++ (czzAppDelegate*) sharedAppDelegate;
+
 @end

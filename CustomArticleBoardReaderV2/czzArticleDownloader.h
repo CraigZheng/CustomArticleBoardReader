@@ -6,6 +6,8 @@
 //  Copyright (c) 2014 Craig. All rights reserved.
 //
 
+
+//TODO: not yet finish, need authentication to view full profile
 #import <Foundation/Foundation.h>
 #import "czzArticle.h"
 
@@ -22,5 +24,5 @@
 
 -(id)initWithArticleID:(NSInteger)articleID delegate:(id<czzArticleDownloaderDelegate>)delegate startImmediately:(BOOL)start;
 -(void)constructURLConnectionAndStart;
-
+-(void)stop;
 @end

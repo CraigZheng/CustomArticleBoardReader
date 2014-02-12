@@ -24,8 +24,10 @@
 @property NSString *category;
 @property NSString *htmlBody;
 
-@property NSArray *articleFragments;
+@property NSMutableArray *imageSrc;
 
 -(id)initWithJSONData:(NSData*)jsonData;
 -(id)initWithJSONDictonary:(NSDictionary*)jsonDict;
+//replace the temporary [IMAGE] anchor in the content to an <img> tag with local inage
+-(void)notifyImageDownloaded:(NSString*)imgURL saveTo:(NSString*)savePath;
 @end

@@ -57,4 +57,8 @@
         [self.delegate articleDownloaded:nil withArticleID:self.articleID success:NO];
 }
 
+-(void)stop{
+    [urlConn cancel];
+}
+
 @end

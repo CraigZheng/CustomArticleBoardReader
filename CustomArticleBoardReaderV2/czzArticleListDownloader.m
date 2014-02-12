@@ -23,6 +23,7 @@
     if (self){
         self.delegate = delegate;
         self.classNumber = classNumber;
+        self.cursor = 1;
         if (start){
             [self startDownloadingWithOrdering:DEFAULT_ORDER];
         }
@@ -33,6 +34,7 @@
 -(void)startDownloadingWithOrdering:(NSInteger)ordering{
     NSString *articleListString = [ARTICLE_LIST_HOST stringByReplacingOccurrencesOfString:ARTICLE_CLASS withString:[NSString stringWithFormat:@"%ld", (long)self.classNumber]];
     articleListString = [articleListString stringByReplacingOccurrencesOfString:ARTICLE_ORDER withString:[NSString stringWithFormat:@"%ld", (long)ordering]];
+    articleListString = [articleListString stringByReplacingOccurrencesOfString:CURSOR withString:[NSString stringWithFormat:@"%ld", (long)self.cursor]];
     NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:articleListString]];
     urlConn = [[NSURLConnection alloc] initWithRequest:request delegate:self startImmediately:YES];
     
@@ -56,6 +58,7 @@
     NSMutableArray *articles = [NSMutableArray new];
     NSError *error;
     NSDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:receivedData options:NSJSONReadingMutableContainers error:&error];
+    //NSLog(@"%@", [[NSString alloc] initWithData:receivedData encoding:NSUTF8StringEncoding]);
     if (error) {
         [self.delegate articleListDownloaded:nil withClass:self.classNumber success:NO];
     } else {
@@ -68,5 +71,9 @@
         }
         [self.delegate articleListDownloaded:articles withClass:self.classNumber success:YES];
     }
+}
+
+-(void)stop{
+    [urlConn cancel];
 }
 @end

@@ -7,6 +7,7 @@
 //
 
 #import "czzArticle.h"
+#import "czzAppDelegate.h"
 
 @implementation czzArticle
 
@@ -14,6 +15,9 @@
     self = [super init];
     if (self){
         self.tags = [NSArray new];
+        self.imageSrc = [NSMutableArray new];
+        self.name = @"无题";
+        self.desc = @"无简介";
     }
     return self;
 }
@@ -56,11 +60,11 @@
         if ([key isEqualToString:@"collectnum"]){
             self.favouriteCount = [[dataDict objectForKey:key] integerValue];
         }
-        if ([key isEqualToString:@"commentnuminvideo"]){
+        if ([key isEqualToString:@"commentnum"]){
             self.commentCount = [[dataDict objectForKey:key] integerValue];
         }
         if ([key isEqualToString:@"createtime"]){
-            self.createTime = [NSDate dateWithTimeIntervalSince1970:1366965794000];
+            self.createTime = [NSDate dateWithTimeIntervalSince1970:[[dataDict objectForKey:key] longValue]];
         }
         if ([key isEqualToString:@"creator"]){
             self.creator = [[czzAcUser alloc] initWithJSON:[dataDict objectForKey:key]];
@@ -82,98 +86,128 @@
 }
 
 -(NSString*)extractImgTags:(NSString*)htmlBody{
-    /*
-    NSDataDetector *linkDetector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:nil];
-    NSArray *matches = [linkDetector matchesInString:htmlBody
-                                             options:0
-                                               range:NSMakeRange(0, htmlBody.length)];
-    for (NSTextCheckingResult *match in matches) {
-        if ([match resultType] == NSTextCheckingTypeLink) {
-            NSURL *url = [match URL];
-            if ([url.absoluteString hasSuffix:@"jpg"] || [url.absoluteString hasSuffix:@"jpeg"] || [url.absoluteString hasSuffix:@"gif"] || [url.absoluteString hasSuffix:@"png"]){
-                NSLog(@"%@", url.absoluteString);
-            }
-        }
-    }
-    NSRange imgTagBegin = [htmlBody rangeOfString:@"<img" options:NSCaseInsensitiveSearch];
-    while (imgTagBegin.location != NSNotFound) {
-        NSRange imgTagEnd = [htmlBody rangeOfString:@"/>" options:NSCaseInsensitiveSearch range:NSMakeRange(imgTagBegin.location, htmlBody.length - imgTagBegin.location)];
-        if (imgTagEnd.location != NSNotFound) {
-            NSLog(@"%@", [htmlBody substringWithRange:NSMakeRange(imgTagBegin.location, imgTagEnd.location + imgTagEnd.length)]);
-            [htmlBody stringByReplacingCharactersInRange:NSMakeRange(imgTagBegin.location, imgTagEnd.location + imgTagEnd.length) withString:@"%^$&*(&"];
-        }
-        //next image tag begin
-        imgTagBegin = [htmlBody rangeOfString:@"<img" options:NSCaseInsensitiveSearch];
-    }
-    
-    return htmlBody;
-     */
-    
-    NSMutableArray *level3Fragments = [NSMutableArray new];
-    NSArray *level1Fragments = [htmlBody componentsSeparatedByString:@"<img"];
-    for (NSString *l1fragment in level1Fragments) {
-        NSArray *level2fragments = [l1fragment componentsSeparatedByString:@"/>"];
-        for (NSString *l2fragment in level2fragments) {
-            NSDataDetector *linkDetector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:nil];
-            NSArray *matches = [linkDetector matchesInString:l2fragment
-                                                     options:0
-                                                       range:NSMakeRange(0, l2fragment.length)];
-
-            if (matches.count <= 0)
-                [level3Fragments addObject:l2fragment];
-            else {
-                for (NSTextCheckingResult *match in matches) {
-                    if ([match resultType] == NSTextCheckingTypeLink) {
-                        NSURL *url = [match URL];
-                        if ([url.absoluteString hasSuffix:@"jpg"] || [url.absoluteString hasSuffix:@"jpeg"] || [url.absoluteString hasSuffix:@"gif"] || [url.absoluteString hasSuffix:@"png"]){
-                            //change URL scheme to custom action
-                            NSString *newAction = [@"action:" stringByAppendingString:url.absoluteString];
-                            newAction = [self embedURLIntoAnchor:newAction];
-                            [level3Fragments addObject:newAction];
-
-                        }
+    //NSString *tempString = [self stringBetweenString:@"<img" andString:@"/>" withstring:htmlBody];
+    NSString *imgTag = [self extractString:htmlBody toLookFor:@"<img" skipForwardX:0 toStopBefore:@"/>"];
+    NSInteger maximumTry = 999;
+    while (imgTag != nil && maximumTry >0) {
+        //to avoid loop lock
+        maximumTry--;
+        NSDataDetector *linkDetector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:nil];
+        NSArray *matches = [linkDetector matchesInString:imgTag
+                                                 options:0
+                                                   range:NSMakeRange(0, imgTag.length)];
+        if (matches.count > 0){
+            for (NSTextCheckingResult *match in matches) {
+                if ([match resultType] == NSTextCheckingTypeLink) {
+                    NSURL *url = [match URL];
+                    if ([url.absoluteString.lastPathComponent rangeOfString:@"jpg" options:NSCaseInsensitiveSearch].location != NSNotFound ||
+                        [url.absoluteString.lastPathComponent rangeOfString:@"jpeg" options:NSCaseInsensitiveSearch].location != NSNotFound ||
+                        [url.absoluteString.lastPathComponent rangeOfString:@"gif" options:NSCaseInsensitiveSearch].location != NSNotFound ||
+                        [url.absoluteString.lastPathComponent rangeOfString:@"png"options:NSCaseInsensitiveSearch].location != NSNotFound){
+                        //change URL scheme to custom action
+                        NSString *imgInTag = [self embedURLIntoAnchor:url.absoluteString];
+                        [self.imageSrc addObject:url.absoluteString];
+                        htmlBody = [htmlBody stringByReplacingOccurrencesOfString:imgTag withString:imgInTag];
                     }
                 }
-                
+            }
+        } else {
+            
+            NSString *emoconURL = [self extractString:imgTag toLookFor:@"\"" skipForwardX:1 toStopBefore:@"\""];
+            if (emoconURL.length > 0 && [emoconURL rangeOfString:@"emotion"].location != NSNotFound)
+            {
+                htmlBody = [htmlBody stringByReplacingOccurrencesOfString:emoconURL withString:[NSString stringWithFormat:@"\"http://www.acfun.tv%@", emoconURL]];
             }
         }
+        imgTag = [self extractString:htmlBody toLookFor:@"<img" skipForwardX:0 toStopBefore:@"/>"];
     }
-    /*
-    NSMutableString *newHtmlBody = [NSMutableString new];
-    NSInteger i = 0;
-    if ([htmlBody hasPrefix:@"<img"])
-        i = 1;
-    for (NSString *l3fragment in level3Fragments) {
-        if (i % 2 == 0)
-            [newHtmlBody appendString:l3fragment];
-        i++;
-        NSDataDetector *linkDetector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:nil];
-        NSArray *matches = [linkDetector matchesInString:l3fragment
-                                                 options:0
-                                                   range:NSMakeRange(0, l3fragment.length)];
-        for (NSTextCheckingResult *match in matches) {
-            if ([match resultType] == NSTextCheckingTypeLink) {
-                NSURL *url = [match URL];
-                if ([url.absoluteString hasSuffix:@"jpg"] || [url.absoluteString hasSuffix:@"jpeg"] || [url.absoluteString hasSuffix:@"gif"] || [url.absoluteString hasSuffix:@"png"]){
-                    NSLog(@"%@", url.absoluteString);
-                }
-            }
-        }
-     
+    return htmlBody;
     }
-    
-    return newHtmlBody;
-     */
-    NSMutableString *newHtmlBody = [NSMutableString new];
-    for (NSString *l3Fragment in level3Fragments) {
-        [newHtmlBody appendString:l3Fragment];
-    }
-    self.articleFragments = level3Fragments;
-    return newHtmlBody;
-}
 
 -(NSString*)embedURLIntoAnchor:(NSString*)url{
-    NSString *aString = [NSString stringWithFormat:@"</p><a href=%@ >[IMAGE]</a><br>", url];
+    NSString *imgSrc = [@"action:" stringByAppendingString:url];
+    NSString *aString = [NSString stringWithFormat:@"</p><a href=%@ >[[点我下载图片]]</a><br>", imgSrc];
     return aString;
 }
+
+-(void)notifyImageDownloaded:(NSString *)imgURL saveTo:(NSString *)savePath{
+    NSString *imgTagInBody = [self embedURLIntoAnchor:imgURL];
+    NSString *localImageInImgTag = [self readyLocalImageForUIWebView:savePath];
+    if (localImageInImgTag.length > 0){
+        self.htmlBody = [self.htmlBody stringByReplacingOccurrencesOfString:imgTagInBody withString:localImageInImgTag];
+    }
+}
+
+-(NSString*)readyLocalImageForUIWebView:(NSString*)localImagePath {
+    //example : <img src="smiley.gif" height="42" width="42">
+    UIImage *image = [UIImage imageWithContentsOfFile:localImagePath];
+    if (!image)
+        return nil;
+    //shrink the image accordingly
+    NSInteger width = image.size.width;
+    NSInteger heigth = image.size.height;
+    if (image.size.width > [czzAppDelegate sharedAppDelegate].window.frame.size.width)
+    {
+        width = [czzAppDelegate sharedAppDelegate].window.frame.size.width * 0.95;
+        heigth = width / image.size.width * heigth;
+    }
+    NSString *imgTagString = [NSString stringWithFormat:@"<a href=\"openfile:%@\" ><img src=\"file://%@\" width=\"%ld\" height=\"%ld\" align=\"left\" /></a></p>", localImagePath, localImagePath, (long)width, (long)heigth];
+    //NSString *imgTagString = [NSString stringWithFormat:@"<img src=\"file:/%@\" width=\"280\" height=\"320\" />", localImagePath];
+    return imgTagString;
+}
+
+- (NSString *)extractString:(NSString *)fullString toLookFor:(NSString *)lookFor skipForwardX:(NSInteger)skipForward toStopBefore:(NSString *)stopBefore
+{
+    NSRange firstRange = [fullString rangeOfString:lookFor];
+    if (firstRange.location != NSNotFound) {
+        NSRange secondRange = [[fullString substringFromIndex:firstRange.location + skipForward] rangeOfString:stopBefore];
+        if (secondRange.location != NSNotFound) {
+            NSRange finalRange = NSMakeRange(firstRange.location + skipForward, secondRange.location + [stopBefore length]);
+            return [fullString substringWithRange:finalRange];
+        }
+    }
+    return nil;
+}
+
+#pragma mark - encoder and decoder - for storing this object into the storage
+- (void) encodeWithCoder: (NSCoder *) coder
+{
+    [coder encodeInteger:self.acId forKey:@"acId"];
+    [coder encodeObject:self.name forKey:@"name"];
+    [coder encodeObject:self.desc forKey:@"desc"];
+    [coder encodeObject:self.previewUrl forKey:@"previewUrl"];
+    [coder encodeInteger:self.viewCount forKey:@"viewCount"];
+    [coder encodeInteger:self.favouriteCount forKey:@"favouriteCount"];
+    [coder encodeInteger:self.commentCount forKey:@"commentCount"];
+    [coder encodeObject:self.createTime forKey:@"createTime"];
+    [coder encodeObject:self.creator forKey:@"creator"];
+    [coder encodeBool:self.isOriginal forKey:@"isOriginal"];
+    [coder encodeObject:self.tags forKey:@"tags"];
+    [coder encodeObject:self.category forKey:@"category"];
+    [coder encodeObject:self.htmlBody forKey:@"htmlBody"];
+    [coder encodeObject:self.imageSrc forKey:@"imageSrc"];
+}
+
+- (id) initWithCoder: (NSCoder *) coder
+{
+    self = [self init];
+    if (self){
+        self.acId = [coder decodeIntegerForKey:@"acId"];
+        self.name = [coder decodeObjectForKey:@"name"];
+        self.desc = [coder decodeObjectForKey:@"desc"];
+        self.previewUrl = [coder decodeObjectForKey:@"previewUrl"];
+        self.viewCount = [coder decodeIntegerForKey:@"viewCount"];
+        self.favouriteCount = [coder decodeIntegerForKey:@"favouriteCount"];
+        self.commentCount = [coder decodeIntegerForKey:@"commentCount"];
+        self.createTime = [coder decodeObjectForKey:@"createTime"];
+        self.creator = [coder decodeObjectForKey:@"creator"];
+        self.isOriginal = [coder decodeBoolForKey:@"isOriginal"];
+        self.tags = [coder decodeObjectForKey:@"tags"];
+        self.category = [coder decodeObjectForKey:@"category"];
+        self.htmlBody = [coder decodeObjectForKey:@"htmlBody"];
+        self.imageSrc = [coder decodeObjectForKey:@"imageSrc"];
+    }
+    return self;
+}
+
 @end
