@@ -36,7 +36,7 @@
     for (NSString *key in dict.allKeys) {
         if ([key isEqualToString:@"content"]) {
             self.content = [dict objectForKey:key];
-            [self.content stringByReplacingOccurrencesOfString:@"<br/>" withString:@"\\n"];
+            self.content = [self.content stringByReplacingOccurrencesOfString:@"<br/>" withString:@""];
         }
         if ([key isEqualToString:@"user"]){
             czzAcUser *user = [[czzAcUser alloc] initWithJSON:[dict objectForKey:key]];

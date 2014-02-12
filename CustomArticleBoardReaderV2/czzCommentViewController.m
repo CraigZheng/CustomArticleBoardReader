@@ -51,7 +51,7 @@
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier forIndexPath:indexPath];
     if (cell){
         UILabel *authorLabel = (UILabel*)[cell viewWithTag:1];
-        UILabel *contentLabel = (UILabel*)[cell viewWithTag:2];
+        UITextView *contentTextView = (UITextView*)[cell viewWithTag:2];
         czzComment *comment = [comments objectAtIndex:indexPath.row];
         NSString *authorString;
         if (comment.refCommentFlow.count > 0) {
@@ -61,7 +61,7 @@
         } else
         authorString = [NSString stringWithFormat:@"#%ld %@ 说：", (long)comment.floorIndex, comment.user.name];
         authorLabel.text = authorString;
-        contentLabel.text = comment.content;
+        contentTextView.text = comment.content;
     }
     return cell;
 }
