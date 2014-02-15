@@ -44,6 +44,7 @@
 		442FFF0418AA6830001ECDAA /* czzCommentDownloader.m in Sources */ = {isa = PBXBuildFile; fileRef = 442FFF0318AA6830001ECDAA /* czzCommentDownloader.m */; };
 		442FFF0718AA7192001ECDAA /* czzCommentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 442FFF0618AA7192001ECDAA /* czzCommentViewController.m */; };
 		442FFF0918AB134D001ECDAA /* warning.png in Resources */ = {isa = PBXBuildFile; fileRef = 442FFF0818AB134D001ECDAA /* warning.png */; };
+		4485EF4518AFDB7C0031B3BC /* czzFavriouteManagerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4485EF4418AFDB7C0031B3BC /* czzFavriouteManagerViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -121,6 +122,8 @@
 		442FFF0518AA7192001ECDAA /* czzCommentViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = czzCommentViewController.h; sourceTree = "<group>"; };
 		442FFF0618AA7192001ECDAA /* czzCommentViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = czzCommentViewController.m; sourceTree = "<group>"; };
 		442FFF0818AB134D001ECDAA /* warning.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = warning.png; sourceTree = "<group>"; };
+		4485EF4318AFDB7C0031B3BC /* czzFavriouteManagerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = czzFavriouteManagerViewController.h; sourceTree = "<group>"; };
+		4485EF4418AFDB7C0031B3BC /* czzFavriouteManagerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = czzFavriouteManagerViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -198,6 +201,8 @@
 				442FFE9218A78A1D001ECDAA /* czzAppDelegate.h */,
 				442FFE9318A78A1D001ECDAA /* czzAppDelegate.m */,
 				442FFE9518A78A1D001ECDAA /* Main.storyboard */,
+				4485EF4318AFDB7C0031B3BC /* czzFavriouteManagerViewController.h */,
+				4485EF4418AFDB7C0031B3BC /* czzFavriouteManagerViewController.m */,
 				442FFF0518AA7192001ECDAA /* czzCommentViewController.h */,
 				442FFF0618AA7192001ECDAA /* czzCommentViewController.m */,
 				442FFECD18A84275001ECDAA /* czzArticleListViewController.h */,
@@ -476,6 +481,7 @@
 				442FFEC218A78B5C001ECDAA /* czzArticleDownloader.m in Sources */,
 				442FFEF218A867EA001ECDAA /* czzArticlelViewController.m in Sources */,
 				442FFF0718AA7192001ECDAA /* czzCommentViewController.m in Sources */,
+				4485EF4518AFDB7C0031B3BC /* czzFavriouteManagerViewController.m in Sources */,
 				442FFECF18A84275001ECDAA /* czzArticleListViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -697,6 +703,7 @@
 				442FFEB418A78A1D001ECDAA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		442FFEB518A78A1D001ECDAA /* Build configuration list for PBXNativeTarget "CustomArticleBoardReaderV2Tests" */ = {
 			isa = XCConfigurationList;
@@ -705,6 +712,7 @@
 				442FFEB718A78A1D001ECDAA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

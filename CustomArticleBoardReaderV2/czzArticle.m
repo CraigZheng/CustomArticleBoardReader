@@ -198,7 +198,7 @@
 
 -(NSString*)embedURLIntoAnchor:(NSString*)url{
     NSString *imgSrc = [@"action:" stringByAppendingString:url];
-    NSString *aString = [NSString stringWithFormat:@"</p><a href=%@ >[[点我下载图片]]</a><br>", imgSrc];
+    NSString *aString = [NSString stringWithFormat:@"</p><a href=%@>[[点我下载图片]]</a></p>", imgSrc];
     return aString;
 }
 
@@ -223,8 +223,7 @@
         width = [czzAppDelegate sharedAppDelegate].window.frame.size.width;
         heigth = width / image.size.width * heigth;
     }
-    NSString *imgTagString = [NSString stringWithFormat:@"<a href=\"openfile:%@\" ><img src=\"file://%@\" width=\"%ld\" height=\"%ld\" align=\"left\" /></a></p>", localImagePath, localImagePath, (long)width, (long)heigth];
-    //NSString *imgTagString = [NSString stringWithFormat:@"<img src=\"file:/%@\" width=\"280\" height=\"320\" />", localImagePath];
+    NSString *imgTagString = [NSString stringWithFormat:@"<a href=\"openfile:%@\" ><img src=\"file://%@\" width=\"%ld\" height=\"%ld\" align=\"center\" /></a><br/>", localImagePath, localImagePath, (long)width, (long)heigth];
     return imgTagString;
 }
 

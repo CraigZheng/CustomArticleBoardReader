@@ -43,10 +43,22 @@
 
 #pragma mark - UITableViewDataSource
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
-    return comments.count;
+    if (comments.count <= 0 || [[comments lastObject] floorIndex] <= 2)
+        return comments.count;
+    return comments.count + 1;
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
+    //load more cell and loading cell - the last row of the whole table
+    if (indexPath.row >= comments.count){
+        NSString *last_row_identifier = @"load_more_cell_identifier";
+        //if articleListDownloader is not nil, it means its currently downloading
+        if (commentDownloader){
+            last_row_identifier = @"loading_cell_identifier";
+        }
+        return [tableView dequeueReusableCellWithIdentifier:last_row_identifier];
+    }
+
     NSString *identifier = @"comment_cell_identifier";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier forIndexPath:indexPath];
     if (cell){
@@ -67,6 +79,9 @@
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (indexPath.row >= comments.count){
+        return tableView.rowHeight;
+    }
     CGFloat preferHeight = 0;
     UITextView *newHiddenTextView = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 1)];
     newHiddenTextView.hidden = YES;
@@ -77,6 +92,7 @@
     preferHeight = [newHiddenTextView sizeThatFits:CGSizeMake(newHiddenTextView.frame.size.width, MAXFLOAT)].height + 15;
     return MAX(tableView.rowHeight, preferHeight);
 }
+
 #pragma mark - czzCommentDownloaderDelegate
 -(void)commentDownloaded:(NSArray *)com withArticleID:(NSInteger)articleID success:(BOOL)success{
     if (success){
@@ -87,5 +103,13 @@
         [self.view makeToast:@"下载失败" duration:1.0 position:@"center" image:[UIImage imageNamed:@"warning"]];
     [[[czzAppDelegate sharedAppDelegate] window] hideToastActivity];
     self.tableView.userInteractionEnabled = YES;
+    commentDownloader = nil;
+}
+
+- (IBAction)loadMoreAction:(id)sender {
+    NSInteger cursor = comments.count;
+    [self startDownloadingCommentWithCursor:cursor];
+    NSIndexPath *lastRowIndexPath = [NSIndexPath indexPathForRow:comments.count inSection:0];
+    [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:lastRowIndexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 @end

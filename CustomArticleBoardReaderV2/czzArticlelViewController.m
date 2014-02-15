@@ -37,7 +37,10 @@
     self.title = [NSString stringWithFormat:@"%ld", (long)myArticle.acId];
     self.articleWebView.scrollView.delegate = self;
     imageDownloaders = [NSMutableDictionary new];
-    [self startDownloadingArticle];
+    if (myArticle.htmlBody == nil)
+        [self startDownloadingArticle];
+    else
+        [self.articleWebView loadHTMLString:myArticle.htmlBody baseURL:nil];
 }
 
 -(void)startDownloadingArticle{
@@ -81,19 +84,6 @@
 }
 
 -(BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType{
-    /*
-    if (navigationType == UIWebViewNavigationTypeOther){
-        if ([request.URL.scheme isEqualToString:@"action"]){
-            NSString *actionURLString = [request.URL.absoluteString substringFromIndex:[request.URL.absoluteString rangeOfString:@":"].location + 1];
-            czzImageDownloader *imgDownloader = [[czzImageDownloader alloc] init];
-            imgDownloader.imageURLString = actionURLString;
-            imgDownloader.delegate = self;
-            [imgDownloader start];
-            
-        }
-
-    }
-     */
     if ([request.URL.scheme isEqualToString:@"action"]){
         NSString *actionURLString = [request.URL.absoluteString substringFromIndex:[request.URL.absoluteString rangeOfString:@":"].location + 1];
         //if such imageDownloader is presented, stop the previous downloader and restart a new one
@@ -251,6 +241,6 @@
     NSString* basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSString* favirouteFolder = [basePath stringByAppendingPathComponent:@"Faviroutes"];
     [NSKeyedArchiver archiveRootObject:self.myArticle toFile:[favirouteFolder stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld.fav", (long)myArticle.acId]]];
-
+    [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"已收藏"];
 }
 @end
