@@ -18,7 +18,7 @@
 @property NSInteger favouriteCount;
 @property NSInteger commentCount;
 @property NSDate *createTime;
-@property czzAcUser *creator; //TODO: user class
+@property czzAcUser *creator;
 @property BOOL isOriginal;
 @property NSArray *tags;
 @property NSString *category;

@@ -50,6 +50,11 @@
     [[[czzAppDelegate sharedAppDelegate] window] hideToastActivity];
     if (articleDownloader)
         [articleDownloader stop];
+    //stop all image downloader
+    for (czzImageDownloader *imgDownloader in imageDownloaders.allValues) {
+        if (imgDownloader)
+            [imgDownloader stop];
+    }
 }
 
 #pragma mark - czzArticleDownloaderDelegate
@@ -76,11 +81,10 @@
 }
 
 -(BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType{
+    /*
     if (navigationType == UIWebViewNavigationTypeOther){
         if ([request.URL.scheme isEqualToString:@"action"]){
             NSString *actionURLString = [request.URL.absoluteString substringFromIndex:[request.URL.absoluteString rangeOfString:@":"].location + 1];
-            //NSLog(@"action: %@", actionURLString);
-            
             czzImageDownloader *imgDownloader = [[czzImageDownloader alloc] init];
             imgDownloader.imageURLString = actionURLString;
             imgDownloader.delegate = self;
@@ -89,10 +93,30 @@
         }
 
     }
+     */
+    if ([request.URL.scheme isEqualToString:@"action"]){
+        NSString *actionURLString = [request.URL.absoluteString substringFromIndex:[request.URL.absoluteString rangeOfString:@":"].location + 1];
+        //if such imageDownloader is presented, stop the previous downloader and restart a new one
+        czzImageDownloader *previousDownloader = [imageDownloaders objectForKey:actionURLString];
+        if (previousDownloader)
+        {
+            [previousDownloader stop];
+            [imageDownloaders removeObjectForKey:actionURLString];
+        }
+        czzImageDownloader *imgDownloader = [[czzImageDownloader alloc] init];
+        imgDownloader.imageURLString = actionURLString;
+        imgDownloader.delegate = self;
+        [imgDownloader start];
+        //set the imageDownloader as the object and actionURLString as the key
+        [imageDownloaders setObject:imgDownloader forKey:actionURLString];
+        
+        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"开始下载图片..." duration:1.0 position:@"bottom"];
+    }
+
     if (navigationType == UIWebViewNavigationTypeLinkClicked) {
+        /*
         if ([request.URL.scheme isEqualToString:@"action"]){
             NSString *actionURLString = [request.URL.absoluteString substringFromIndex:[request.URL.absoluteString rangeOfString:@":"].location + 1];
-            //NSLog(@"action: %@", actionURLString);
             //if such imageDownloader is presented, stop the previous downloader and restart a new one
             czzImageDownloader *previousDownloader = [imageDownloaders objectForKey:actionURLString];
             if (previousDownloader)
@@ -110,7 +134,8 @@
             [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"开始下载图片..." duration:1.0 position:@"bottom"];
         }
         //to open clicked image
-        else if ([request.URL.scheme isEqualToString:@"openfile"]){
+        else */
+        if ([request.URL.scheme isEqualToString:@"openfile"]){
             NSString *fileLocation = [request.URL.absoluteString substringFromIndex:[request.URL.absoluteString rangeOfString:@":"].location + 1];
             documentInteractionController = [[UIDocumentInteractionController alloc] init];
             documentInteractionController.URL = [NSURL fileURLWithPath:fileLocation];
@@ -215,7 +240,7 @@
 }
 
 - (IBAction)loadAllImages:(id)sender {
-    [[czzAppDelegate sharedAppDelegate] showToast:@"下载所有图片..."];
+    [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"下载所有图片..." duration:1.0 position:@"bottom"];
     for (NSString *imgURL in myArticle.imageSrc) {
         NSURLRequest *requst = [NSURLRequest requestWithURL:[NSURL URLWithString:[@"action:" stringByAppendingString:imgURL]]];
         [articleWebView loadRequest:requst];

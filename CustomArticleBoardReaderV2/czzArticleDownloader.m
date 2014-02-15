@@ -50,15 +50,39 @@
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection{
-    czzArticle* newArticle = [[czzArticle alloc] initWithJSONData:receivedData];
-    if (newArticle)
-        [self.delegate articleDownloaded:newArticle withArticleID:self.articleID success:YES];
-    else
-        [self.delegate articleDownloaded:nil withArticleID:self.articleID success:NO];
+    NSString *receivedHTMLBody = [[NSJSONSerialization JSONObjectWithData:receivedData options:NSJSONReadingMutableContainers error:nil] valueForKey:@"txt"];
+    NSError *error;
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"<img" options:NSRegularExpressionCaseInsensitive error:&error];
+    NSUInteger numberOfMatches = [regex numberOfMatchesInString:receivedHTMLBody options:0 range:NSMakeRange(0, [receivedHTMLBody length])];
+    if (!error && numberOfMatches > 200){
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"图片过多" message:[NSString stringWithFormat:@"文章中共有%ld张图片，可能用电脑来看更适合。你确定要打开这篇文章吗？", (long)numberOfMatches] delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确认", nil];
+        [alertView show];
+    } else {
+        czzArticle* newArticle = [[czzArticle alloc] initWithJSONData:receivedData];
+        if (newArticle)
+            [self.delegate articleDownloaded:newArticle withArticleID:self.articleID success:YES];
+        else
+            [self.delegate articleDownloaded:nil withArticleID:self.articleID success:NO];
+    }
 }
 
 -(void)stop{
     [urlConn cancel];
+}
+
+#pragma mark - UIAlertView delegate
+-(void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex{
+    if ([alertView.title isEqualToString:@"图片过多"]){
+        if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"确认"]){
+            czzArticle* newArticle = [[czzArticle alloc] initWithJSONData:receivedData];
+            if (newArticle)
+                [self.delegate articleDownloaded:newArticle withArticleID:self.articleID success:YES];
+            else
+                [self.delegate articleDownloaded:nil withArticleID:self.articleID success:NO];
+        } else {
+            [self.delegate articleDownloaded:nil withArticleID:self.articleID success:NO];
+        }
+    }
 }
 
 @end

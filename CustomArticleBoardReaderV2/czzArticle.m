@@ -9,7 +9,16 @@
 #import "czzArticle.h"
 #import "czzAppDelegate.h"
 
+#define RANDOM_STRING @"%$^&^$%2$%^&%7#!@#^%#&#*"
+
+@interface czzArticle()
+@property NSMutableArray *paragraphTags;
+@property NSMutableArray *imageTags;
+@end
+
 @implementation czzArticle
+@synthesize paragraphTags;
+@synthesize imageTags;
 
 -(id)init{
     self = [super init];
@@ -18,6 +27,8 @@
         self.imageSrc = [NSMutableArray new];
         self.name = @"无题";
         self.desc = @"无简介";
+        paragraphTags = [NSMutableArray new];
+        imageTags = [NSMutableArray new];
     }
     return self;
 }
@@ -50,6 +61,7 @@
         }
         if ([key isEqualToString:@"desc"]){
             self.desc = [dataDict objectForKey:key];
+            self.desc = [self.desc stringByReplacingOccurrencesOfString:@"<br/>" withString:@"\n"];
         }
         if ([key isEqualToString:@"previewurl"]){
             self.previewUrl = [dataDict objectForKey:key];
@@ -80,9 +92,46 @@
         }
         if ([key isEqualToString:@"txt"]){
             self.htmlBody = [dataDict objectForKey:key];
-            self.htmlBody = [self extractImgTags:self.htmlBody];
+            self.htmlBody = [self prepareHTMLForBetterVisual:self.htmlBody];
         }
     }
+}
+
+#pragma mark - prepareHTMLForBetterVisual will remove the old formatting, and re-apply some simple html format for better visual on a mobile device
+/*
+ this function will remove everything between < > except </p> and <img>
+ <p> and <img> will be preseved for better formatting and image broswing
+ */
+-(NSString*)prepareHTMLForBetterVisual:(NSString*)oldHTML{
+    oldHTML = [self replaceParagraphyTagsAndBrTags:oldHTML];
+    oldHTML = [self extractImgTags:oldHTML];
+    oldHTML = [self stringByApplyingSimpleHTMLFormat:oldHTML];
+    oldHTML = [self repopulateParagraphyTagsAndImageTags:oldHTML];
+    return oldHTML;
+}
+
+-(NSString *)stringByApplyingSimpleHTMLFormat:(NSString*)htmlString {
+    NSRange r;
+    //remove everything between < and >
+    while ((r = [htmlString rangeOfString:@"<[^>]+>" options:NSRegularExpressionSearch]).location != NSNotFound)
+        htmlString = [htmlString stringByReplacingCharactersInRange:r withString:@""];
+    NSString *newHTMLString = [NSString stringWithFormat:@"<html> \n"
+                                   "<head> \n"
+                                   "<style type=\"text/css\"> \n"
+                                   "body {font-family: \"%@\"; font-size: %@; width:100%% ;padding:0px; margin:0px;}\n"
+                                   "</style> \n"
+                                   "</head> \n"
+                                   "<body>%@</body> \n"
+                                   "</html>", @"helvetica", [NSNumber numberWithInt:16], htmlString];
+
+    return newHTMLString;
+}
+
+-(NSString*)replaceParagraphyTagsAndBrTags:(NSString*)htmlBody{
+    htmlBody = [htmlBody stringByReplacingOccurrencesOfString:@"</p>" withString:[self embedString:@"PARAGRAPH TAG" withString:RANDOM_STRING]];
+    htmlBody = [htmlBody stringByReplacingOccurrencesOfString:@"<br/>" withString:[self embedString:@"BR TAG" withString:RANDOM_STRING]];
+    htmlBody = [htmlBody stringByReplacingOccurrencesOfString:@"<br />" withString:[self embedString:@"BR TAG" withString:RANDOM_STRING]];
+    return htmlBody;
 }
 
 -(NSString*)extractImgTags:(NSString*)htmlBody{
@@ -104,10 +153,11 @@
                         [url.absoluteString.lastPathComponent rangeOfString:@"jpeg" options:NSCaseInsensitiveSearch].location != NSNotFound ||
                         [url.absoluteString.lastPathComponent rangeOfString:@"gif" options:NSCaseInsensitiveSearch].location != NSNotFound ||
                         [url.absoluteString.lastPathComponent rangeOfString:@"png"options:NSCaseInsensitiveSearch].location != NSNotFound){
-                        //change URL scheme to custom action
-                        NSString *imgInTag = [self embedURLIntoAnchor:url.absoluteString];
+                        //change URL scheme to mark string for later process
+                        //NSString *imgInTag = [self embedURLIntoAnchor:url.absoluteString];
+                        NSString *imgMark = [self embedString:url.absoluteString withString:RANDOM_STRING];
                         [self.imageSrc addObject:url.absoluteString];
-                        htmlBody = [htmlBody stringByReplacingOccurrencesOfString:imgTag withString:imgInTag];
+                        htmlBody = [htmlBody stringByReplacingOccurrencesOfString:imgTag withString:imgMark];
                     }
                 }
             }
@@ -122,7 +172,29 @@
         imgTag = [self extractString:htmlBody toLookFor:@"<img" skipForwardX:0 toStopBefore:@"/>"];
     }
     return htmlBody;
+}
+
+-(NSString*)embedString:(NSString*)originalString withString:(NSString*)string
+{
+    originalString = [string stringByAppendingString:originalString];
+    originalString = [originalString stringByAppendingString:string];
+    return originalString;
+}
+
+//use this function at last to repopulate marked p tags and image tags
+-(NSString*)repopulateParagraphyTagsAndImageTags:(NSString*)htmlString{
+    //p tags
+    NSString *markedPTags = [self embedString:@"PARAGRAPH TAG" withString:RANDOM_STRING];
+    htmlString = [htmlString stringByReplacingOccurrencesOfString:markedPTags withString:@"</p>"];
+    //br tags
+    htmlString = [htmlString stringByReplacingOccurrencesOfString:[self embedString:@"BR TAG" withString:RANDOM_STRING] withString:@"<br/>"];
+    //img tags
+    for (NSString *imgURLString in self.imageSrc) {
+        NSString *markedImgURLString = [self embedString:imgURLString withString:RANDOM_STRING];
+        htmlString = [htmlString stringByReplacingOccurrencesOfString:markedImgURLString withString:[self embedURLIntoAnchor:imgURLString]];
     }
+    return htmlString;
+}
 
 -(NSString*)embedURLIntoAnchor:(NSString*)url{
     NSString *imgSrc = [@"action:" stringByAppendingString:url];
@@ -148,7 +220,7 @@
     NSInteger heigth = image.size.height;
     if (image.size.width > [czzAppDelegate sharedAppDelegate].window.frame.size.width)
     {
-        width = [czzAppDelegate sharedAppDelegate].window.frame.size.width * 0.95;
+        width = [czzAppDelegate sharedAppDelegate].window.frame.size.width;
         heigth = width / image.size.width * heigth;
     }
     NSString *imgTagString = [NSString stringWithFormat:@"<a href=\"openfile:%@\" ><img src=\"file://%@\" width=\"%ld\" height=\"%ld\" align=\"left\" /></a></p>", localImagePath, localImagePath, (long)width, (long)heigth];

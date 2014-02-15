@@ -18,7 +18,7 @@
 -(void)articleDownloaded:(czzArticle*)article withArticleID:(NSInteger)articleID success:(BOOL)success;
 @end
 
-@interface czzArticleDownloader : NSObject
+@interface czzArticleDownloader : NSObject<UIAlertViewDelegate>
 @property NSInteger articleID;
 @property id<czzArticleDownloaderDelegate> delegate;
 

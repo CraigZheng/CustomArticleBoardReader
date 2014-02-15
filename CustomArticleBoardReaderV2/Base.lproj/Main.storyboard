@@ -111,10 +111,10 @@
                                         <constraint firstAttribute="bottom" secondItem="Hgx-2i-Da6" secondAttribute="bottom" constant="11" id="Sdf-xE-BE9"/>
                                         <constraint firstAttribute="centerX" secondItem="Hgx-2i-Da6" secondAttribute="centerX" id="gIY-hO-UWg"/>
                                     </constraints>
+                                    <connections>
+                                        <outletCollection property="gestureRecognizers" destination="40I-ia-plh" appends="YES" id="eWs-FK-Qhq"/>
+                                    </connections>
                                 </tableViewCellContentView>
-                                <connections>
-                                    <outletCollection property="gestureRecognizers" destination="40I-ia-plh" appends="YES" id="INV-PZ-keb"/>
-                                </connections>
                             </tableViewCell>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="loading_cell_identifier" id="MtT-pu-7q1">
                                 <rect key="frame" x="0.0" y="254" width="320" height="44"/>
@@ -162,7 +162,7 @@
                     <navigationItem key="navigationItem" id="V8D-T3-Ikl">
                         <nil key="title"/>
                         <barButtonItem key="backBarButtonItem" title="文章区" id="gGd-VH-EsG"/>
-                        <segmentedControl key="titleView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="bar" id="Lt4-qr-Uaa">
+                        <segmentedControl key="titleView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="bar" selectedSegmentIndex="0" id="Lt4-qr-Uaa">
                             <rect key="frame" x="19" y="7" width="283" height="31"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <segments>
@@ -172,11 +172,13 @@
                                 <segment title="漫画·小说"/>
                             </segments>
                             <connections>
-                                <action selector="categorySelectedAction:" destination="DjU-UU-AGZ" eventType="valueChanged" id="cNA-Rw-5Ka"/>
+                                <action selector="categorySelectedAction:" destination="DjU-UU-AGZ" eventType="valueChanged" id="088-Yt-fvF"/>
+                                <action selector="categorySelectedAction:" destination="DjU-UU-AGZ" eventType="touchUpOutside" id="fdH-Va-2mZ"/>
                             </connections>
                         </segmentedControl>
                     </navigationItem>
                     <connections>
+                        <outlet property="categorySegmentControl" destination="Lt4-qr-Uaa" id="MRP-et-aNd"/>
                         <segue destination="zin-gV-eV7" kind="push" identifier="go_article_view_controller_identifier" id="7Zp-P2-C1l"/>
                     </connections>
                 </tableViewController>
@@ -206,6 +208,7 @@
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                 <gestureRecognizers/>
+                                <dataDetectorType key="dataDetectorTypes" link="YES"/>
                                 <connections>
                                     <outlet property="delegate" destination="zin-gV-eV7" id="Zfq-eI-lz6"/>
                                 </connections>
@@ -282,7 +285,7 @@
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                             <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                             <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda.</string>
-                                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                             <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                         </textView>
                                     </subviews>

@@ -11,6 +11,7 @@
 @interface czzArticleListViewController : UITableViewController
 
 @property NSInteger lastContentOffsetY;
+@property (strong, nonatomic) IBOutlet UISegmentedControl *categorySegmentControl;
 typedef enum ScrollDirection {
     ScrollDirectionNone,
     ScrollDirectionRight,
@@ -20,6 +21,6 @@ typedef enum ScrollDirection {
     ScrollDirectionCrazy,
 } ScrollDirection;
 
-- (IBAction)categorySelectedAction:(id)sender;
 - (IBAction)loadMoreAction:(id)sender;
+- (IBAction)categorySelectedAction:(id)sender;
 @end

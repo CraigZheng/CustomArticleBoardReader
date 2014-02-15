@@ -14,6 +14,7 @@
 @property NSMutableData *receivedData;
 @property NSString *baseURLString;
 @property NSString *fileName;
+@property NSString *filePath;
 @property long long fileSize;
 @property NSUInteger downloadedSize;
 @end
@@ -29,6 +30,7 @@
 @synthesize isThumbnail;
 @synthesize fileSize;
 @synthesize downloadedSize;
+@synthesize filePath;
 
 -(id)init{
     self = [super init];
@@ -50,12 +52,9 @@
     basePath = [basePath
                 stringByAppendingPathComponent:@"Images"];
     
-    NSString *filePath = [basePath stringByAppendingPathComponent:fileName];
+    filePath = [basePath stringByAppendingPathComponent:imageURLString.lastPathComponent];
     UIImage* image = [[UIImage alloc] initWithContentsOfFile:filePath];
-    CGImageRef cgref = [image CGImage];
-    CIImage *cim = [image CIImage];
-    if (cim != nil && cgref != NULL)
-    {
+    if (image){
         [self.delegate downloadFinished:self success:YES isThumbnail:NO saveTo:filePath error:nil];
         return;
     }
@@ -86,6 +85,11 @@
 - (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response{
     receivedData = [NSMutableData new];
     fileName = response.suggestedFilename;
+    NSString* basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    //save to thumbnail folder or fullsize folder
+    basePath = [basePath
+                stringByAppendingPathComponent:@"Images"];
+    filePath = [basePath stringByAppendingPathComponent:fileName];
     fileSize = [response expectedContentLength];
     downloadedSize = 0;
     //notify delegate that download is started
@@ -105,19 +109,11 @@
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection{
     //save to library directory
-    NSString* basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-    //save to thumbnail folder or fullsize folder
-    basePath = [basePath
-                stringByAppendingPathComponent:@"Images"];
-
-    NSString *filePath = [basePath stringByAppendingPathComponent:fileName];
     NSError *error;
     [receivedData writeToFile:filePath options:NSDataWritingAtomic error:&error];
     //check if image is empty
     UIImage* image = [[UIImage alloc] initWithData:receivedData];
-    CGImageRef cgref = [image CGImage];
-    CIImage *cim = [image CIImage];
-    if (cim == nil && cgref == NULL)
+    if (!image)
     {
         error = [NSError errorWithDomain:@"图片为空白" code:999 userInfo:[NSDictionary dictionaryWithObjectsAndKeys:@"图片为空白", NSLocalizedDescriptionKey, nil]];
     }

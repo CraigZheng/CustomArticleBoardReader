@@ -12,6 +12,7 @@
 #import "czzAppDelegate.h"
 #import "czzArticlelViewController.h"
 #import "czzArticle.h"
+#import <malloc/malloc.h>
 
 
 @interface czzArticleListViewController ()<czzArticleListDownloaderDelegate>
@@ -31,6 +32,7 @@
 @synthesize lastContentOffsetY;
 @synthesize cursor;
 @synthesize selectedCategory;
+@synthesize categorySegmentControl;
 
 - (void)viewDidLoad
 {
@@ -38,6 +40,12 @@
     cursor = 1; //default value
     articleList = [NSMutableArray new];
     articleCategoris = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInteger:110], @"综合", [NSNumber numberWithInteger:73], @"工作·情感", [NSNumber numberWithInteger:74], @"动漫文化", [NSNumber numberWithInteger:75], @"漫画·小说", nil];
+}
+
+-(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    if (articleList.count <= 0)
+        [self startDownloadingWithCategory:categorySegmentControl.selectedSegmentIndex andOrdering:MOST_COMMENTED_DAILY];
 }
 
 #pragma mark - Table view data source
@@ -62,7 +70,7 @@
         return [tableView dequeueReusableCellWithIdentifier:last_row_identifier];
     }
     static NSString *CellIdentifier = @"article_desc_identifier";
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     
     // Configure the cell...
     if (cell){
@@ -96,6 +104,7 @@
     czzArticle *article = [articleList objectAtIndex:indexPath.row];
     newHiddenTextView.text = article.desc;
     preferHeight = [newHiddenTextView sizeThatFits:CGSizeMake(newHiddenTextView.frame.size.width, MAXFLOAT)].height + 20 + 16;
+    [newHiddenTextView removeFromSuperview];
     return MAX(tableView.rowHeight, preferHeight);
 }
 
@@ -130,22 +139,23 @@
     articleListDownloader = nil;
 }
 
-- (IBAction)categorySelectedAction:(id)sender {
-    cursor = 1;//reset cursor
-    articleList = [NSMutableArray new]; //clear previously downloaded list
-    [self.tableView reloadData];
-    UISegmentedControl *segmentControl = (UISegmentedControl*)sender;
-    NSString *selectedTitle = [segmentControl titleForSegmentAtIndex:segmentControl.selectedSegmentIndex];
-    selectedCategory = [articleCategoris objectForKey:selectedTitle];
-
-    [self startDownloadingWithCategory:selectedCategory.integerValue andOrdering:MOST_COMMENTED_DAILY];
-}
-
 - (IBAction)loadMoreAction:(id)sender {
     cursor = articleList.count + 1;
     [self startDownloadingWithCategory:selectedCategory.integerValue andOrdering:MOST_COMMENTED_DAILY];
     NSIndexPath *lastRowIndexPath = [NSIndexPath indexPathForRow:articleList.count inSection:0];
     [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:lastRowIndexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+}
+
+- (IBAction)categorySelectedAction:(id)sender {
+    cursor = 1;//reset cursor
+    articleList = [NSMutableArray new]; //clear previously downloaded list
+    
+    [self.tableView reloadData];
+    UISegmentedControl *segmentControl = (UISegmentedControl*)sender;
+    NSString *selectedTitle = [segmentControl titleForSegmentAtIndex:segmentControl.selectedSegmentIndex];
+    selectedCategory = [articleCategoris objectForKey:selectedTitle];
+    
+    [self startDownloadingWithCategory:selectedCategory.integerValue andOrdering:MOST_COMMENTED_DAILY];
 }
 
 -(void)startDownloadingWithCategory:(NSInteger)category andOrdering:(NSInteger)ordering{
@@ -186,7 +196,7 @@
         }
     }
 }
-
+ 
 #pragma mark - show and hide uitoolbar
 -(void)doSingleViewHideAnimation:(UIView*)incomingView :(NSString*)animType
 {
@@ -210,5 +220,11 @@
     [animation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
     [[incomingView layer] addAnimation:animation forKey:kCATransition];
     incomingView.hidden = NO;
+}
+
+#pragma mark - memory warning
+-(void)didReceiveMemoryWarning{
+    articleList = nil;
+    [self categorySelectedAction:nil];
 }
 @end
