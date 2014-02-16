@@ -25,13 +25,17 @@
         self.classNumber = classNumber;
         self.cursor = 1;
         if (start){
-            [self startDownloadingWithOrdering:DEFAULT_ORDER];
+            [self startDownloadingWithOrdering];
         }
     }
     return self;
 }
 
--(void)startDownloadingWithOrdering:(NSInteger)ordering{
+-(void)startDownloadingWithOrdering{
+    NSInteger ordering = DEFAULT_ORDER;
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:@"articleOrdering"]){
+        ordering = [[NSUserDefaults standardUserDefaults] integerForKey:@"articleOrdering"];
+    }
     NSString *articleListString = [ARTICLE_LIST_HOST stringByReplacingOccurrencesOfString:ARTICLE_CLASS withString:[NSString stringWithFormat:@"%ld", (long)self.classNumber]];
     articleListString = [articleListString stringByReplacingOccurrencesOfString:ARTICLE_ORDER withString:[NSString stringWithFormat:@"%ld", (long)ordering]];
     articleListString = [articleListString stringByReplacingOccurrencesOfString:CURSOR withString:[NSString stringWithFormat:@"%ld", (long)self.cursor]];

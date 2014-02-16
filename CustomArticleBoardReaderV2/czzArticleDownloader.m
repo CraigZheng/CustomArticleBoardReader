@@ -65,11 +65,17 @@
 }
 
 -(void)prepareArticleInBackground{
-    czzArticle* newArticle = [[czzArticle alloc] initWithJSONData:receivedData];
-    if (newArticle)
-        [self.delegate articleDownloaded:newArticle withArticleID:self.articleID success:YES];
-    else
+    @try {
+        czzArticle* newArticle = [[czzArticle alloc] initWithJSONData:receivedData];
+        if (newArticle)
+            [self.delegate articleDownloaded:newArticle withArticleID:self.articleID success:YES];
+        else
+            [self.delegate articleDownloaded:nil withArticleID:self.articleID success:NO];
+    }
+    @catch (NSException *exception) {
+        NSLog(@"%@", exception);
         [self.delegate articleDownloaded:nil withArticleID:self.articleID success:NO];
+    }
 }
 
 -(void)stop{

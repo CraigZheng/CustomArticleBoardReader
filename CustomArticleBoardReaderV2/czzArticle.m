@@ -76,7 +76,9 @@
             self.commentCount = [[dataDict objectForKey:key] integerValue];
         }
         if ([key isEqualToString:@"createtime"]){
-            self.createTime = [NSDate dateWithTimeIntervalSince1970:[[dataDict objectForKey:key] longValue]];
+            //the returned value is in milliseconds
+            double timeStamp = [[dataDict objectForKey:key] doubleValue] / 1000;
+            self.createTime = [NSDate dateWithTimeIntervalSince1970:timeStamp];
         }
         if ([key isEqualToString:@"creator"]){
             self.creator = [[czzAcUser alloc] initWithJSON:[dataDict objectForKey:key]];
@@ -95,6 +97,7 @@
             self.htmlBody = [self prepareHTMLForBetterVisual:self.htmlBody];
         }
     }
+    
 }
 
 #pragma mark - prepareHTMLForBetterVisual will remove the old formatting, and re-apply some simple html format for better visual on a mobile device
@@ -137,7 +140,7 @@
 
 -(NSString*)extractImgTags:(NSString*)htmlBody{
     //NSString *tempString = [self stringBetweenString:@"<img" andString:@"/>" withstring:htmlBody];
-    NSString *imgTag = [self extractString:htmlBody toLookFor:@"<img" skipForwardX:0 toStopBefore:@"/>"];
+    NSString *imgTag = [self extractString:htmlBody toLookFor:@"<img" skipForwardX:0 toStopBefore:@">"];
     NSInteger maximumTry = 999;
     while (imgTag != nil && maximumTry >0) {
         //to avoid loop lock
@@ -170,7 +173,7 @@
                 htmlBody = [htmlBody stringByReplacingOccurrencesOfString:emoconURL withString:[NSString stringWithFormat:@"\"http://www.acfun.tv%@", emoconURL]];
             }
         }
-        imgTag = [self extractString:htmlBody toLookFor:@"<img" skipForwardX:0 toStopBefore:@"/>"];
+        imgTag = [self extractString:htmlBody toLookFor:@"<img" skipForwardX:0 toStopBefore:@">"];
     }
     return htmlBody;
 }

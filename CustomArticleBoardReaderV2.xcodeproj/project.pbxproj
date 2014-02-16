@@ -46,6 +46,7 @@
 		442FFF0918AB134D001ECDAA /* warning.png in Resources */ = {isa = PBXBuildFile; fileRef = 442FFF0818AB134D001ECDAA /* warning.png */; };
 		4485EF4518AFDB7C0031B3BC /* czzFavriouteManagerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4485EF4418AFDB7C0031B3BC /* czzFavriouteManagerViewController.m */; };
 		4485EF4818B061060031B3BC /* czzArticleDescriptionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4485EF4718B061060031B3BC /* czzArticleDescriptionViewController.m */; };
+		4485EF4B18B0A4700031B3BC /* czzSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4485EF4A18B0A4700031B3BC /* czzSettingsViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -127,6 +128,8 @@
 		4485EF4418AFDB7C0031B3BC /* czzFavriouteManagerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = czzFavriouteManagerViewController.m; sourceTree = "<group>"; };
 		4485EF4618B061060031B3BC /* czzArticleDescriptionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = czzArticleDescriptionViewController.h; sourceTree = "<group>"; };
 		4485EF4718B061060031B3BC /* czzArticleDescriptionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = czzArticleDescriptionViewController.m; sourceTree = "<group>"; };
+		4485EF4918B0A4700031B3BC /* czzSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = czzSettingsViewController.h; sourceTree = "<group>"; };
+		4485EF4A18B0A4700031B3BC /* czzSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = czzSettingsViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -204,6 +207,8 @@
 				442FFE9218A78A1D001ECDAA /* czzAppDelegate.h */,
 				442FFE9318A78A1D001ECDAA /* czzAppDelegate.m */,
 				442FFE9518A78A1D001ECDAA /* Main.storyboard */,
+				4485EF4918B0A4700031B3BC /* czzSettingsViewController.h */,
+				4485EF4A18B0A4700031B3BC /* czzSettingsViewController.m */,
 				4485EF4618B061060031B3BC /* czzArticleDescriptionViewController.h */,
 				4485EF4718B061060031B3BC /* czzArticleDescriptionViewController.m */,
 				4485EF4318AFDB7C0031B3BC /* czzFavriouteManagerViewController.h */,
@@ -474,6 +479,7 @@
 				442FFF0418AA6830001ECDAA /* czzCommentDownloader.m in Sources */,
 				442FFECB18A83D73001ECDAA /* Toast+UIView.m in Sources */,
 				442FFEC018A78B5C001ECDAA /* czzAcUser.m in Sources */,
+				4485EF4B18B0A4700031B3BC /* czzSettingsViewController.m in Sources */,
 				442FFEFC18A8FCF4001ECDAA /* czzImageCentre.m in Sources */,
 				442FFEC118A78B5C001ECDAA /* czzArticle.m in Sources */,
 				442FFEF518A8B140001ECDAA /* czzAcUserDownloader.m in Sources */,

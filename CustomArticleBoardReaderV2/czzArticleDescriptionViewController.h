@@ -7,7 +7,14 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "czzArticle.h"
+#import "czzArticlelViewController.h"
 
 @interface czzArticleDescriptionViewController : UIViewController
+@property (nonatomic) czzArticle *myArticle;
 
+@property (strong, nonatomic) IBOutlet UILabel *infoLabel;
+@property (strong, nonatomic) IBOutlet UILabel *titleLabel;
+@property (strong, nonatomic) IBOutlet UILabel *descLabel;
+@property (nonatomic) czzArticlelViewController *parentViewController;
 @end

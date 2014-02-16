@@ -28,7 +28,7 @@
 @property NSInteger cursor;
 @property id<czzArticleListDownloaderDelegate> delegate;
 
--(void)startDownloadingWithOrdering:(NSInteger)ordering;
+-(void)startDownloadingWithOrdering;
 -(void)stop;
 -(id)initWithDelegate:(id<czzArticleListDownloaderDelegate>)delegate class:(NSInteger)classNumber startImmediately:(BOOL)start;
 

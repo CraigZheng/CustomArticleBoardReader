@@ -100,7 +100,7 @@
         [self.tableView reloadData];
     }
     else
-        [self.view makeToast:@"下载失败" duration:1.0 position:@"center" image:[UIImage imageNamed:@"warning"]];
+        [self.view makeToast:@"下载失败：请检查网络" duration:1.0 position:@"center" image:[UIImage imageNamed:@"warning"]];
     [[[czzAppDelegate sharedAppDelegate] window] hideToastActivity];
     self.tableView.userInteractionEnabled = YES;
     commentDownloader = nil;

@@ -58,10 +58,11 @@
         czzArticle *article = [favArticles objectAtIndex:indexPath.row];
         //info strip
         NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-        dateFormatter.dateFormat = @"MM-dd, HH:mm";
+        dateFormatter.dateFormat = @"MMM-dd";
         NSString *dateString = [dateFormatter stringFromDate:article.createTime];
+        
         title.text = article.name;
-        NSString *infoString = [NSString stringWithFormat:@"%@, 评论：%d, 点击：%d", dateString, article.commentCount, article.viewCount];
+        NSString *infoString = [NSString stringWithFormat:@"By %@, 评论：%d, 点击：%d, %@", article.creator.name, article.commentCount, article.viewCount, dateString];
         info.text = infoString;
         desc.text = article.desc;
     }

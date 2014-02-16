@@ -82,7 +82,7 @@
         czzArticle *article = [articleList objectAtIndex:indexPath.row];
         //info strip
         NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
-        dateFormatter.dateFormat = @"MM-dd, HH:mm";
+        dateFormatter.dateFormat = @"MMM-dd, HH:mm";
         NSString *dateString = [dateFormatter stringFromDate:article.createTime];
         title.text = article.name;
         NSString *infoString = [NSString stringWithFormat:@"%@, 评论：%d, 点击：%d", dateString, article.commentCount, article.viewCount];
@@ -143,7 +143,7 @@
 
 - (IBAction)loadMoreAction:(id)sender {
     cursor = articleList.count + 1;
-    [self startDownloadingWithCategory:selectedCategory.integerValue andOrdering:MOST_COMMENTED_DAILY];
+    [self startDownloadingWithCategory:selectedCategory.integerValue];
     NSIndexPath *lastRowIndexPath = [NSIndexPath indexPathForRow:articleList.count inSection:0];
     [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:lastRowIndexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
 }
@@ -157,16 +157,20 @@
     NSString *selectedTitle = [segmentControl titleForSegmentAtIndex:segmentControl.selectedSegmentIndex];
     selectedCategory = [articleCategoris objectForKey:selectedTitle];
     
-    [self startDownloadingWithCategory:selectedCategory.integerValue andOrdering:MOST_COMMENTED_DAILY];
+    [self startDownloadingWithCategory:selectedCategory.integerValue];
 }
 
--(void)startDownloadingWithCategory:(NSInteger)category andOrdering:(NSInteger)ordering{
+-(void)startDownloadingWithCategory:(NSInteger)category{
     //stop any previously started downloader
     if (articleListDownloader)
         [articleListDownloader stop];
     articleListDownloader = [[czzArticleListDownloader alloc] initWithDelegate:self class:category startImmediately:NO];
     articleListDownloader.cursor = cursor;
-    [articleListDownloader startDownloadingWithOrdering:ordering];
+    NSInteger ordering = DEFAULT_ORDER;
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:@"articleOrdering"]){
+        ordering = [[NSUserDefaults standardUserDefaults] integerForKey:@"articleOrdering"];
+    }
+    [articleListDownloader startDownloadingWithOrdering];
     [[[czzAppDelegate sharedAppDelegate] window] makeToastActivity];
 }
 

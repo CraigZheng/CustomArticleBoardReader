@@ -8,6 +8,7 @@
 
 #import "czzAppDelegate.h"
 #import "Toast+UIView.h"
+#import "czzArticleListDownloader.h"
 
 @implementation czzAppDelegate
 
@@ -48,6 +49,8 @@
     if (![[NSFileManager defaultManager] fileExistsAtPath:favirouteFolder]){
         [[NSFileManager defaultManager] createDirectoryAtPath:favirouteFolder withIntermediateDirectories:NO attributes:nil error:nil];
     }
+    
+    [self checkUserDefaults];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application
@@ -62,5 +65,16 @@
 
 -(void)showToast:(NSString *)string{
     [[[[[UIApplication sharedApplication] keyWindow] subviews] lastObject] makeToast:string];
+}
+
+#pragma mark - check user defaults
+-(void)checkUserDefaults{
+    if (![[NSUserDefaults standardUserDefaults] objectForKey:@"shouldAutomaticallyLoadImage"]) {
+        [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"shouldAutomaticallyLoadImage"];
+    }
+    if (![[NSUserDefaults standardUserDefaults] objectForKey:@"articleOrdering"]){
+        [[NSUserDefaults standardUserDefaults] setInteger:MOST_CLICKED_DAILY forKey:@"articleOrdering"];
+    }
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 @end
