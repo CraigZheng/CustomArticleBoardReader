@@ -20,6 +20,7 @@
 
 @interface czzArticleDownloader : NSObject<UIAlertViewDelegate>
 @property NSInteger articleID;
+@property NSThread *articleProcessor;
 @property id<czzArticleDownloaderDelegate> delegate;
 
 -(id)initWithArticleID:(NSInteger)articleID delegate:(id<czzArticleDownloaderDelegate>)delegate startImmediately:(BOOL)start;

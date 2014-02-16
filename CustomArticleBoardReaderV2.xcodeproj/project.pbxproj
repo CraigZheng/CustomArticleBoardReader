@@ -45,6 +45,7 @@
 		442FFF0718AA7192001ECDAA /* czzCommentViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 442FFF0618AA7192001ECDAA /* czzCommentViewController.m */; };
 		442FFF0918AB134D001ECDAA /* warning.png in Resources */ = {isa = PBXBuildFile; fileRef = 442FFF0818AB134D001ECDAA /* warning.png */; };
 		4485EF4518AFDB7C0031B3BC /* czzFavriouteManagerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4485EF4418AFDB7C0031B3BC /* czzFavriouteManagerViewController.m */; };
+		4485EF4818B061060031B3BC /* czzArticleDescriptionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4485EF4718B061060031B3BC /* czzArticleDescriptionViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -124,6 +125,8 @@
 		442FFF0818AB134D001ECDAA /* warning.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = warning.png; sourceTree = "<group>"; };
 		4485EF4318AFDB7C0031B3BC /* czzFavriouteManagerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = czzFavriouteManagerViewController.h; sourceTree = "<group>"; };
 		4485EF4418AFDB7C0031B3BC /* czzFavriouteManagerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = czzFavriouteManagerViewController.m; sourceTree = "<group>"; };
+		4485EF4618B061060031B3BC /* czzArticleDescriptionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = czzArticleDescriptionViewController.h; sourceTree = "<group>"; };
+		4485EF4718B061060031B3BC /* czzArticleDescriptionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = czzArticleDescriptionViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -201,6 +204,8 @@
 				442FFE9218A78A1D001ECDAA /* czzAppDelegate.h */,
 				442FFE9318A78A1D001ECDAA /* czzAppDelegate.m */,
 				442FFE9518A78A1D001ECDAA /* Main.storyboard */,
+				4485EF4618B061060031B3BC /* czzArticleDescriptionViewController.h */,
+				4485EF4718B061060031B3BC /* czzArticleDescriptionViewController.m */,
 				4485EF4318AFDB7C0031B3BC /* czzFavriouteManagerViewController.h */,
 				4485EF4418AFDB7C0031B3BC /* czzFavriouteManagerViewController.m */,
 				442FFF0518AA7192001ECDAA /* czzCommentViewController.h */,
@@ -474,6 +479,7 @@
 				442FFEF518A8B140001ECDAA /* czzAcUserDownloader.m in Sources */,
 				442FFEFB18A8FCF4001ECDAA /* czzImageDownloader.m in Sources */,
 				442FFE9418A78A1D001ECDAA /* czzAppDelegate.m in Sources */,
+				4485EF4818B061060031B3BC /* czzArticleDescriptionViewController.m in Sources */,
 				442FFEC318A78B5C001ECDAA /* czzArticleListDownloader.m in Sources */,
 				442FFED218A844B2001ECDAA /* czzAdTableViewCell.m in Sources */,
 				442FFF0018AA670D001ECDAA /* czzComment.m in Sources */,

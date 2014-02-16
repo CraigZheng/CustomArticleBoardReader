@@ -176,13 +176,12 @@
                                 <segment title="漫画·小说"/>
                             </segments>
                             <connections>
-                                <action selector="categorySelectedAction:" destination="DjU-UU-AGZ" eventType="valueChanged" id="088-Yt-fvF"/>
-                                <action selector="categorySelectedAction:" destination="DjU-UU-AGZ" eventType="touchUpOutside" id="fdH-Va-2mZ"/>
+                                <action selector="categorySelectedAction:" destination="DjU-UU-AGZ" eventType="valueChanged" id="p4L-ni-m0K"/>
                             </connections>
                         </segmentedControl>
                     </navigationItem>
                     <connections>
-                        <outlet property="categorySegmentControl" destination="Lt4-qr-Uaa" id="MRP-et-aNd"/>
+                        <outlet property="categorySegmentControl" destination="Lt4-qr-Uaa" id="dnN-tF-jRg"/>
                         <segue destination="zin-gV-eV7" kind="push" identifier="go_article_view_controller_identifier" id="7Zp-P2-C1l"/>
                     </connections>
                 </tableViewController>
@@ -259,7 +258,13 @@
                             <outlet property="delegate" destination="oe4-lB-f8B" id="JhI-cs-IBX"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="收藏" id="Ocz-kb-0gh"/>
+                    <navigationItem key="navigationItem" title="收藏" id="Ocz-kb-0gh">
+                        <barButtonItem key="rightBarButtonItem" title="管理" id="hbb-ga-xLw">
+                            <connections>
+                                <action selector="manageAction:" destination="oe4-lB-f8B" id="Wm6-n9-RXi"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <segue destination="zin-gV-eV7" kind="push" identifier="go_article_view_controller_identifier" id="Kdc-a9-his"/>
                     </connections>
@@ -267,6 +272,28 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="rCg-ZI-M9c" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="251" y="-289"/>
+        </scene>
+        <!--Czz Article Description View Controller-->
+        <scene sceneID="HFW-zV-61U">
+            <objects>
+                <viewController id="r9K-C8-RVM" customClass="czzArticleDescriptionViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="4xs-5M-XUI"/>
+                        <viewControllerLayoutGuide type="bottom" id="Msg-cU-Ctg"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="9oc-rA-88d">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                    </view>
+                    <toolbarItems>
+                        <barButtonItem style="plain" systemItem="flexibleSpace" id="dcf-lM-dSZ"/>
+                    </toolbarItems>
+                    <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Wh5-FJ-TaW" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="251" y="407"/>
         </scene>
         <!--Czz Articlel View Controller - AcID-->
         <scene sceneID="ALn-9s-gzc">
@@ -314,7 +341,7 @@
                                 <action selector="loadAllImages:" destination="zin-gV-eV7" id="ZGX-oG-pxe"/>
                             </connections>
                         </barButtonItem>
-                        <barButtonItem style="plain" systemItem="flexibleSpace" id="dcf-lM-dSZ"/>
+                        <barButtonItem style="plain" systemItem="flexibleSpace" id="E0N-1A-z1S"/>
                         <barButtonItem title="评论" id="cMw-k2-Z97">
                             <connections>
                                 <segue destination="Kxp-mo-cxL" kind="push" id="zBF-qV-aOo"/>
@@ -460,6 +487,6 @@
         <simulatedScreenMetrics key="destination" type="retina4"/>
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
-        <segue reference="Kdc-a9-his"/>
+        <segue reference="7Zp-P2-C1l"/>
     </inferredMetricsTieBreakers>
 </document>

@@ -1,5 +1,5 @@
 //
-//  czzFavriouteManagerViewController.h
+//  czzArticleDescriptionViewController.h
 //  CustomArticleBoardReaderV2
 //
 //  Created by Craig on 16/02/2014.
@@ -8,7 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface czzFavriouteManagerViewController : UITableViewController
+@interface czzArticleDescriptionViewController : UIViewController
 
-- (IBAction)manageAction:(id)sender;
 @end

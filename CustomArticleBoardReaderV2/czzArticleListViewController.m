@@ -45,7 +45,9 @@
 -(void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
     if (articleList.count <= 0)
-        [self startDownloadingWithCategory:categorySegmentControl.selectedSegmentIndex andOrdering:MOST_COMMENTED_DAILY];
+    {
+        [self performSelector:@selector(categorySelectedAction:) withObject:categorySegmentControl];
+    }
 }
 
 #pragma mark - Table view data source
@@ -222,9 +224,4 @@
     incomingView.hidden = NO;
 }
 
-#pragma mark - memory warning
--(void)didReceiveMemoryWarning{
-    articleList = nil;
-    [self categorySelectedAction:nil];
-}
 @end

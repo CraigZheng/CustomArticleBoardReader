@@ -13,17 +13,20 @@
 @interface czzFavriouteManagerViewController ()
 @property NSMutableArray *favArticles;
 @property NSIndexPath *selectedIndexPath;
+@property BOOL editing;
 @end
 
 @implementation czzFavriouteManagerViewController
 @synthesize favArticles;
 @synthesize selectedIndexPath;
+@synthesize editing;
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 
     // Uncomment the following line to preserve selection between presentations.
+    editing = NO;
     favArticles = [NSMutableArray new];
     NSString* basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSString* favirouteFolder = [basePath stringByAppendingPathComponent:@"Faviroutes"];
@@ -85,44 +88,36 @@
     [self performSegueWithIdentifier:@"go_article_view_controller_identifier" sender:self];
 }
 
-/*
+
 // Override to support conditional editing of the table view.
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
 {
     // Return NO if you do not want the specified item to be editable.
     return YES;
 }
-*/
 
-/*
+
+
 // Override to support editing the table view.
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if (editingStyle == UITableViewCellEditingStyleDelete) {
+        //delete the archived article from the disk
+        czzArticle *articleToDelete = [favArticles objectAtIndex:indexPath.row];
+        NSString* basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+        NSString* favirouteFolder = [basePath stringByAppendingPathComponent:@"Faviroutes"];
+        NSString* filePath = [favirouteFolder stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld.fav", (long)articleToDelete.acId]];
+        [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
+        [favArticles removeObjectAtIndex:indexPath.row];
+
         // Delete the row from the data source
-        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
-    }   
+        [tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+    }
     else if (editingStyle == UITableViewCellEditingStyleInsert) {
         // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
     }   
 }
-*/
 
-/*
-// Override to support rearranging the table view.
-- (void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)fromIndexPath toIndexPath:(NSIndexPath *)toIndexPath
-{
-}
-*/
-
-/*
-// Override to support conditional rearranging of the table view.
-- (BOOL)tableView:(UITableView *)tableView canMoveRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    // Return NO if you do not want the item to be re-orderable.
-    return YES;
-}
-*/
 
 #pragma mark - Navigation
 
@@ -136,4 +131,8 @@
     }
 }
 
+- (IBAction)manageAction:(id)sender {
+    editing = !editing;
+    [self.tableView setEditing:editing animated:YES];
+}
 @end

@@ -103,10 +103,10 @@
  <p> and <img> will be preseved for better formatting and image broswing
  */
 -(NSString*)prepareHTMLForBetterVisual:(NSString*)oldHTML{
-    oldHTML = [self replaceParagraphyTagsAndBrTags:oldHTML];
+    oldHTML = [self replaceFormattingTags:oldHTML];
     oldHTML = [self extractImgTags:oldHTML];
     oldHTML = [self stringByApplyingSimpleHTMLFormat:oldHTML];
-    oldHTML = [self repopulateParagraphyTagsAndImageTags:oldHTML];
+    oldHTML = [self repopulateFormattingTagsAndImageTags:oldHTML];
     return oldHTML;
 }
 
@@ -118,7 +118,7 @@
     NSString *newHTMLString = [NSString stringWithFormat:@"<html> \n"
                                    "<head> \n"
                                    "<style type=\"text/css\"> \n"
-                                   "body {font-family: \"%@\"; font-size: %@; width:100%% ;padding:0px; margin:0px;}\n"
+                                   "body {font-family: \"%@\"; font-size: %@; width:100%% ;padding:0px; margin:0px; word-wrap: break-word;}\n"
                                    "</style> \n"
                                    "</head> \n"
                                    "<body>%@</body> \n"
@@ -127,10 +127,11 @@
     return newHTMLString;
 }
 
--(NSString*)replaceParagraphyTagsAndBrTags:(NSString*)htmlBody{
+-(NSString*)replaceFormattingTags:(NSString*)htmlBody{
     htmlBody = [htmlBody stringByReplacingOccurrencesOfString:@"</p>" withString:[self embedString:@"PARAGRAPH TAG" withString:RANDOM_STRING]];
-    htmlBody = [htmlBody stringByReplacingOccurrencesOfString:@"<br/>" withString:[self embedString:@"BR TAG" withString:RANDOM_STRING]];
-    htmlBody = [htmlBody stringByReplacingOccurrencesOfString:@"<br />" withString:[self embedString:@"BR TAG" withString:RANDOM_STRING]];
+    //htmlBody = [htmlBody stringByReplacingOccurrencesOfString:@"<br/>" withString:[self embedString:@"BR TAG" withString:RANDOM_STRING]];
+    htmlBody = [htmlBody stringByReplacingOccurrencesOfString:@"<br" withString:[[self embedString:@"BR TAG" withString:RANDOM_STRING] stringByAppendingString:@"<+"]];
+    htmlBody = [htmlBody stringByReplacingOccurrencesOfString:@"<div" withString:[[self embedString:@"BR TAG" withString:RANDOM_STRING] stringByAppendingString:@"<+"]];
     return htmlBody;
 }
 
@@ -182,7 +183,7 @@
 }
 
 //use this function at last to repopulate marked p tags and image tags
--(NSString*)repopulateParagraphyTagsAndImageTags:(NSString*)htmlString{
+-(NSString*)repopulateFormattingTagsAndImageTags:(NSString*)htmlString{
     //p tags
     NSString *markedPTags = [self embedString:@"PARAGRAPH TAG" withString:RANDOM_STRING];
     htmlString = [htmlString stringByReplacingOccurrencesOfString:markedPTags withString:@"</p>"];
@@ -198,7 +199,7 @@
 
 -(NSString*)embedURLIntoAnchor:(NSString*)url{
     NSString *imgSrc = [@"action:" stringByAppendingString:url];
-    NSString *aString = [NSString stringWithFormat:@"</p><a href=%@>[[点我下载图片]]</a></p>", imgSrc];
+    NSString *aString = [NSString stringWithFormat:@"<br><a href=%@>[[点我下载图片]]</a>", imgSrc];
     return aString;
 }
 
@@ -223,7 +224,7 @@
         width = [czzAppDelegate sharedAppDelegate].window.frame.size.width;
         heigth = width / image.size.width * heigth;
     }
-    NSString *imgTagString = [NSString stringWithFormat:@"<a href=\"openfile:%@\" ><img src=\"file://%@\" width=\"%ld\" height=\"%ld\" align=\"center\" /></a><br/>", localImagePath, localImagePath, (long)width, (long)heigth];
+    NSString *imgTagString = [NSString stringWithFormat:@"<br><a href=\"openfile:%@\" ><img src=\"file://%@\" width=\"%ld\" height=\"%ld\" align=\"center\" /></a>", localImagePath, localImagePath, (long)width, (long)heigth];
     return imgTagString;
 }
 

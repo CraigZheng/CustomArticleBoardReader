@@ -16,6 +16,7 @@
 @implementation czzArticleDownloader
 @synthesize urlConn;
 @synthesize receivedData;
+@synthesize articleProcessor;
 
 -(id)initWithArticleID:(NSInteger)articleID delegate:(id<czzArticleDownloaderDelegate>)delegate startImmediately:(BOOL)start{
     self = [super init];
@@ -58,12 +59,17 @@
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"图片过多" message:[NSString stringWithFormat:@"文章中共有%ld张图片，可能用电脑来看更适合。你确定要打开这篇文章吗？", (long)numberOfMatches] delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确认", nil];
         [alertView show];
     } else {
-        czzArticle* newArticle = [[czzArticle alloc] initWithJSONData:receivedData];
-        if (newArticle)
-            [self.delegate articleDownloaded:newArticle withArticleID:self.articleID success:YES];
-        else
-            [self.delegate articleDownloaded:nil withArticleID:self.articleID success:NO];
+        articleProcessor = [[NSThread alloc] initWithTarget:self selector:@selector(prepareArticleInBackground) object:nil];
+        [articleProcessor start];
     }
+}
+
+-(void)prepareArticleInBackground{
+    czzArticle* newArticle = [[czzArticle alloc] initWithJSONData:receivedData];
+    if (newArticle)
+        [self.delegate articleDownloaded:newArticle withArticleID:self.articleID success:YES];
+    else
+        [self.delegate articleDownloaded:nil withArticleID:self.articleID success:NO];
 }
 
 -(void)stop{

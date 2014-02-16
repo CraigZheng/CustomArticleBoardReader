@@ -13,8 +13,9 @@
 #import "czzImageDownloader.h"
 #import "czzImageCentre.h"
 #import "czzCommentViewController.h"
+#import "czzArticleListViewController.h"
 
-@interface czzArticlelViewController ()<czzArticleDownloaderDelegate, UIWebViewDelegate, UIScrollViewDelegate, czzImageDownloaderDelegate, UIDocumentInteractionControllerDelegate>
+@interface czzArticlelViewController ()<czzArticleDownloaderDelegate, UIWebViewDelegate, UIScrollViewDelegate, czzImageDownloaderDelegate, UIDocumentInteractionControllerDelegate, UINavigationControllerDelegate>
 @property czzArticleDownloader *articleDownloader;
 @property UIDocumentInteractionController *documentInteractionController;
 @property CGPoint previousContentOffset;
@@ -36,6 +37,7 @@
 	// Do any additional setup after loading the view.
     self.title = [NSString stringWithFormat:@"%ld", (long)myArticle.acId];
     self.articleWebView.scrollView.delegate = self;
+    self.navigationController.delegate = self;
     imageDownloaders = [NSMutableDictionary new];
     if (myArticle.htmlBody == nil)
         [self startDownloadingArticle];
@@ -48,16 +50,29 @@
     [[[czzAppDelegate sharedAppDelegate] window] makeToastActivity];
 }
 
--(void)viewWillDisappear:(BOOL)animated{
-    [super viewWillDisappear:animated];
+-(void)viewDidDisappear:(BOOL)animated{
+    [super viewDidDisappear:animated];
+    self.navigationController.delegate = nil;
     [[[czzAppDelegate sharedAppDelegate] window] hideToastActivity];
-    if (articleDownloader)
-        [articleDownloader stop];
-    //stop all image downloader
-    for (czzImageDownloader *imgDownloader in imageDownloaders.allValues) {
-        if (imgDownloader)
-            [imgDownloader stop];
+}
+
+#pragma mark - UINavigationControllerDelegate
+-(void)navigationController:(UINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated{
+    //this view has being poped from navigation controller, stop all downloaders
+    if ([viewController isKindOfClass:[czzArticleListViewController class]]){
+        if (articleDownloader) {
+            [articleDownloader.articleProcessor cancel];
+            [articleDownloader stop];
+        }
+        //stop all image downloader
+        for (czzImageDownloader *imgDownloader in imageDownloaders.allValues) {
+            if (imgDownloader)
+                [imgDownloader stop];
+        }
     }
+}
+-(void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated{
+
 }
 
 #pragma mark - czzArticleDownloaderDelegate
@@ -104,27 +119,7 @@
     }
 
     if (navigationType == UIWebViewNavigationTypeLinkClicked) {
-        /*
-        if ([request.URL.scheme isEqualToString:@"action"]){
-            NSString *actionURLString = [request.URL.absoluteString substringFromIndex:[request.URL.absoluteString rangeOfString:@":"].location + 1];
-            //if such imageDownloader is presented, stop the previous downloader and restart a new one
-            czzImageDownloader *previousDownloader = [imageDownloaders objectForKey:actionURLString];
-            if (previousDownloader)
-            {
-                [previousDownloader stop];
-                [imageDownloaders removeObjectForKey:actionURLString];
-            }
-            czzImageDownloader *imgDownloader = [[czzImageDownloader alloc] init];
-            imgDownloader.imageURLString = actionURLString;
-            imgDownloader.delegate = self;
-            [imgDownloader start];
-            //set the imageDownloader as the object and actionURLString as the key
-            [imageDownloaders setObject:imgDownloader forKey:actionURLString];
-            
-            [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"开始下载图片..." duration:1.0 position:@"bottom"];
-        }
         //to open clicked image
-        else */
         if ([request.URL.scheme isEqualToString:@"openfile"]){
             NSString *fileLocation = [request.URL.absoluteString substringFromIndex:[request.URL.absoluteString rangeOfString:@":"].location + 1];
             documentInteractionController = [[UIDocumentInteractionController alloc] init];
