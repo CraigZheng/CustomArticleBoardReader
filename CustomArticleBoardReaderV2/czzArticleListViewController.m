@@ -40,14 +40,21 @@
     cursor = 1; //default value
     articleList = [NSMutableArray new];
     articleCategoris = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithInteger:110], @"综合", [NSNumber numberWithInteger:73], @"工作·情感", [NSNumber numberWithInteger:74], @"动漫文化", [NSNumber numberWithInteger:75], @"漫画·小说", nil];
+    UIRefreshControl *refControl = [UIRefreshControl new];
+    [refControl addTarget:self action:@selector(refreshArticleList) forControlEvents:UIControlEventValueChanged];
+    self.refreshControl = refControl;
 }
 
 -(void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
     if (articleList.count <= 0)
     {
-        [self performSelector:@selector(categorySelectedAction:) withObject:categorySegmentControl];
+        [self refreshArticleList];
     }
+}
+
+-(void)refreshArticleList{
+    [self performSelector:@selector(categorySelectedAction:) withObject:categorySegmentControl];
 }
 
 #pragma mark - Table view data source
@@ -85,7 +92,7 @@
         dateFormatter.dateFormat = @"MMM-dd, HH:mm";
         NSString *dateString = [dateFormatter stringFromDate:article.createTime];
         title.text = article.name;
-        NSString *infoString = [NSString stringWithFormat:@"%@, 评论：%d, 点击：%d", dateString, article.commentCount, article.viewCount];
+        NSString *infoString = [NSString stringWithFormat:@"%@, 评论：%ld, 点击：%ld", dateString, (long)article.commentCount, (long)article.viewCount];
         info.text = infoString;
         desc.text = article.desc;
     }
@@ -139,6 +146,7 @@
         [[czzAppDelegate sharedAppDelegate] showToast:@"Download failed"];
     [articleListDownloader stop];
     articleListDownloader = nil;
+    [self.refreshControl endRefreshing];
 }
 
 - (IBAction)loadMoreAction:(id)sender {
@@ -166,10 +174,6 @@
         [articleListDownloader stop];
     articleListDownloader = [[czzArticleListDownloader alloc] initWithDelegate:self class:category startImmediately:NO];
     articleListDownloader.cursor = cursor;
-    NSInteger ordering = DEFAULT_ORDER;
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:@"articleOrdering"]){
-        ordering = [[NSUserDefaults standardUserDefaults] integerForKey:@"articleOrdering"];
-    }
     [articleListDownloader startDownloadingWithOrdering];
     [[[czzAppDelegate sharedAppDelegate] window] makeToastActivity];
 }

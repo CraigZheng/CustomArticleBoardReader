@@ -26,7 +26,7 @@
 @property BOOL isThumbnail;
 
 -(id)init;
--(void)start;
+-(void)startDownloading;
 -(void)stop;
 -(double)progress;
 @end

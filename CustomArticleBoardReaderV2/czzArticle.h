@@ -26,6 +26,8 @@
 
 @property NSMutableArray *imageSrc;
 
+@property UIViewController *parentViewController;
+
 -(id)initWithJSONData:(NSData*)jsonData;
 -(id)initWithJSONDictonary:(NSDictionary*)jsonDict;
 //replace the temporary [IMAGE] anchor in the content to an <img> tag with local inage

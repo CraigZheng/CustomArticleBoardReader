@@ -45,9 +45,9 @@
 -(void)startDownloadingComment{
     NSString *host;
     if (shouldDownloadMultipleComment){
-        host = [MULTIPLECOMMENTHOST stringByReplacingOccurrencesOfString:COMMENTID withString:[NSString stringWithFormat:@"%d", self.articleID]];
+        host = [MULTIPLECOMMENTHOST stringByReplacingOccurrencesOfString:COMMENTID withString:[NSString stringWithFormat:@"%ld", (long)self.articleID]];
     } else
-        host = [SINGLECOMMENTHOST stringByReplacingOccurrencesOfString:COMMENTID withString:[NSString stringWithFormat:@"%d", self.articleID]];
+        host = [SINGLECOMMENTHOST stringByReplacingOccurrencesOfString:COMMENTID withString:[NSString stringWithFormat:@"%ld", (long)self.articleID]];
     host = [host stringByReplacingOccurrencesOfString:QUOTE_NU withString:[NSString stringWithFormat:@"%ld", (long)self.quoteLimit]];
     host = [host stringByReplacingOccurrencesOfString:CURSOR withString:[NSString stringWithFormat:@"%ld", (long)self.cursor]];
     NSLog(@"%@", host);

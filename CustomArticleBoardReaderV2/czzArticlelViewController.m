@@ -16,13 +16,16 @@
 #import "czzArticleListViewController.h"
 #import "czzArticleDescriptionViewController.h"
 
+#define MAX_CONCURRENT_DOWNLOADER 5
+
 @interface czzArticlelViewController ()<czzArticleDownloaderDelegate, UIWebViewDelegate, UIScrollViewDelegate, czzImageDownloaderDelegate, UIDocumentInteractionControllerDelegate, UINavigationControllerDelegate>
 @property czzArticleDownloader *articleDownloader;
 @property UIDocumentInteractionController *documentInteractionController;
 @property CGPoint previousContentOffset;
-@property NSMutableDictionary *imageDownloaders;
 @property czzArticleDescriptionViewController *descViewController;
 @property BOOL shouldAutomaticallyLoadImage;
+@property NSMutableSet *downloaderQueue;
+@property NSMutableSet *downloaderExecuting;
 @end
 
 @implementation czzArticlelViewController
@@ -32,9 +35,10 @@
 @synthesize previousContentOffset;
 @synthesize documentInteractionController;
 @synthesize favirouteButton;
-@synthesize imageDownloaders;
 @synthesize descViewController;
 @synthesize shouldAutomaticallyLoadImage;
+@synthesize downloaderExecuting;
+@synthesize downloaderQueue;
 
 - (void)viewDidLoad
 {
@@ -43,7 +47,8 @@
     self.title = [NSString stringWithFormat:@"%ld", (long)myArticle.acId];
     self.articleWebView.scrollView.delegate = self;
     self.navigationController.delegate = self;
-    imageDownloaders = [NSMutableDictionary new];
+    downloaderQueue = [NSMutableSet new];
+    downloaderExecuting = [NSMutableSet new];
     shouldAutomaticallyLoadImage = [[NSUserDefaults standardUserDefaults] boolForKey:@"shouldAutomaticallyLoadImage"];
     if (myArticle.htmlBody == nil)
         [self startDownloadingArticle];
@@ -91,9 +96,8 @@
             [articleDownloader stop];
         }
         //stop all image downloader
-        for (czzImageDownloader *imgDownloader in imageDownloaders.allValues) {
-            if (imgDownloader)
-                [imgDownloader stop];
+        for (czzImageDownloader *imgDownloader in downloaderExecuting.allObjects) {
+            [imgDownloader stop];
         }
     }
 }
@@ -114,6 +118,7 @@
 
 #pragma mark - UIWebView delegate
 -(void)webViewDidStartLoad:(UIWebView *)webView{
+    webView.userInteractionEnabled = NO;
     previousContentOffset = webView.scrollView.contentOffset;
     [[[czzAppDelegate sharedAppDelegate] window] makeToastActivity];
 }
@@ -125,22 +130,23 @@
     [[[czzAppDelegate sharedAppDelegate] window] hideToastActivity];
 }
 
+-(void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error{
+    webView.userInteractionEnabled = YES;
+}
+
 -(BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType{
     if ([request.URL.scheme isEqualToString:@"action"]){
         NSString *actionURLString = [request.URL.absoluteString substringFromIndex:[request.URL.absoluteString rangeOfString:@":"].location + 1];
-        //if such imageDownloader is presented, stop the previous downloader and restart a new one
-        czzImageDownloader *previousDownloader = [imageDownloaders objectForKey:actionURLString];
-        if (previousDownloader)
-        {
-            [previousDownloader stop];
-            [imageDownloaders removeObjectForKey:actionURLString];
-        }
         czzImageDownloader *imgDownloader = [[czzImageDownloader alloc] init];
         imgDownloader.imageURLString = actionURLString;
         imgDownloader.delegate = self;
-        [imgDownloader start];
-        //set the imageDownloader as the object and actionURLString as the key
-        [imageDownloaders setObject:imgDownloader forKey:actionURLString];
+        if (downloaderExecuting.count < MAX_CONCURRENT_DOWNLOADER && ![downloaderExecuting containsObject:imgDownloader]) {
+            [downloaderExecuting addObject:imgDownloader];
+            [imgDownloader startDownloading];
+        } else {
+            [downloaderQueue addObject:imgDownloader];
+        }
+        //NSLog(@"executing: %d, in queue: %d", downloaderExecuting.count, downloaderQueue.count);
         if (navigationType != UIWebViewNavigationTypeOther)
             [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"开始下载图片..." duration:1.0 position:@"bottom"];
     }
@@ -168,9 +174,9 @@
         CGFloat duration = 1.0;
         if (shouldAutomaticallyLoadImage)
             duration = 0.5;
-        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"图片下载好了" duration:duration position:@"bottom"];
+        if (!error)
+            [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"图片下载好了" duration:duration position:@"bottom"];
         [myArticle notifyImageDownloaded:imgDownloader.imageURLString saveTo:path];
-        previousContentOffset = articleWebView.scrollView.contentOffset;
         if ([articleWebView isLoading])
             [articleWebView stopLoading];
         [articleWebView loadHTMLString:myArticle.htmlBody baseURL:nil];
@@ -178,11 +184,26 @@
     } else {
         [self.view makeToast:error.localizedDescription duration:1.5 position:@"center" title:@"图片下载出错：请检查网络和储存空间" image:[UIImage imageNamed:@"warning"]];
     }
+    //remove this downloading from executing stack, and insert a waiting downloading from the queue
+    [downloaderExecuting removeObject:imgDownloader];
+    [downloaderQueue removeObject:imgDownloader];
+    NSEnumerator *objEnumerator = downloaderQueue.objectEnumerator;
+    czzImageDownloader *newDownloader;
+    while (downloaderExecuting.count < MAX_CONCURRENT_DOWNLOADER && (newDownloader = [objEnumerator nextObject])) {
+        [downloaderExecuting addObject:newDownloader];
+        [newDownloader startDownloading];
+    }
+    //remove any duplicate in the queue
+    for (czzImageDownloader* downer in downloaderExecuting.allObjects) {
+        [downloaderQueue removeObject:downer];
+    }
+    //NSLog(@"executing: %d, in queue: %d", downloaderExecuting.count, downloaderQueue.count);
 }
 
 #pragma mark - myArticle setter, also load the given html body if presented
 -(void)setMyArticle:(czzArticle *)article{
     myArticle = article;
+    myArticle.parentViewController = self;
     if (myArticle.htmlBody){
         [articleWebView loadHTMLString:myArticle.htmlBody baseURL:nil];
     }

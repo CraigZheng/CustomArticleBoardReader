@@ -40,7 +40,7 @@
     return self;
 }
 
--(void)start{
+-(void)startDownloading{
     if (!imageURLString)
         return;
     if (urlConn){
@@ -54,13 +54,17 @@
     
     filePath = [basePath stringByAppendingPathComponent:imageURLString.lastPathComponent];
     UIImage* image = [[UIImage alloc] initWithContentsOfFile:filePath];
+    NSError *error = [NSError errorWithDomain:@"图片为空白" code:999 userInfo:[NSDictionary dictionaryWithObjectsAndKeys:@"图片已经下载过了", NSLocalizedDescriptionKey, nil]];
     if (image){
-        [self.delegate downloadFinished:self success:YES isThumbnail:NO saveTo:filePath error:nil];
+        [self.delegate downloadFinished:self success:YES isThumbnail:NO saveTo:filePath error:error];
         return;
     }
 
     NSURLRequest *urlRequest = [NSURLRequest requestWithURL:[NSURL URLWithString:targetURLString]];
-    urlConn = [[NSURLConnection alloc] initWithRequest:urlRequest delegate:self startImmediately:YES];
+    urlConn = [[NSURLConnection alloc] initWithRequest:urlRequest delegate:self startImmediately:NO];
+    [urlConn scheduleInRunLoop:[NSRunLoop mainRunLoop]
+                          forMode:NSDefaultRunLoopMode];
+    [urlConn start];
 }
 
 -(void)stop{
@@ -145,4 +149,5 @@
 -(NSUInteger)hash{
     return imageURLString.hash;
 }
+
 @end

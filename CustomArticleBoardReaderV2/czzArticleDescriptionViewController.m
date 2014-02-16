@@ -27,7 +27,7 @@
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     dateFormatter.dateFormat = @"yyyy MMM-dd, hh:mm";
     NSString *dateString = [dateFormatter stringFromDate:myArticle.createTime];
-    NSString *infoString = [NSString stringWithFormat:@"By %@, 评论：%d 点击：%d, %@", myArticle.creator.name, myArticle.commentCount, myArticle.viewCount, dateString];
+    NSString *infoString = [NSString stringWithFormat:@"By %@, 评论：%ld 点击：%ld, %@", myArticle.creator.name, (long)myArticle.commentCount, (long)myArticle.viewCount, dateString];
     infoLabel.text = infoString;
     descLabel.text = myArticle.desc;
     titleLabel.text = myArticle.name;

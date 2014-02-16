@@ -62,7 +62,7 @@
         NSString *dateString = [dateFormatter stringFromDate:article.createTime];
         
         title.text = article.name;
-        NSString *infoString = [NSString stringWithFormat:@"By %@, 评论：%d, 点击：%d, %@", article.creator.name, article.commentCount, article.viewCount, dateString];
+        NSString *infoString = [NSString stringWithFormat:@"By %@, 评论：%ld, 点击：%ld, %@", article.creator.name, (long)article.commentCount, (long)article.viewCount, dateString];
         info.text = infoString;
         desc.text = article.desc;
     }

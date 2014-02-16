@@ -222,9 +222,10 @@
     //shrink the image accordingly
     NSInteger width = image.size.width;
     NSInteger heigth = image.size.height;
-    if (image.size.width > [czzAppDelegate sharedAppDelegate].window.frame.size.width)
+    CGFloat widthOfWindow = self.parentViewController.view.frame.size.width;
+    if (image.size.width > widthOfWindow)
     {
-        width = [czzAppDelegate sharedAppDelegate].window.frame.size.width;
+        width = widthOfWindow;
         heigth = width / image.size.width * heigth;
     }
     NSString *imgTagString = [NSString stringWithFormat:@"<br><a href=\"openfile:%@\" ><img src=\"file://%@\" width=\"%ld\" height=\"%ld\" align=\"center\" /></a>", localImagePath, localImagePath, (long)width, (long)heigth];

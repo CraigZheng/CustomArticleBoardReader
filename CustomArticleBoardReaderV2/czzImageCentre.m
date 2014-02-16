@@ -109,7 +109,7 @@
     if ([currentImageDownloaders containsObject:imgDown]){
         [self stopAndRemoveImageDownloaderWithURL:imgURL];
     }
-    [imgDown start];
+    [imgDown startDownloading];
     [currentImageDownloaders addObject:imgDown];
 }
 
@@ -130,7 +130,7 @@
     if ([currentImageDownloaders containsObject:imgDown]){
         [self stopAndRemoveImageDownloaderWithURL:imgURL];
     }
-    [imgDown start];
+    [imgDown startDownloading];
     [currentImageDownloaders addObject:imgDown];
 }
 
