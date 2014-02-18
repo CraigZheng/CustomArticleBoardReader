@@ -10,7 +10,7 @@
 
 @implementation czzAcUser
 
--(id)initWithJSON:(NSDictionary *)dataDict{
+-(id)initWithJSONDictionary:(NSDictionary *)dataDict{
     self = [super init];
     NSError *error;
     //NSMutableDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&error];
@@ -28,6 +28,9 @@
             }
             if ([key isEqualToString:@"avatar"]){
                 self.avatar = [dataDict objectForKey:key];
+            }
+            if ([key isEqualToString:@"gender"]){
+                self.gender = [[dataDict objectForKey:key] integerValue];
             }
         }
     }

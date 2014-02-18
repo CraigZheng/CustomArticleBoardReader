@@ -15,6 +15,26 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
+    [self checkStorages];
+    [self checkUserDefaults];
+    //ran a number
+    NSInteger upperHand = [[NSUserDefaults standardUserDefaults] integerForKey:@"oddForSplashAdScreen"];
+    if (upperHand == 0)
+        upperHand = 2;
+    NSInteger r = arc4random_uniform(upperHand);
+    //NSLog(@"%u", r);
+    if (r == 1){
+        GADInterstitial *splashInterstitial_ = [[GADInterstitial alloc] init];
+        splashInterstitial_.adUnitID = @"a153030071f04ab";
+        splashInterstitial_.delegate = self;
+        GADRequest *request = [GADRequest request];
+        request.testing = YES;
+        
+        [splashInterstitial_ loadAndDisplayRequest:request
+                                       usingWindow:self.window
+                                      initialImage:nil];
+    }
+
     return YES;
 }
 							
@@ -39,18 +59,7 @@
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-    NSString* basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-    NSString* imgFolder = [basePath
-                           stringByAppendingPathComponent:@"Images"];
-    NSString* favirouteFolder = [basePath stringByAppendingPathComponent:@"Faviroutes"];
-    if (![[NSFileManager defaultManager] fileExistsAtPath:imgFolder]){
-        [[NSFileManager defaultManager] createDirectoryAtPath:imgFolder withIntermediateDirectories:NO attributes:nil error:nil];
-    }
-    if (![[NSFileManager defaultManager] fileExistsAtPath:favirouteFolder]){
-        [[NSFileManager defaultManager] createDirectoryAtPath:favirouteFolder withIntermediateDirectories:NO attributes:nil error:nil];
-    }
-    
-    [self checkUserDefaults];
+
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application
@@ -67,7 +76,7 @@
     [[[[[UIApplication sharedApplication] keyWindow] subviews] lastObject] makeToast:string];
 }
 
-#pragma mark - check user defaults
+#pragma mark - check user defaults and storages
 -(void)checkUserDefaults{
     if (![[NSUserDefaults standardUserDefaults] objectForKey:@"shouldAutomaticallyLoadImage"]) {
         [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"shouldAutomaticallyLoadImage"];
@@ -75,6 +84,60 @@
     if (![[NSUserDefaults standardUserDefaults] objectForKey:@"articleOrdering"]){
         [[NSUserDefaults standardUserDefaults] setInteger:MOST_CLICKED_DAILY forKey:@"articleOrdering"];
     }
+    if (![[NSUserDefaults standardUserDefaults] objectForKey:@"oddForSplashAdScreen"]){
+        [[NSUserDefaults standardUserDefaults] setInteger:2 forKey:@"oddForSplashAdScreen"];
+    }
+    if (![[NSUserDefaults standardUserDefaults] objectForKey:@"oddForReadingAdScreen"]){
+        [[NSUserDefaults standardUserDefaults] setInteger:5 forKey:@"oddForReadingAdScreen"];
+    }
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
+
+-(void)checkStorages{
+    NSString* basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString* imgFolder = [basePath
+                           stringByAppendingPathComponent:@"Images"];
+    NSString* favirouteFolder = [basePath stringByAppendingPathComponent:@"Faviroutes"];
+    if (![[NSFileManager defaultManager] fileExistsAtPath:imgFolder]){
+        [[NSFileManager defaultManager] createDirectoryAtPath:imgFolder withIntermediateDirectories:NO attributes:nil error:nil];
+    }
+    if (![[NSFileManager defaultManager] fileExistsAtPath:favirouteFolder]){
+        [[NSFileManager defaultManager] createDirectoryAtPath:favirouteFolder withIntermediateDirectories:NO attributes:nil error:nil];
+    }
+}
+
+#pragma mark - GADInterstitialDelegate
+-(void)interstitialWillPresentScreen:(GADInterstitial *)ad{
+    NSInteger odd = [[NSUserDefaults standardUserDefaults] integerForKey:@"oddForSplashAdScreen"];
+    if (odd == 0)
+        odd = 2;
+    NSString *infoString = [NSString stringWithFormat:@"开启广告掉宝几率：%d%%", (NSInteger)((1.0 / odd) * 100)];
+    [self.window makeToast:infoString duration:2.0 position:@"bottom"];
+}
+
+#pragma mark - show and hide uitoolbar
+-(void)doSingleViewHideAnimation:(UIView*)incomingView :(NSString*)animType :(CGFloat)duration
+{
+    CATransition *animation = [CATransition animation];
+    [animation setType:kCATransitionPush];
+    [animation setSubtype:animType];
+    
+    [animation setDuration:duration];
+    [animation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
+    [[incomingView layer] addAnimation:animation forKey:kCATransition];
+    incomingView.hidden = YES;
+}
+
+-(void)doSingleViewShowAnimation:(UIView*)incomingView :(NSString*)animType :(CGFloat)duration
+{
+    CATransition *animation = [CATransition animation];
+    [animation setType:kCATransitionPush];
+    [animation setSubtype:animType];
+    
+    [animation setDuration:duration];
+    [animation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
+    [[incomingView layer] addAnimation:animation forKey:kCATransition];
+    incomingView.hidden = NO;
+}
+
 @end

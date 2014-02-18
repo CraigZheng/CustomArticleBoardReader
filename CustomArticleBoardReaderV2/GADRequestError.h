@@ -9,10 +9,10 @@
 
 @class GADRequest;
 
-extern NSString *const kGADErrorDomain;
+extern NSString *kGADErrorDomain;
 
 // NSError codes for GAD error domain.
-typedef NS_ENUM(NSInteger, GADErrorCode) {
+typedef enum {
   // The ad request is invalid.  The localizedFailureReason error description
   // will have more details.  Typically this is because the ad did not have the
   // ad unit ID or root view controller set.
@@ -48,9 +48,11 @@ typedef NS_ENUM(NSInteger, GADErrorCode) {
   kGADErrorMediationNoFill,
 
   // Attempting to pass an invalid ad size to an adapter.
-  kGADErrorMediationInvalidAdSize
-};
+  kGADErrorMediationInvalidAdSize,
+
+} GADErrorCode;
 
 // This class represents the error generated due to invalid request parameters.
 @interface GADRequestError : NSError
+
 @end

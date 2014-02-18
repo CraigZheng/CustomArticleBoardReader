@@ -15,17 +15,19 @@
 #import "czzCommentViewController.h"
 #import "czzArticleListViewController.h"
 #import "czzArticleDescriptionViewController.h"
+#import "GADInterstitial.h"
 
 #define MAX_CONCURRENT_DOWNLOADER 5
 
-@interface czzArticlelViewController ()<czzArticleDownloaderDelegate, UIWebViewDelegate, UIScrollViewDelegate, czzImageDownloaderDelegate, UIDocumentInteractionControllerDelegate, UINavigationControllerDelegate>
+@interface czzArticlelViewController ()<czzArticleDownloaderDelegate, UIWebViewDelegate, UIScrollViewDelegate, czzImageDownloaderDelegate, UIDocumentInteractionControllerDelegate, UINavigationControllerDelegate, GADInterstitialDelegate>
 @property czzArticleDownloader *articleDownloader;
 @property UIDocumentInteractionController *documentInteractionController;
 @property CGPoint previousContentOffset;
 @property czzArticleDescriptionViewController *descViewController;
 @property BOOL shouldAutomaticallyLoadImage;
-@property NSMutableSet *downloaderQueue;
-@property NSMutableSet *downloaderExecuting;
+@property NSMutableOrderedSet *downloaderQueue;
+@property NSMutableOrderedSet *downloaderExecuting;
+@property GADInterstitial *interstitial_;
 @end
 
 @implementation czzArticlelViewController
@@ -34,11 +36,12 @@
 @synthesize articleWebView;
 @synthesize previousContentOffset;
 @synthesize documentInteractionController;
-@synthesize favirouteButton;
 @synthesize descViewController;
 @synthesize shouldAutomaticallyLoadImage;
 @synthesize downloaderExecuting;
 @synthesize downloaderQueue;
+@synthesize readingModeBarButton;
+@synthesize interstitial_;
 
 - (void)viewDidLoad
 {
@@ -47,23 +50,20 @@
     self.title = [NSString stringWithFormat:@"%ld", (long)myArticle.acId];
     self.articleWebView.scrollView.delegate = self;
     self.navigationController.delegate = self;
-    downloaderQueue = [NSMutableSet new];
-    downloaderExecuting = [NSMutableSet new];
+    downloaderQueue = [NSMutableOrderedSet new];
+    downloaderExecuting = [NSMutableOrderedSet new];
     shouldAutomaticallyLoadImage = [[NSUserDefaults standardUserDefaults] boolForKey:@"shouldAutomaticallyLoadImage"];
     if (myArticle.htmlBody == nil)
         [self startDownloadingArticle];
     else
         [self.articleWebView loadHTMLString:myArticle.htmlBody baseURL:nil];
     [self addBannerDescViewToTop];
+    [self showAdRandomly];
 }
 
 -(void)startDownloadingArticle{
     articleDownloader = [[czzArticleDownloader alloc] initWithArticleID:myArticle.acId delegate:self startImmediately:YES];
     [[[czzAppDelegate sharedAppDelegate] window] makeToastActivity];
-}
-
--(void)viewWillAppear:(BOOL)animated{
-    [super viewWillAppear:animated];
 }
 
 -(void)viewDidDisappear:(BOOL)animated{
@@ -87,6 +87,34 @@
     [self.articleWebView.scrollView addSubview:descViewController.view];
 }
 
+-(void)showAdRandomly{
+    NSInteger upperHand = [[NSUserDefaults standardUserDefaults] integerForKey:@"oddForReadingAdScreen"];
+    if (upperHand == 0)
+        upperHand = 5;
+    NSInteger r = arc4random_uniform(upperHand);
+    if (r == 1){
+        interstitial_ = [[GADInterstitial alloc] init];
+        interstitial_.adUnitID = @"a153030071f04ab";
+        interstitial_.delegate = self;
+        GADRequest *request = [GADRequest request];
+        request.testing = YES;
+        
+        [interstitial_ loadRequest:request];
+    }
+}
+
+#pragma mark - GADInterstitialDelegate
+-(void)interstitialWillPresentScreen:(GADInterstitial *)ad{
+    NSInteger odd = [[NSUserDefaults standardUserDefaults] integerForKey:@"oddForReadingAdScreen"];
+    if (odd == 0)
+        odd = 5;
+    NSString *infoString = [NSString stringWithFormat:@"阅读广告掉宝几率：%d%%", (NSInteger)((1.0 / odd) * 100)];
+    [[czzAppDelegate sharedAppDelegate].window makeToast:infoString duration:2.0 position:@"bottom"];
+}
+
+-(void)interstitialDidReceiveAd:(GADInterstitial *)ad{
+    [interstitial_ presentFromRootViewController:self];
+}
 #pragma mark - UINavigationControllerDelegate
 -(void)navigationController:(UINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated{
     //this view has being poped from navigation controller, stop all downloaders
@@ -96,13 +124,10 @@
             [articleDownloader stop];
         }
         //stop all image downloader
-        for (czzImageDownloader *imgDownloader in downloaderExecuting.allObjects) {
+        for (czzImageDownloader *imgDownloader in downloaderExecuting.objectEnumerator) {
             [imgDownloader stop];
         }
     }
-}
--(void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated{
-
 }
 
 #pragma mark - czzArticleDownloaderDelegate
@@ -119,13 +144,15 @@
 #pragma mark - UIWebView delegate
 -(void)webViewDidStartLoad:(UIWebView *)webView{
     webView.userInteractionEnabled = NO;
-    previousContentOffset = webView.scrollView.contentOffset;
+    if (webView.scrollView.contentOffset.y >= 10)
+        previousContentOffset = webView.scrollView.contentOffset;
     [[[czzAppDelegate sharedAppDelegate] window] makeToastActivity];
 }
 
 -(void)webViewDidFinishLoad:(UIWebView *)webView{
     [webView.scrollView setContentSize: CGSizeMake(webView.frame.size.width, webView.scrollView.contentSize.height)];
-    webView.scrollView.contentOffset = previousContentOffset;
+    if (previousContentOffset.y >= 10)
+        webView.scrollView.contentOffset = previousContentOffset;
     webView.userInteractionEnabled = YES;
     [[[czzAppDelegate sharedAppDelegate] window] hideToastActivity];
 }
@@ -194,9 +221,10 @@
         [newDownloader startDownloading];
     }
     //remove any duplicate in the queue
-    for (czzImageDownloader* downer in downloaderExecuting.allObjects) {
+    for (czzImageDownloader* downer in downloaderExecuting.objectEnumerator) {
         [downloaderQueue removeObject:downer];
     }
+    
     //NSLog(@"executing: %d, in queue: %d", downloaderExecuting.count, downloaderQueue.count);
 }
 
@@ -226,16 +254,6 @@
 
 #pragma mark - UIScrollView delegate
 
--(void)scrollViewWillBeginDragging:(UIScrollView *)scrollView{
-    //in ios 6, the uitableview will not expand to under the uitoolbar, so hidding it won't do anything good
-    if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0) {
-        //when user do a scrolling and the tool bar is not yet hidden, hide the tool bar
-        if (self.navigationController.toolbar.hidden == NO){
-            [self doSingleViewHideAnimation:self.navigationController.toolbar :kCATransitionFromBottom :0.1];
-        }
-    }
-}
-
 -(void)scrollViewDidScroll:(UIScrollView *)scrollView{
     ScrollDirection scrollDirection;
     //if user drag the finger up, the scroll view direction is down, else is up
@@ -246,56 +264,82 @@
         scrollDirection = ScrollDirectionUp;
     }
     self.lastContentOffsetY = scrollView.contentOffset.y;
-    if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0) {
+    //if running on ios 7+ device and have not scroll to the top
+    if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0 && scrollView.contentOffset.y > 0) {
         //show the toolbar if user moved the finger up, and the toolbar is currently hidden
         if (scrollDirection == ScrollDirectionUp && self.navigationController.toolbar.hidden == YES){
-            [self doSingleViewShowAnimation:self.navigationController.toolbar :kCATransitionFromTop :0.1];
+            [self showNavigationBarAndToolBar];
+        } else if (scrollDirection == ScrollDirectionDown && self.navigationController.toolbar.hidden == NO) {
+            [self hideNavigationBarAndToolBar];
         }
     }
 }
 
+#pragma mark - show and hide tool bar
+
+-(void)hideNavigationBarAndToolBar{
+    [[czzAppDelegate sharedAppDelegate] doSingleViewHideAnimation:self.navigationController.toolbar :kCATransitionFromBottom :0.2];
+    //[[czzAppDelegate sharedAppDelegate] doSingleViewHideAnimation:self.navigationController.navigationBar :kCATransitionFromTop :0.2];
+
+}
+
+-(void)showNavigationBarAndToolBar{
+    [[czzAppDelegate sharedAppDelegate] doSingleViewShowAnimation:self.navigationController.toolbar :kCATransitionFromTop :0.2];
+    //[[czzAppDelegate sharedAppDelegate] doSingleViewShowAnimation:self.navigationController.navigationBar :kCATransitionFromBottom :0.2];
+}
+
+#pragma mark - show and hide description view
+
 -(void)showDescView{
-    [self doSingleViewShowAnimation:descViewController.view :kCATransitionFromBottom :0.2];
+    [[czzAppDelegate sharedAppDelegate] doSingleViewShowAnimation:descViewController.view :kCATransitionFromBottom :0.2];
     self.articleWebView.scrollView.contentInset = UIEdgeInsetsMake(descViewController.view.frame.size.height + descViewController.view.frame.origin.y, 0, 0, 0);
     self.articleWebView.scrollView.contentOffset = CGPointMake(0, descViewController.view.frame.size.height + descViewController.view.frame.origin.y);
 }
 
 -(void)hideDescView{
-    [self doSingleViewHideAnimation:descViewController.view :kCATransitionFromTop :0.2];
+    [[czzAppDelegate sharedAppDelegate] doSingleViewHideAnimation:descViewController.view :kCATransitionFromTop :0.2];
     self.articleWebView.scrollView.contentInset = UIEdgeInsetsMake(0, 0, 0, 0);
 }
 
-#pragma mark - show and hide uitoolbar
--(void)doSingleViewHideAnimation:(UIView*)incomingView :(NSString*)animType :(CGFloat)duration
-{
-    CATransition *animation = [CATransition animation];
-    [animation setType:kCATransitionPush];
-    [animation setSubtype:animType];
-    
-    [animation setDuration:duration];
-    [animation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
-    [[incomingView layer] addAnimation:animation forKey:kCATransition];
-    incomingView.hidden = YES;
-}
-
--(void)doSingleViewShowAnimation:(UIView*)incomingView :(NSString*)animType :(CGFloat)duration
-{
-    CATransition *animation = [CATransition animation];
-    [animation setType:kCATransitionPush];
-    [animation setSubtype:animType];
-    
-    [animation setDuration:duration];
-    [animation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
-    [[incomingView layer] addAnimation:animation forKey:kCATransition];
-    incomingView.hidden = NO;
-}
-
+#pragma mark - tool bar menu actions
 - (IBAction)loadAllImages:(id)sender {
     [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"自动下载所有图片..." duration:1.0 position:@"bottom"];
     for (NSString *imgURL in myArticle.imageSrc) {
         NSURLRequest *requst = [NSURLRequest requestWithURL:[NSURL URLWithString:[@"action:" stringByAppendingString:imgURL]]];
         [articleWebView loadRequest:requst];
     }
+}
+
+- (IBAction)changeMode:(id)sender {
+    BOOL noImage = [[NSUserDefaults standardUserDefaults] boolForKey:@"shouldNotDisplayImage"];
+    noImage = !noImage;
+    [[NSUserDefaults standardUserDefaults] setBool:noImage forKey:@"shouldNotDisplayImage"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    [self changeReadingMode:noImage];
+}
+
+- (IBAction)shareAction:(id)sender {
+    [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"this is a fucking unfinished feature, be patient fuckhead!"];
+}
+
+-(void)changeReadingMode:(BOOL)noImage{
+    if (noImage){
+        readingModeBarButton.image = [UIImage imageNamed:@"notebook"];
+    } else {
+        readingModeBarButton.image = [UIImage imageNamed:@"news_paper"];
+    }
+    NSString *htmlToLoad;
+    [[[czzAppDelegate sharedAppDelegate] window] makeToastActivity];
+    if (noImage){
+        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"文豪模式" duration:0.5 position:@"bottom"];
+        htmlToLoad = myArticle.htmlBodyWithouImage;
+    } else {
+        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"一般模式" duration:0.5 position:@"bottom"];
+        htmlToLoad = myArticle.htmlBody;
+    }
+    [[[czzAppDelegate sharedAppDelegate] window] hideToastActivity];
+    [articleWebView loadHTMLString:htmlToLoad baseURL:nil];
+
 }
 
 - (IBAction)favirouteAction:(id)sender {

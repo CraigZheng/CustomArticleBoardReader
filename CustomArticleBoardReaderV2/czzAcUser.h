@@ -18,5 +18,5 @@
 @property NSString *qq;
 @property NSString *phone;
 
--(id)initWithJSON:(NSDictionary*)dataDict;
+-(id)initWithJSONDictionary:(NSDictionary*)dataDict;
 @end

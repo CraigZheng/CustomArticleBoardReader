@@ -12,8 +12,6 @@
 #import "czzAppDelegate.h"
 #import "czzArticlelViewController.h"
 #import "czzArticle.h"
-#import <malloc/malloc.h>
-
 
 @interface czzArticleListViewController ()<czzArticleListDownloaderDelegate>
 @property NSDictionary *articleCategoris;
@@ -51,6 +49,7 @@
     {
         [self refreshArticleList];
     }
+    //[self presentViewController:[self.storyboard instantiateViewControllerWithIdentifier:@"ad_view_controller"] animated:YES completion:nil];
 }
 
 -(void)refreshArticleList{
@@ -179,57 +178,31 @@
 }
 
 #pragma mark - UIScrollView delegate
--(void)scrollViewWillBeginDragging:(UIScrollView *)scrollView{
-    //in ios 6, the uitableview will not expand to under the uitoolbar, so hidding it won't do anything good
-    if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0) {
-        //when user do a scrolling and the tool bar is not yet hidden, hide the tool bar
-        if (self.navigationController.toolbar.hidden == NO){
-            [self doSingleViewHideAnimation:self.navigationController.toolbar :kCATransitionFromBottom];
-        }
-    }
-}
-
 -(void)scrollViewDidScroll:(UIScrollView *)scrollView{
-    if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0) {
-        ScrollDirection scrollDirection;
-        //if user drag the finger up, the scroll view direction is down, else is up
-        if (self.lastContentOffsetY < scrollView.contentOffset.y){
-            scrollDirection = ScrollDirectionDown;
-        }
-        else {
-            scrollDirection = ScrollDirectionUp;
-        }
-        self.lastContentOffsetY = scrollView.contentOffset.y;
+    ScrollDirection scrollDirection;
+    //if user drag the finger up, the scroll view direction is down, else is up
+    if (self.lastContentOffsetY < scrollView.contentOffset.y){
+        scrollDirection = ScrollDirectionDown;
+    }
+    else {
+        scrollDirection = ScrollDirectionUp;
+    }
+    self.lastContentOffsetY = scrollView.contentOffset.y;
+    if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0 && scrollView.contentOffset.y > 0) {
         //show the toolbar if user moved the finger up, and the toolbar is currently hidden
         if (scrollDirection == ScrollDirectionUp && self.navigationController.toolbar.hidden == YES){
-            [self doSingleViewShowAnimation:self.navigationController.toolbar :kCATransitionFromTop];
+            [self showToolbar];
+        } else if (scrollDirection == ScrollDirectionDown){
+            [self hideToolbar];
         }
     }
 }
- 
-#pragma mark - show and hide uitoolbar
--(void)doSingleViewHideAnimation:(UIView*)incomingView :(NSString*)animType
-{
-    CATransition *animation = [CATransition animation];
-    [animation setType:kCATransitionPush];
-    [animation setSubtype:animType];
-    
-    [animation setDuration:0.05];
-    [animation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
-    [[incomingView layer] addAnimation:animation forKey:kCATransition];
-    incomingView.hidden = YES;
+
+-(void)showToolbar{
+    [[czzAppDelegate sharedAppDelegate] doSingleViewShowAnimation:self.navigationController.toolbar :kCATransitionFromTop:0.2];
 }
 
--(void)doSingleViewShowAnimation:(UIView*)incomingView :(NSString*)animType
-{
-    CATransition *animation = [CATransition animation];
-    [animation setType:kCATransitionPush];
-    [animation setSubtype:animType];
-    
-    [animation setDuration:0.05];
-    [animation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
-    [[incomingView layer] addAnimation:animation forKey:kCATransition];
-    incomingView.hidden = NO;
+-(void)hideToolbar{
+    [[czzAppDelegate sharedAppDelegate] doSingleViewHideAnimation:self.navigationController.toolbar :kCATransitionFromBottom:0.2];
 }
-
 @end

@@ -22,13 +22,18 @@
     if (self){
         self.acUserID = userID;
         self.delegate = delegate;
-        [self constructURLConnectionAndStart];
     }
     return self;
 }
 
--(void)constructURLConnectionAndStart{
+-(void)startDownloading{
     NSString *acUserIDURLString = [ACUSERHOST stringByReplacingOccurrencesOfString:ACUSERID withString:[NSString stringWithFormat:@"%ld", (long)self.acUserID]];
+    NSString *access_token = [[NSUserDefaults standardUserDefaults] objectForKey:@"access_token"];
+    if (!access_token){
+        [self.delegate acUserDownloaded:nil withAcUserID:self.acUserID success:NO];
+        return;
+    }
+    acUserIDURLString = [acUserIDURLString stringByReplacingOccurrencesOfString:ACCESS_TOKEN withString:access_token];
     NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:acUserIDURLString]];
     urlConn = [[NSURLConnection alloc] initWithRequest:request delegate:self startImmediately:YES];
 }
@@ -52,6 +57,18 @@
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection{
+    //TODO: form a ac user outta json
+    NSError *error;
+    NSDictionary *jsonDict = [NSJSONSerialization JSONObjectWithData:receivedData options:NSJSONReadingMutableContainers error:&error];
+    if (error) {
+        NSLog(@"%@", error);
+        return;
+    }
+    czzAcUser *newUser = [[czzAcUser alloc] initWithJSONDictionary:jsonDict];
+    if (newUser)
+        [self.delegate acUserDownloaded:newUser withAcUserID:self.acUserID success:YES];
+    else
+        [self.delegate acUserDownloaded:nil withAcUserID:self.acUserID success:NO];
 }
 
 @end

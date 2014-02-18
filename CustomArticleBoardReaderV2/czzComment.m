@@ -39,7 +39,7 @@
             self.content = [self.content stringByReplacingOccurrencesOfString:@"<br/>" withString:@""];
         }
         if ([key isEqualToString:@"user"]){
-            czzAcUser *user = [[czzAcUser alloc] initWithJSON:[dict objectForKey:key]];
+            czzAcUser *user = [[czzAcUser alloc] initWithJSONDictionary:[dict objectForKey:key]];
             self.user = user;
         }
         if ([key isEqualToString:@"time"]){

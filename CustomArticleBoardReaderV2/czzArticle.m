@@ -81,7 +81,7 @@
             self.createTime = [NSDate dateWithTimeIntervalSince1970:timeStamp];
         }
         if ([key isEqualToString:@"creator"]){
-            self.creator = [[czzAcUser alloc] initWithJSON:[dataDict objectForKey:key]];
+            self.creator = [[czzAcUser alloc] initWithJSONDictionary:[dataDict objectForKey:key]];
         }
         if ([key isEqualToString:@"isoriginal"]){
             self.isOriginal = [[dataDict objectForKey:key] boolValue];
@@ -106,7 +106,7 @@
  <p> and <img> will be preseved for better formatting and image broswing
  */
 -(NSString*)prepareHTMLForBetterVisual:(NSString*)oldHTML{
-    oldHTML = [self replaceFormattingTags:oldHTML];
+    oldHTML = [self markFormattingTags:oldHTML];
     oldHTML = [self extractImgTags:oldHTML];
     oldHTML = [self stringByApplyingSimpleHTMLFormat:oldHTML];
     oldHTML = [self repopulateFormattingTagsAndImageTags:oldHTML];
@@ -130,7 +130,7 @@
     return newHTMLString;
 }
 
--(NSString*)replaceFormattingTags:(NSString*)htmlBody{
+-(NSString*)markFormattingTags:(NSString*)htmlBody{
     htmlBody = [htmlBody stringByReplacingOccurrencesOfString:@"</p>" withString:[self embedString:@"PARAGRAPH TAG" withString:RANDOM_STRING]];
     //htmlBody = [htmlBody stringByReplacingOccurrencesOfString:@"<br/>" withString:[self embedString:@"BR TAG" withString:RANDOM_STRING]];
     htmlBody = [htmlBody stringByReplacingOccurrencesOfString:@"<br" withString:[[self embedString:@"BR TAG" withString:RANDOM_STRING] stringByAppendingString:@"<+"]];
@@ -243,6 +243,17 @@
         }
     }
     return nil;
+}
+
+#pragma mark - getter for getting the htmlBodyWithouImage
+-(NSString *)htmlBodyWithouImage{
+    NSString *newHtmlBody = [NSString stringWithString:self.htmlBody];
+    if (newHtmlBody){
+        newHtmlBody = [self markFormattingTags:newHtmlBody];
+        newHtmlBody = [self stringByApplyingSimpleHTMLFormat:newHtmlBody];
+        newHtmlBody = [self repopulateFormattingTagsAndImageTags:newHtmlBody];
+    }
+    return newHtmlBody;
 }
 
 #pragma mark - encoder and decoder - for storing this object into the storage

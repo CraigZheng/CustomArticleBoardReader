@@ -13,11 +13,23 @@
 @interface czzCommentViewController ()<czzCommentDownloaderDelegate>
 @property czzCommentDownloader *commentDownloader;
 @property NSMutableArray *comments;
+@property NSInteger lastContentOffsetY;
+
+typedef enum ScrollDirection {
+    ScrollDirectionNone,
+    ScrollDirectionRight,
+    ScrollDirectionLeft,
+    ScrollDirectionUp,
+    ScrollDirectionDown,
+    ScrollDirectionCrazy,
+} ScrollDirection;
+
 @end
 
 @implementation czzCommentViewController
 @synthesize commentDownloader;
 @synthesize comments;
+@synthesize lastContentOffsetY;
 
 - (void)viewDidLoad
 {
@@ -85,7 +97,7 @@
     CGFloat preferHeight = 0;
     UITextView *newHiddenTextView = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 1)];
     newHiddenTextView.hidden = YES;
-    newHiddenTextView.font = [UIFont systemFontOfSize:15];
+    newHiddenTextView.font = [UIFont systemFontOfSize:16];
     [self.view addSubview:newHiddenTextView];
     czzComment *comment = [comments objectAtIndex:indexPath.row];
     newHiddenTextView.text = comment.content;
@@ -93,6 +105,27 @@
     return MAX(tableView.rowHeight, preferHeight);
 }
 
+#pragma mark - UIScrollViewDelegate
+-(void)scrollViewDidScroll:(UIScrollView *)scrollView{
+    ScrollDirection scrollDirection;
+    //if user drag the finger up, the scroll view direction is down, else is up
+    if (self.lastContentOffsetY < scrollView.contentOffset.y){
+        scrollDirection = ScrollDirectionDown;
+    }
+    else {
+        scrollDirection = ScrollDirectionUp;
+    }
+    self.lastContentOffsetY = scrollView.contentOffset.y;
+    //if running on ios 7+ device and have not scroll to the top
+    if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0 && scrollView.contentOffset.y > 10) {
+        //show the toolbar if user moved the finger up, and the toolbar is currently hidden
+        if (scrollDirection == ScrollDirectionUp && self.navigationController.toolbar.hidden == YES){
+            [self showNavigationBarAndToolBar];
+        } else if (scrollDirection == ScrollDirectionDown && self.navigationController.toolbar.hidden == NO) {
+            [self hideNavigationBarAndToolBar];
+        }
+    }
+}
 #pragma mark - czzCommentDownloaderDelegate
 -(void)commentDownloaded:(NSArray *)com withArticleID:(NSInteger)articleID success:(BOOL)success{
     if (success){
@@ -112,4 +145,22 @@
     NSIndexPath *lastRowIndexPath = [NSIndexPath indexPathForRow:comments.count inSection:0];
     [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:lastRowIndexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
 }
+
+- (IBAction)postCommentAction:(id)sender {
+    [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"这部分还没做好"];
+
+}
+
+#pragma mark - show and hide navigation bar and tool bar
+-(void)hideNavigationBarAndToolBar{
+    [[czzAppDelegate sharedAppDelegate] doSingleViewHideAnimation:self.navigationController.toolbar :kCATransitionFromBottom :0.2];
+    //[[czzAppDelegate sharedAppDelegate] doSingleViewHideAnimation:self.navigationController.navigationBar :kCATransitionFromTop :0.2];
+    
+}
+
+-(void)showNavigationBarAndToolBar{
+    [[czzAppDelegate sharedAppDelegate] doSingleViewShowAnimation:self.navigationController.toolbar :kCATransitionFromTop :0.2];
+    //[[czzAppDelegate sharedAppDelegate] doSingleViewShowAnimation:self.navigationController.navigationBar :kCATransitionFromBottom :0.2];
+}
+
 @end

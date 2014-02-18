@@ -14,14 +14,14 @@
 #define GAD_SIMULATOR_ID @"Simulator"
 
 // Genders to help deliver more relevant ads.
-typedef NS_ENUM(NSInteger, GADGender) {
+typedef enum {
   kGADGenderUnknown,
   kGADGenderMale,
   kGADGenderFemale
-};
+} GADGender;
 
 // Specifies optional parameters for ad requests.
-@interface GADRequest : NSObject<NSCopying>
+@interface GADRequest : NSObject <NSCopying>
 
 // Creates an autoreleased GADRequest.
 + (GADRequest *)request;
@@ -46,7 +46,7 @@ typedef NS_ENUM(NSInteger, GADGender) {
 - (void)removeAdNetworkExtrasFor:(Class<GADAdNetworkExtras>)clazz;
 
 // Extras sent to the mediation server (if using Mediation). For future use.
-@property(nonatomic, copy) NSDictionary *mediationExtras;
+@property (nonatomic, retain) NSDictionary *mediationExtras;
 
 #pragma mark Collecting SDK Information
 
@@ -56,23 +56,22 @@ typedef NS_ENUM(NSInteger, GADGender) {
 #pragma mark Testing
 
 // Add the device's identifier into this array for testing purposes.
-@property(nonatomic, copy) NSArray *testDevices;
+@property (nonatomic, retain) NSArray *testDevices;
 
 #pragma mark User Information
 
 // The user's gender may be used to deliver more relevant ads.
-@property(nonatomic, assign) GADGender gender;
+@property (nonatomic, assign) GADGender gender;
 
 // The user's birthday may be used to deliver more relevant ads.
-@property(nonatomic, retain) NSDate *birthday;
+@property (nonatomic, retain) NSDate *birthday;
 - (void)setBirthdayWithMonth:(NSInteger)m day:(NSInteger)d year:(NSInteger)y;
 
 // The user's current location may be used to deliver more relevant ads.
 // However do not use Core Location just for advertising, make sure it is used
 // for more beneficial reasons as well.  It is both a good idea and part of
 // Apple's guidelines.
-- (void)setLocationWithLatitude:(CGFloat)latitude
-                      longitude:(CGFloat)longitude
+- (void)setLocationWithLatitude:(CGFloat)latitude longitude:(CGFloat)longitude
                        accuracy:(CGFloat)accuracyInMeters;
 
 // When Core Location isn't available but the user's location is known supplying
@@ -109,7 +108,7 @@ typedef NS_ENUM(NSInteger, GADGender) {
 // A keyword is a word or phrase describing the current activity of the user
 // such as @"Sports Scores".  Each keyword is an NSString in the NSArray.  To
 // clear the keywords set this to nil.
-@property(nonatomic, retain) NSMutableArray *keywords;
+@property (nonatomic, retain) NSMutableArray *keywords;
 
 // Convenience method for adding keywords one at a time such as @"Sports Scores"
 // and then @"Football".
@@ -121,10 +120,10 @@ typedef NS_ENUM(NSInteger, GADGender) {
 // Accesses the additionalParameters for the "GoogleAdmob" ad network. Please
 // use -registerAdNetworkExtras: method above and pass an instance of
 // GADAdMobExtras instead.
-@property(nonatomic, copy) NSDictionary *additionalParameters;
+@property (nonatomic, retain) NSDictionary *additionalParameters;
 
 // This property has been deprecated with the latest SDK releases. Please use
 // testDevices.
-@property(nonatomic, assign, getter=isTesting) BOOL testing;
+@property (nonatomic, getter=isTesting) BOOL testing;
 
 @end

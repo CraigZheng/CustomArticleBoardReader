@@ -23,7 +23,7 @@
 @property NSArray *tags;
 @property NSString *category;
 @property NSString *htmlBody;
-
+@property (nonatomic) NSString *htmlBodyWithouImage;
 @property NSMutableArray *imageSrc;
 
 @property UIViewController *parentViewController;

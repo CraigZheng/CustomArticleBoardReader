@@ -10,7 +10,8 @@
 #import "czzAcUser.h"
 
 #define ACUSERID @"AcUserID"
-#define ACUSERHOST @"api.acfun.tv/users/AcUserID"
+#define ACCESS_TOKEN @"ACCESS_TOKEN"
+#define ACUSERHOST @"http://api.acfun.tv/users/AcUserID?access_token=ACCESS_TOKEN"
 
 @protocol czzAcUserDownloaderProtocol <NSObject>
 @optional
@@ -19,9 +20,9 @@
 
 @interface czzAcUserDownloader : NSObject
 @property NSInteger acUserID;
-@property id<czzAcUserDownloaderProtocol> delegate;
+@property (retain) id<czzAcUserDownloaderProtocol> delegate;
 
 -(id)initWithAcUserID:(NSInteger)userID delegate:(id<czzAcUserDownloaderProtocol>)delegate;
--(void)constructURLConnectionAndStart;
+-(void)startDownloading;
 -(void)stop;
 @end

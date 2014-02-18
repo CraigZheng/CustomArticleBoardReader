@@ -14,8 +14,10 @@
 @property NSInteger lastContentOffsetY;
 @property (strong, nonatomic) IBOutlet UIWebView *articleWebView;
 @property (nonatomic) czzArticle *myArticle;
-@property (strong, nonatomic) IBOutlet UIBarButtonItem *favirouteButton;
+@property (strong, nonatomic) IBOutlet UIBarButtonItem *readingModeBarButton;
 
 - (IBAction)loadAllImages:(id)sender;
+- (IBAction)changeMode:(id)sender;
+- (IBAction)shareAction:(id)sender;
 - (IBAction)favirouteAction:(id)sender;
 @end

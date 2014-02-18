@@ -155,13 +155,13 @@
                         </connections>
                     </tableView>
                     <toolbarItems>
-                        <barButtonItem title="收藏" id="8jN-Ye-Z7H">
+                        <barButtonItem image="like_filled.png" id="8jN-Ye-Z7H">
                             <connections>
                                 <segue destination="oe4-lB-f8B" kind="push" id="2tG-DY-M08"/>
                             </connections>
                         </barButtonItem>
                         <barButtonItem style="plain" systemItem="flexibleSpace" id="TvK-hk-7dO"/>
-                        <barButtonItem title="设置" id="4Ga-0G-zRi">
+                        <barButtonItem image="settings.png" id="4Ga-0G-zRi">
                             <connections>
                                 <segue destination="dxA-A3-BZQ" kind="push" id="2AJ-v7-74z"/>
                             </connections>
@@ -198,10 +198,41 @@
             </objects>
             <point key="canvasLocation" x="-285" y="-289"/>
         </scene>
+        <!--Czz Login View Controller - 登陆-->
+        <scene sceneID="l1E-nb-iFR">
+            <objects>
+                <viewController storyboardIdentifier="login_view_controller" title="登陆" id="MBu-FR-4dw" customClass="czzLoginViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="GK2-fo-xeG"/>
+                        <viewControllerLayoutGuide type="bottom" id="9YZ-rj-Fey"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="X9S-B0-w7e">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <webView contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Xtt-oI-uwt">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <connections>
+                                    <outlet property="delegate" destination="MBu-FR-4dw" id="Rcg-b6-YPu"/>
+                                </connections>
+                            </webView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                    </view>
+                    <connections>
+                        <outlet property="loginWebView" destination="Xtt-oI-uwt" id="WPP-nH-e7C"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="X7v-Ty-FjC" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-285" y="407"/>
+        </scene>
         <!--Czz Settings View Controller - 设置-->
         <scene sceneID="w6g-lk-MFu">
             <objects>
-                <tableViewController id="dxA-A3-BZQ" customClass="czzSettingsViewController" sceneMemberID="viewController">
+                <tableViewController hidesBottomBarWhenPushed="YES" id="dxA-A3-BZQ" customClass="czzSettingsViewController" sceneMemberID="viewController">
                     <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="grouped" separatorStyle="default" rowHeight="44" sectionHeaderHeight="10" sectionFooterHeight="10" id="Lbr-fR-ted">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -371,7 +402,7 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" title="收藏" id="Ocz-kb-0gh">
-                        <barButtonItem key="rightBarButtonItem" title="管理" id="hbb-ga-xLw">
+                        <barButtonItem key="rightBarButtonItem" systemItem="organize" id="hbb-ga-xLw">
                             <connections>
                                 <action selector="manageAction:" destination="oe4-lB-f8B" id="Wm6-n9-RXi"/>
                             </connections>
@@ -403,7 +434,7 @@
                                 <constraints>
                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="21" id="42u-kK-JR9"/>
                                 </constraints>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
                             </label>
@@ -488,27 +519,33 @@
                         </constraints>
                     </view>
                     <toolbarItems>
-                        <barButtonItem title="收藏本文" id="dCu-Fc-TcS">
-                            <connections>
-                                <action selector="favirouteAction:" destination="zin-gV-eV7" id="ckb-sU-AqZ"/>
-                            </connections>
-                        </barButtonItem>
-                        <barButtonItem title="下载所有图片" id="maP-H9-km2">
+                        <barButtonItem image="download.png" id="maP-H9-km2">
                             <connections>
                                 <action selector="loadAllImages:" destination="zin-gV-eV7" id="ZGX-oG-pxe"/>
                             </connections>
                         </barButtonItem>
                         <barButtonItem style="plain" systemItem="flexibleSpace" id="E0N-1A-z1S"/>
-                        <barButtonItem title="评论" id="cMw-k2-Z97">
+                        <barButtonItem image="share.png" id="F2n-4a-mZ4">
+                            <connections>
+                                <action selector="shareAction:" destination="zin-gV-eV7" id="qN8-Gh-zAw"/>
+                            </connections>
+                        </barButtonItem>
+                        <barButtonItem style="plain" systemItem="flexibleSpace" id="McK-AZ-eyw"/>
+                        <barButtonItem image="chat.png" id="cMw-k2-Z97">
                             <connections>
                                 <segue destination="Kxp-mo-cxL" kind="push" id="zBF-qV-aOo"/>
                             </connections>
                         </barButtonItem>
                     </toolbarItems>
-                    <navigationItem key="navigationItem" title="AcID" id="IIm-HU-YEr"/>
+                    <navigationItem key="navigationItem" title="AcID" id="IIm-HU-YEr">
+                        <barButtonItem key="rightBarButtonItem" image="like.png" id="cG9-BJ-5xc">
+                            <connections>
+                                <action selector="favirouteAction:" destination="zin-gV-eV7" id="fHg-kQ-jpR"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="articleWebView" destination="KZq-f9-ch0" id="uwl-hw-eZC"/>
-                        <outlet property="favirouteButton" destination="dCu-Fc-TcS" id="JSh-pn-Nbb"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="vdD-U9-h7N" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -545,7 +582,7 @@
                                             <rect key="frame" x="0.0" y="20" width="320" height="23"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                             <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                             <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                         </textView>
                                     </subviews>
@@ -624,7 +661,11 @@
                         </connections>
                     </tableView>
                     <toolbarItems>
-                        <barButtonItem title="发表评论" id="xIA-QR-oen"/>
+                        <barButtonItem image="comment.png" id="xIA-QR-oen">
+                            <connections>
+                                <action selector="postCommentAction:" destination="Kxp-mo-cxL" id="R1M-e1-t3V"/>
+                            </connections>
+                        </barButtonItem>
                     </toolbarItems>
                     <navigationItem key="navigationItem" id="fDc-6n-D3V"/>
                 </tableViewController>
@@ -638,12 +679,21 @@
             <point key="canvasLocation" x="1230" y="407"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="chat.png" width="20" height="20"/>
+        <image name="comment.png" width="20" height="20"/>
+        <image name="download.png" width="20" height="20"/>
+        <image name="like.png" width="20" height="20"/>
+        <image name="like_filled.png" width="20" height="20"/>
+        <image name="settings.png" width="20" height="20"/>
+        <image name="share.png" width="20" height="20"/>
+    </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
         <simulatedOrientationMetrics key="orientation"/>
         <simulatedScreenMetrics key="destination" type="retina4"/>
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
-        <segue reference="Kdc-a9-his"/>
+        <segue reference="7Zp-P2-C1l"/>
     </inferredMetricsTieBreakers>
 </document>

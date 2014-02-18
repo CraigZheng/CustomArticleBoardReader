@@ -9,6 +9,7 @@
 #import "czzSettingsViewController.h"
 #import "czzArticleListDownloader.h"
 #import "Toast+UIView.h"
+#import "czzLoginViewController.h"
 
 @interface czzSettingsViewController ()<UIActionSheetDelegate>
 @property NSMutableArray *commands;
@@ -22,7 +23,7 @@
     [super viewDidLoad];
 
     // Uncomment the following line to preserve selection between presentations.
-    commands = [[NSMutableArray alloc] initWithObjects:@"自动下载图片", @"文章排列顺序", @"清除图片缓存", nil];
+    commands = [[NSMutableArray alloc] initWithObjects:@"自动下载图片", @"文章排列顺序", @"清除图片缓存", @"登陆", nil];
 }
 
 #pragma mark - Table view data source
@@ -72,6 +73,10 @@
             [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
         }
         [self.view makeToast:@"缓存已清空"];
+    } else if (indexPath.row == 3){
+        //登陆
+        czzLoginViewController *loginViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"login_view_controller"];
+        [self.navigationController pushViewController:loginViewController animated:YES];
     }
 }
 
