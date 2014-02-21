@@ -82,6 +82,9 @@
     if (![[NSUserDefaults standardUserDefaults] objectForKey:@"shouldAutomaticallyLoadImage"]) {
         [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"shouldAutomaticallyLoadImage"];
     }
+    if (![[NSUserDefaults standardUserDefaults] objectForKey:@"shouldUseExperimentalBrowser"]) {
+        [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"shouldUseExperimentalBrowser"];
+    }
     if (![[NSUserDefaults standardUserDefaults] objectForKey:@"articleOrdering"]){
         [[NSUserDefaults standardUserDefaults] setInteger:MOST_CLICKED_DAILY forKey:@"articleOrdering"];
     }

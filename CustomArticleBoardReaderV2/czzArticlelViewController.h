@@ -16,7 +16,6 @@
 @property (nonatomic) czzArticle *myArticle;
 
 - (IBAction)loadAllImages:(id)sender;
-- (IBAction)changeMode:(id)sender;
 - (IBAction)shareAction:(id)sender;
 - (IBAction)favirouteAction:(id)sender;
 @end

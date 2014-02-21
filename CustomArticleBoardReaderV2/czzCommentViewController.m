@@ -111,6 +111,7 @@ typedef enum ScrollDirection {
     czzComment *comment = [comments objectAtIndex:indexPath.row];
     newHiddenTextView.text = comment.content;
     preferHeight = [newHiddenTextView sizeThatFits:CGSizeMake(newHiddenTextView.frame.size.width, MAXFLOAT)].height + 15;
+    [newHiddenTextView removeFromSuperview];
     return MAX(tableView.rowHeight, preferHeight);
 }
 

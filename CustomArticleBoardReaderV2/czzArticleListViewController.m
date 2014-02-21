@@ -11,6 +11,7 @@
 #import "Toast+UIView.h"
 #import "czzAppDelegate.h"
 #import "czzArticlelViewController.h"
+#import "czzArticleTableViewController.h"
 #import "czzArticle.h"
 
 @interface czzArticleListViewController ()<czzArticleListDownloaderDelegate>
@@ -119,7 +120,10 @@
 #pragma mark - UITableview delegate
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     selectedIndexPath = indexPath;
-    [self performSegueWithIdentifier:@"go_article_view_controller_identifier" sender:self];
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"shouldUseExperimentalBrowser"])
+        [self performSegueWithIdentifier:@"go_article_table_view_controller_identifier" sender:self];
+    else
+        [self performSegueWithIdentifier:@"go_article_view_controller_identifier" sender:self];
 }
 
 #pragma mark - Navigation
@@ -131,6 +135,9 @@
     if ([segue.identifier isEqualToString:@"go_article_view_controller_identifier"]){
         czzArticlelViewController *articleViewController = (czzArticlelViewController*)segue.destinationViewController;
         articleViewController.myArticle = [articleList objectAtIndex:selectedIndexPath.row];
+    } else if ([segue.identifier isEqualToString:@"go_article_table_view_controller_identifier"]){
+        czzArticleTableViewController *articleTableViewController = (czzArticleTableViewController*)segue.destinationViewController;
+        articleTableViewController.myArticle = [articleList objectAtIndex:selectedIndexPath.row];
     }
 }
 

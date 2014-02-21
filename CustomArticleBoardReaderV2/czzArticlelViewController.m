@@ -39,7 +39,6 @@
 @synthesize shouldAutomaticallyLoadImage;
 @synthesize downloaderExecuting;
 @synthesize downloaderQueue;
-@synthesize readingModeBarButton;
 @synthesize interstitial_;
 
 - (void)viewDidLoad
@@ -309,36 +308,8 @@
     }
 }
 
-- (IBAction)changeMode:(id)sender {
-    BOOL noImage = [[NSUserDefaults standardUserDefaults] boolForKey:@"shouldNotDisplayImage"];
-    noImage = !noImage;
-    [[NSUserDefaults standardUserDefaults] setBool:noImage forKey:@"shouldNotDisplayImage"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-    [self changeReadingMode:noImage];
-}
-
 - (IBAction)shareAction:(id)sender {
     [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"this is a fucking unfinished feature, be patient fuckhead!"];
-}
-
--(void)changeReadingMode:(BOOL)noImage{
-    if (noImage){
-        readingModeBarButton.image = [UIImage imageNamed:@"notebook"];
-    } else {
-        readingModeBarButton.image = [UIImage imageNamed:@"news_paper"];
-    }
-    NSString *htmlToLoad;
-    [[[czzAppDelegate sharedAppDelegate] window] makeToastActivity];
-    if (noImage){
-        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"文豪模式" duration:0.5 position:@"bottom"];
-        htmlToLoad = myArticle.htmlBodyWithouImage;
-    } else {
-        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"一般模式" duration:0.5 position:@"bottom"];
-        htmlToLoad = myArticle.htmlBody;
-    }
-    [[[czzAppDelegate sharedAppDelegate] window] hideToastActivity];
-    [articleWebView loadHTMLString:htmlToLoad baseURL:nil];
-
 }
 
 - (IBAction)favirouteAction:(id)sender {

@@ -19,6 +19,7 @@
 @implementation czzArticle
 @synthesize paragraphTags;
 @synthesize imageTags;
+@synthesize htmlFragments;
 
 -(id)init{
     self = [super init];
@@ -29,6 +30,8 @@
         self.desc = @"无简介";
         paragraphTags = [NSMutableArray new];
         imageTags = [NSMutableArray new];
+        htmlFragments = [NSMutableArray new];
+        
     }
     return self;
 }
@@ -52,53 +55,7 @@
 }
 
 -(void)assignPropertyWithJSONDictonary:(NSDictionary*)dataDict{
-    /*
-    for (NSString *key in dataDict.allKeys) {
-        if ([key isEqualToString:@"acId"]){
-            self.acId = [[dataDict objectForKey:key] integerValue];
-        }
-        if ([key isEqualToString:@"name"]){
-            self.name = [dataDict objectForKey:key];
-        }
-        if ([key isEqualToString:@"desc"]){
-            self.desc = [dataDict objectForKey:key];
-            self.desc = [self.desc stringByReplacingOccurrencesOfString:@"<br/>" withString:@"\n"];
-        }
-        if ([key isEqualToString:@"previewurl"]){
-            self.previewUrl = [dataDict objectForKey:key];
-        }
-        if ([key isEqualToString:@"viewernum"]){
-            self.viewCount = [[dataDict objectForKey:key] integerValue];
-        }
-        if ([key isEqualToString:@"collectnum"]){
-            self.favouriteCount = [[dataDict objectForKey:key] integerValue];
-        }
-        if ([key isEqualToString:@"commentnum"]){
-            self.commentCount = [[dataDict objectForKey:key] integerValue];
-        }
-        if ([key isEqualToString:@"createtime"]){
-            //the returned value is in milliseconds
-            double timeStamp = [[dataDict objectForKey:key] doubleValue] / 1000;
-            self.createTime = [NSDate dateWithTimeIntervalSince1970:timeStamp];
-        }
-        if ([key isEqualToString:@"creator"]){
-            self.creator = [[czzAcUser alloc] initWithJSONDictionary:[dataDict objectForKey:key]];
-        }
-        if ([key isEqualToString:@"isoriginal"]){
-            self.isOriginal = [[dataDict objectForKey:key] boolValue];
-        }
-        if ([key isEqualToString:@"tags"]){
-            self.tags = [dataDict objectForKey:key];
-        }
-        if ([key isEqualToString:@"category"]){
-            self.category = [dataDict objectForKey:key];
-        }
-        if ([key isEqualToString:@"txt"]){
-            self.htmlBody = [dataDict objectForKey:key];
-            self.htmlBody = [self prepareHTMLForBetterVisual:self.htmlBody];
-        }
-    }
-     */
+
     self.acId = [[dataDict objectForKey:@"acId"] integerValue];
     self.name = [dataDict objectForKey:@"name"];
     self.desc = [dataDict objectForKey:@"desc"];
@@ -116,6 +73,10 @@
     self.htmlBody = [dataDict objectForKey:@"txt"];
     if (self.htmlBody){
         self.htmlBody = [self prepareHTMLForBetterVisual:self.htmlBody];
+        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"shouldUseExperimentalBrowser"]) {
+            NSArray *fragments = [self prepareHTMLForFragments:[dataDict objectForKey:@"txt"]];
+            [self.htmlFragments addObjectsFromArray:fragments];
+        }
     }
 }
 
@@ -130,6 +91,79 @@
     oldHTML = [self stringByApplyingSimpleHTMLFormat:oldHTML];
     oldHTML = [self repopulateFormattingTagsAndImageTags:oldHTML];
     return oldHTML;
+}
+
+-(NSMutableArray*)prepareHTMLForFragments:(NSString*)oldHtml{
+    NSMutableArray *fragments = [NSMutableArray new];
+    oldHtml = [self markFormattingTags:oldHtml];
+    //--- IMG TAG
+    NSString *imgTag = [self extractString:oldHtml toLookFor:@"<img" skipForwardX:0 toStopBefore:@">"];
+    NSInteger maximumTry = 999;
+    while (imgTag != nil && maximumTry >0) {
+        //to avoid loop lock
+        maximumTry--;
+        NSDataDetector *linkDetector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:nil];
+        NSArray *matches = [linkDetector matchesInString:imgTag
+                                                 options:0
+                                                   range:NSMakeRange(0, imgTag.length)];
+        if (matches.count > 0){
+            for (NSTextCheckingResult *match in matches) {
+                if ([match resultType] == NSTextCheckingTypeLink) {
+                    NSURL *url = [match URL];
+                    if ([url.absoluteString.lastPathComponent rangeOfString:@"jpg" options:NSCaseInsensitiveSearch].location != NSNotFound ||
+                        [url.absoluteString.lastPathComponent rangeOfString:@"jpeg" options:NSCaseInsensitiveSearch].location != NSNotFound ||
+                        [url.absoluteString.lastPathComponent rangeOfString:@"gif" options:NSCaseInsensitiveSearch].location != NSNotFound ||
+                        [url.absoluteString.lastPathComponent rangeOfString:@"png"options:NSCaseInsensitiveSearch].location != NSNotFound){
+                        //NSString *imgMark = [self embedString:url.absoluteString withString:RANDOM_STRING];
+                        oldHtml = [oldHtml stringByReplacingOccurrencesOfString:imgTag withString:url.absoluteString];
+                    }
+                }
+            }
+        } else {
+            
+            NSString *emoconURL = [self extractString:imgTag toLookFor:@"\"" skipForwardX:1 toStopBefore:@"\""];
+            if (emoconURL.length > 0 && [emoconURL rangeOfString:@"emotion"].location != NSNotFound)
+            {
+                oldHtml = [oldHtml stringByReplacingOccurrencesOfString:emoconURL withString:[NSString stringWithFormat:@"\"http://www.acfun.tv%@", emoconURL]];
+            }
+        }
+        imgTag = [self extractString:oldHtml toLookFor:@"<img" skipForwardX:0 toStopBefore:@">"];
+    }
+    //--- END IMG TAG
+    NSRange r;
+    //remove everything between < and >
+    while ((r = [oldHtml rangeOfString:@"<[^>]+>" options:NSRegularExpressionSearch]).location != NSNotFound)
+        oldHtml = [oldHtml stringByReplacingCharactersInRange:r withString:@""];
+    NSArray *pass1 = [oldHtml componentsSeparatedByString:[self embedString:@"PARAGRAPH TAG" withString:RANDOM_STRING]];
+    NSMutableArray *pass2 = [NSMutableArray new];
+    for (NSString *p1Frag in pass1) {
+        NSArray *tempP2 = [p1Frag componentsSeparatedByString:[self embedString:@"BR TAG" withString:RANDOM_STRING]];
+        [pass2 addObjectsFromArray:tempP2];
+    }
+    NSMutableOrderedSet *pass3 = [NSMutableOrderedSet new];
+    for (NSString *imgSrc in self.imageSrc){
+        for (NSString* p2Frag in pass2){
+            NSArray *tempP3 = [p2Frag componentsSeparatedByString:imgSrc];
+            if (tempP3.count > 1){
+                //it doesn't contain the given image mark, add itself
+                [pass3 addObject:p2Frag];
+                for (NSString *tempString in tempP3) {
+                    if (tempString.length == 0)
+                        [pass3 addObject:imgSrc];
+                    else
+                        [pass3 addObject:tempString];
+                }
+            } else {
+                [pass3 addObject:tempP3[0]];
+            }
+        }
+    }
+    for (NSString* fragment in pass3.array) {
+        if (fragment.length != 0) {
+            [fragments addObject:[fragment stringByReplacingOccurrencesOfString:@"\n" withString:@""]];
+        }
+    }
+    return fragments;
 }
 
 -(NSString *)stringByApplyingSimpleHTMLFormat:(NSString*)htmlString {
@@ -151,14 +185,12 @@
 
 -(NSString*)markFormattingTags:(NSString*)htmlBody{
     htmlBody = [htmlBody stringByReplacingOccurrencesOfString:@"</p>" withString:[self embedString:@"PARAGRAPH TAG" withString:RANDOM_STRING]];
-    //htmlBody = [htmlBody stringByReplacingOccurrencesOfString:@"<br/>" withString:[self embedString:@"BR TAG" withString:RANDOM_STRING]];
     htmlBody = [htmlBody stringByReplacingOccurrencesOfString:@"<br" withString:[[self embedString:@"BR TAG" withString:RANDOM_STRING] stringByAppendingString:@"<+"]];
     htmlBody = [htmlBody stringByReplacingOccurrencesOfString:@"<div" withString:[[self embedString:@"BR TAG" withString:RANDOM_STRING] stringByAppendingString:@"<+"]];
     return htmlBody;
 }
 
 -(NSString*)extractImgTags:(NSString*)htmlBody{
-    //NSString *tempString = [self stringBetweenString:@"<img" andString:@"/>" withstring:htmlBody];
     NSString *imgTag = [self extractString:htmlBody toLookFor:@"<img" skipForwardX:0 toStopBefore:@">"];
     NSInteger maximumTry = 999;
     while (imgTag != nil && maximumTry >0) {
@@ -176,8 +208,6 @@
                         [url.absoluteString.lastPathComponent rangeOfString:@"jpeg" options:NSCaseInsensitiveSearch].location != NSNotFound ||
                         [url.absoluteString.lastPathComponent rangeOfString:@"gif" options:NSCaseInsensitiveSearch].location != NSNotFound ||
                         [url.absoluteString.lastPathComponent rangeOfString:@"png"options:NSCaseInsensitiveSearch].location != NSNotFound){
-                        //change URL scheme to mark string for later process
-                        //NSString *imgInTag = [self embedURLIntoAnchor:url.absoluteString];
                         NSString *imgMark = [self embedString:url.absoluteString withString:RANDOM_STRING];
                         [self.imageSrc addObject:url.absoluteString];
                         htmlBody = [htmlBody stringByReplacingOccurrencesOfString:imgTag withString:imgMark];
@@ -220,6 +250,7 @@
 }
 
 -(NSString*)embedURLIntoAnchor:(NSString*)url{
+    //change scheme of URL to action in order to allow webview to catch it
     NSString *imgSrc = [@"action:" stringByAppendingString:url];
     NSString *aString = [NSString stringWithFormat:@"<br><a href=%@>[[点我下载图片]]</a>", imgSrc];
     return aString;

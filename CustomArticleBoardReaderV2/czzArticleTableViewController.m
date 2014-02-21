@@ -41,6 +41,11 @@
     }
 }
 
+-(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"这个浏览器正在紧张有序地开发中！" duration:1.0 position:@"bottom"];
+}
+
 -(void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated{
     if ([viewController isKindOfClass:[czzArticleListViewController class]]){
         if (articleDownloader)
@@ -56,29 +61,57 @@
 #pragma mark - Table view data source
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return myArticle.htmlFragments;
+    NSLog(@"%d rows", myArticle.htmlFragments.count);
+    return myArticle.htmlFragments.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    static NSString *CellIdentifier = @"Cell";
+    static NSString *CellIdentifier = @"html_fragment_cell_identifier";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
     
     // Configure the cell...
-    
+    if (cell){
+        NSString *htmlFragment = [myArticle.htmlFragments objectAtIndex:indexPath.row];
+        UITextView *fragmentTextView = (UITextView*)[cell viewWithTag:1];
+        fragmentTextView.text = htmlFragment;
+    }
     return cell;
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    CGFloat preferHeight = 0;
+    UITextView *newHiddenTextView = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 1)];
+    newHiddenTextView.hidden = YES;
+    newHiddenTextView.font = [UIFont systemFontOfSize:16];
+    [self.view addSubview:newHiddenTextView];
+    NSString *htmlFragment = [myArticle.htmlFragments objectAtIndex:indexPath.row];
+    newHiddenTextView.text = htmlFragment;
+    preferHeight = [newHiddenTextView sizeThatFits:CGSizeMake(newHiddenTextView.frame.size.width, MAXFLOAT)].height;
+    [newHiddenTextView removeFromSuperview];
+    return MAX(tableView.rowHeight, preferHeight);
+
+}
+
+#pragma mark - czzArticleDownloaderDelegate
+-(void)articleDownloaded:(czzArticle *)article withArticleID:(NSInteger)articleID success:(BOOL)success{
+    [self setMyArticle:article];
+    [[[czzAppDelegate sharedAppDelegate] window] hideToastActivity];
 }
 
 #pragma mark - myArticle setter, also load the given html body if presented
 -(void)setMyArticle:(czzArticle *)article{
     myArticle = article;
     myArticle.parentViewController = self;
-    if (myArticle.htmlBody){
-
+    if (myArticle.htmlFragments.count > 0){
+        [self performSelectorOnMainThread:@selector(refreshTableView) withObject:nil waitUntilDone:YES];
     }
     if (shouldAutomaticallyLoadImage){
         
     }
 }
 
+-(void)refreshTableView{
+    [self.tableView reloadData];
+}
 @end
