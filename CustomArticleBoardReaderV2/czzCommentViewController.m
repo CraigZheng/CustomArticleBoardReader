@@ -9,6 +9,9 @@
 #import "czzCommentViewController.h"
 #import "Toast+UIView.h"
 #import "czzAppDelegate.h"
+#import "czzComment.h"
+#import "czzCommentDownloader.h"
+#import "czzPostCommentViewController.h"
 
 @interface czzCommentViewController ()<czzCommentDownloaderDelegate>
 @property czzCommentDownloader *commentDownloader;
@@ -35,10 +38,16 @@ typedef enum ScrollDirection {
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
-    comments = [NSMutableArray new];
-    [self startDownloadingCommentWithCursor:comments.count + 1];
+    [self refreshComments];
+    UIRefreshControl *refControl = [[UIRefreshControl alloc] init];
+    [refControl addTarget:self action:@selector(refreshComments) forControlEvents:UIControlEventValueChanged];
 }
 
+-(void)refreshComments{
+    comments = [NSMutableArray new];
+    [self.tableView reloadData];
+    [self startDownloadingCommentWithCursor:comments.count + 1];
+}
 -(void)startDownloadingCommentWithCursor:(NSInteger)cursor{
     [[[czzAppDelegate sharedAppDelegate] window] makeToastActivity];
     commentDownloader = [[czzCommentDownloader alloc] initWithArticleID:self.articleID downloadMultipleReferedComment:YES delegate:self];
@@ -146,9 +155,24 @@ typedef enum ScrollDirection {
     [self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:lastRowIndexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
-- (IBAction)postCommentAction:(id)sender {
-    [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"这部分还没做好"];
+#pragma mark - czzCommentUploaderDelegate
+-(void)sendComment:(czzComment *)comment toVideo:(NSInteger)videoID success:(BOOL)success{
+    if (success){
+        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"评论已发"];
+        [self refreshComments];
+    } else {
+        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"评论发不出去我浑身难受！"];
+    }
+}
 
+#pragma mark - prepare for segue
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender{
+    if ([segue.destinationViewController isKindOfClass:[czzPostCommentViewController class]]){
+        czzPostCommentViewController *incomingViewController = segue.destinationViewController;
+        //configure the destination view controller
+        incomingViewController.videoID = self.articleID;
+        //TODO: refer floor
+    }
 }
 
 #pragma mark - show and hide navigation bar and tool bar

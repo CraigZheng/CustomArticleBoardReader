@@ -19,22 +19,11 @@
         return nil;
     }
     if (self){
-        for (NSString *key in dataDict.allKeys) {
-            if ([key isEqualToString:@"id"]){
-                self.userID = [[dataDict objectForKey:key] integerValue];
-            }
-            if ([key isEqualToString:@"name"]){
-                self.name = [dataDict objectForKey:key];
-            }
-            if ([key isEqualToString:@"avatar"]){
-                self.avatar = [dataDict objectForKey:key];
-            }
-            if ([key isEqualToString:@"gender"]){
-                self.gender = [[dataDict objectForKey:key] integerValue];
-            }
-        }
+        self.userID = [[dataDict objectForKey:@"id"] integerValue];
+        self.name = [dataDict objectForKey:@"name"];
+        self.avatar = [dataDict objectForKey:@"avatar"];
+        self.gender = [[dataDict objectForKey:@"gender"] integerValue];
     }
-
     return self;
 }
 

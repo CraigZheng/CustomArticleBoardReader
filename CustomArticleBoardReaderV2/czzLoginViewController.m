@@ -9,6 +9,7 @@
 #import "czzLoginViewController.h"
 #import "czzAppDelegate.h"
 #import "czzAcUser.h"
+#import "czzMySelf.h"
 #import "czzAcUserDownloader.h"
 #import "Toast+UIView.h"
 
@@ -17,11 +18,14 @@
 
 
 @interface czzLoginViewController ()<UIWebViewDelegate, czzAcUserDownloaderProtocol>
-
+@property NSString *access_token;
+@property NSDate *expiry_date;
 @end
 
 @implementation czzLoginViewController
 @synthesize loginWebView;
+@synthesize access_token;
+@synthesize expiry_date;
 
 - (void)viewDidLoad
 {
@@ -29,6 +33,12 @@
 	// Do any additional setup after loading the view.
     [loginWebView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:LOGIN_HOST]]];
     
+}
+
+-(void)viewWillDisappear:(BOOL)animated{
+    [super viewWillDisappear:animated];
+    [loginWebView stopLoading];
+    [[[czzAppDelegate sharedAppDelegate] window] hideToastActivity];
 }
 
 #pragma mark - UIWebViewDelegate
@@ -52,12 +62,12 @@
         for (NSString *component in components) {
             if ([component hasPrefix:@"access_token"]){
                 NSLog(@"%@", component);
-                NSString *access_token = [component componentsSeparatedByString:@"="][1];
+                access_token = [component componentsSeparatedByString:@"="][1];
                 [[NSUserDefaults standardUserDefaults] setObject:access_token forKey:@"access_token"];
             } else if ([component hasPrefix:@"expires_in"]){
                 NSLog(@"%@", component);
-                NSInteger expiries_in = [[component componentsSeparatedByString:@"="][1] integerValue];
-                NSDate *expiry_date = [[NSDate new] dateByAddingTimeInterval:expiries_in];
+                NSInteger expiries_in = [[component componentsSeparatedByString:@"="][1] integerValue] / 1000;
+                expiry_date = [[NSDate new] dateByAddingTimeInterval:expiries_in];
                 [[NSUserDefaults standardUserDefaults] setObject:expiry_date forKey:@"access_token_expiry_date"];
             } else if ([component hasPrefix:@"user_id"]){
                 NSLog(@"%@", component);
@@ -82,7 +92,19 @@
 #pragma mark - czzAcUserDownloaderDelegate
 -(void)acUserDownloaded:(czzAcUser *)acUser withAcUserID:(NSInteger)userID success:(BOOL)success{
     NSLog(@"%@", acUser);
-    [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"登陆成功"];
-    [self.navigationController popViewControllerAnimated:YES];
+    if (success) {
+        czzMySelf *currentLoginUser = [[czzMySelf alloc] initWithAcUser:acUser access_token:access_token expiry_date:expiry_date];
+        currentLoginUser.access_token = access_token;
+        currentLoginUser.access_token_expiry_date = expiry_date;
+        NSString* basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+        NSString *userFile = [basePath stringByAppendingPathComponent:@"currentLoginUser.dat"];
+        [NSKeyedArchiver archiveRootObject:currentLoginUser toFile:userFile];
+        [[czzAppDelegate sharedAppDelegate] setCurrentLoginUser:currentLoginUser];
+        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"登陆成功！"];
+        [self.navigationController popViewControllerAnimated:YES];
+    } else {
+        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"登陆失败，请重试"];
+        [loginWebView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:LOGIN_HOST]]];
+    }
 }
 @end

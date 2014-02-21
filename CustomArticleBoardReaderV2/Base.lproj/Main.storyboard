@@ -187,6 +187,7 @@
                     <connections>
                         <outlet property="categorySegmentControl" destination="Lt4-qr-Uaa" id="dnN-tF-jRg"/>
                         <segue destination="zin-gV-eV7" kind="push" identifier="go_article_view_controller_identifier" id="7Zp-P2-C1l"/>
+                        <segue destination="LTL-3h-VuO" kind="push" identifier="go_article_table_view_controller" id="10x-mW-Vab"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="7TB-gx-Smj" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -227,7 +228,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="X7v-Ty-FjC" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-285" y="407"/>
+            <point key="canvasLocation" x="1230" y="-289"/>
         </scene>
         <!--Czz Settings View Controller - 设置-->
         <scene sceneID="w6g-lk-MFu">
@@ -552,6 +553,35 @@
             </objects>
             <point key="canvasLocation" x="791" y="407"/>
         </scene>
+        <!--Czz Article Table View Controller - AcID-->
+        <scene sceneID="kWN-iv-R55">
+            <objects>
+                <tableViewController id="LTL-3h-VuO" customClass="czzArticleTableViewController" sceneMemberID="viewController">
+                    <tableView key="view" opaque="NO" clipsSubviews="YES" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="Vvw-63-Med">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <prototypes>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" id="gfI-au-rzk">
+                                <rect key="frame" x="0.0" y="86" width="320" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="gfI-au-rzk" id="OpC-WD-glX">
+                                    <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                        </prototypes>
+                        <connections>
+                            <outlet property="dataSource" destination="LTL-3h-VuO" id="kSY-H1-0Tk"/>
+                            <outlet property="delegate" destination="LTL-3h-VuO" id="g8I-LZ-G9R"/>
+                        </connections>
+                    </tableView>
+                    <navigationItem key="navigationItem" title="AcID" id="9TL-O3-0jU"/>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="4r5-C5-KBY" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="791" y="1116"/>
+        </scene>
         <!--Czz Comment View Controller-->
         <scene sceneID="nU4-zA-GuD">
             <objects>
@@ -663,7 +693,7 @@
                     <toolbarItems>
                         <barButtonItem image="comment.png" id="xIA-QR-oen">
                             <connections>
-                                <action selector="postCommentAction:" destination="Kxp-mo-cxL" id="R1M-e1-t3V"/>
+                                <segue destination="Pax-gr-PaP" kind="push" id="Yf1-bx-3jq"/>
                             </connections>
                         </barButtonItem>
                     </toolbarItems>
@@ -677,6 +707,43 @@
                 </tapGestureRecognizer>
             </objects>
             <point key="canvasLocation" x="1230" y="407"/>
+        </scene>
+        <!--Czz Post Comment View Controller - 回复：-->
+        <scene sceneID="1DF-24-HVa">
+            <objects>
+                <viewController id="Pax-gr-PaP" customClass="czzPostCommentViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="hXA-VE-dw5"/>
+                        <viewControllerLayoutGuide type="bottom" id="k1p-3H-cRI"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="CH0-qv-QSb">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" text="公知精英狂喜乱舞……" translatesAutoresizingMaskIntoConstraints="NO" id="GsJ-DC-61B">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            </textView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                    </view>
+                    <navigationItem key="navigationItem" title="回复：" id="WTo-Om-SoH">
+                        <barButtonItem key="rightBarButtonItem" systemItem="reply" id="r7j-kI-T9b">
+                            <connections>
+                                <action selector="postAction:" destination="Pax-gr-PaP" id="FFH-Am-7E9"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="postTextView" destination="GsJ-DC-61B" id="i4f-p3-8Jb"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="HTe-dW-x4X" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1657" y="407"/>
         </scene>
     </scenes>
     <resources>

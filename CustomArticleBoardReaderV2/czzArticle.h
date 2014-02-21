@@ -26,6 +26,7 @@
 @property (nonatomic) NSString *htmlBodyWithouImage;
 @property NSMutableArray *imageSrc;
 
+@property NSMutableArray *htmlFragments;
 @property UIViewController *parentViewController;
 
 -(id)initWithJSONData:(NSData*)jsonData;

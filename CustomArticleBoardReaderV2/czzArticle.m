@@ -52,6 +52,7 @@
 }
 
 -(void)assignPropertyWithJSONDictonary:(NSDictionary*)dataDict{
+    /*
     for (NSString *key in dataDict.allKeys) {
         if ([key isEqualToString:@"acId"]){
             self.acId = [[dataDict objectForKey:key] integerValue];
@@ -97,7 +98,25 @@
             self.htmlBody = [self prepareHTMLForBetterVisual:self.htmlBody];
         }
     }
-    
+     */
+    self.acId = [[dataDict objectForKey:@"acId"] integerValue];
+    self.name = [dataDict objectForKey:@"name"];
+    self.desc = [dataDict objectForKey:@"desc"];
+    if (self.desc)
+        self.desc = [self.desc stringByReplacingOccurrencesOfString:@"<br/>" withString:@"\n"];
+    self.previewUrl = [dataDict objectForKey:@"previewurl"];
+    self.viewCount = [[dataDict objectForKey:@"viewernum"] integerValue];
+    self.favouriteCount = [[dataDict objectForKey:@"collectnum"] integerValue];
+    self.commentCount = [[dataDict objectForKey:@"commentnum"] integerValue];
+    self.createTime = [NSDate dateWithTimeIntervalSince1970:[[dataDict objectForKey:@"createtime"] doubleValue] / 1000];
+    self.creator = [[czzAcUser alloc] initWithJSONDictionary:[dataDict objectForKey:@"creator"]];
+    self.isOriginal = [[dataDict objectForKey:@"isOriginal"] boolValue];
+    self.tags = [dataDict objectForKey:@"tags"];
+    self.category = [dataDict objectForKey:@"category"];
+    self.htmlBody = [dataDict objectForKey:@"txt"];
+    if (self.htmlBody){
+        self.htmlBody = [self prepareHTMLForBetterVisual:self.htmlBody];
+    }
 }
 
 #pragma mark - prepareHTMLForBetterVisual will remove the old formatting, and re-apply some simple html format for better visual on a mobile device

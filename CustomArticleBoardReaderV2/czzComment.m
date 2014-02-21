@@ -33,6 +33,7 @@
 }
 
 -(void)assignPropertiesWithJSONDictionary:(NSDictionary*)dict{
+    /*
     for (NSString *key in dict.allKeys) {
         if ([key isEqualToString:@"content"]) {
             self.content = [dict objectForKey:key];
@@ -72,6 +73,31 @@
                 self.refCommentFlow = [NSArray arrayWithObject:comment];
             }
         }
+    }
+     */
+    self.content = [dict objectForKey:@"content"];
+    if (self.content)
+        self.content = [self.content stringByReplacingOccurrencesOfString:@"<br/>" withString:@""];
+    self.user = [[czzAcUser alloc] initWithJSONDictionary:[dict objectForKey:@"user"]];
+    //post time
+    NSDateFormatter *dateFormatter = [NSDateFormatter new];
+    dateFormatter.dateFormat = @"MMM d,yyyy h:m:ss tt";
+    self.postTime = [dateFormatter dateFromString:[dict objectForKey:@"time"]];
+    self.commentID = [[dict objectForKey:@"id"] integerValue];
+    self.floorIndex = [[dict objectForKey:@"floorindex"] integerValue];
+    //ref comment flow
+    id refComment = [dict objectForKey:@"refcommentflow"];
+    if ([refComment isKindOfClass:[NSArray class]]){
+        refComment = (NSArray*)refComment;
+        NSMutableArray *tempCommentArray = [NSMutableArray new];
+        for (NSDictionary *dict in refComment) {
+            czzComment *refComment = [[czzComment alloc] initWithJSONDictionary:dict];
+            [tempCommentArray addObject:refComment];
+        }
+        self.refCommentFlow = tempCommentArray;
+    } else if ([refComment isKindOfClass:[NSDictionary class]]){
+        czzComment *comment = [[czzComment alloc] initWithJSONDictionary:(NSDictionary*)refComment];
+        self.refCommentFlow = [NSArray arrayWithObject:comment];
     }
 }
 @end

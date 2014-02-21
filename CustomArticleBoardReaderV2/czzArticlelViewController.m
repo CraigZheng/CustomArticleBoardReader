@@ -11,7 +11,6 @@
 #import "czzAppDelegate.h"
 #import "Toast+UIView.h"
 #import "czzImageDownloader.h"
-#import "czzImageCentre.h"
 #import "czzCommentViewController.h"
 #import "czzArticleListViewController.h"
 #import "czzArticleDescriptionViewController.h"

@@ -7,13 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "czzComment.h"
-#import "czzCommentDownloader.h"
 
 
 @interface czzCommentViewController : UITableViewController
 @property NSInteger articleID;
 
 - (IBAction)loadMoreAction:(id)sender;
-- (IBAction)postCommentAction:(id)sender;
 @end

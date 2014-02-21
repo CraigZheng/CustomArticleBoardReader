@@ -9,9 +9,11 @@
 #import <UIKit/UIKit.h>
 #import "GADInterstitial.h"
 
+@class czzMySelf;
 @interface czzAppDelegate : UIResponder <UIApplicationDelegate, GADInterstitialDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
+@property (nonatomic) czzMySelf *currentLoginUser;
 
 -(void)showToast:(NSString*)string;
 + (czzAppDelegate*) sharedAppDelegate;

@@ -17,6 +17,7 @@
     // Override point for customization after application launch.
     [self checkStorages];
     [self checkUserDefaults];
+    [self checkLoginUser];
     //ran a number
     NSInteger upperHand = [[NSUserDefaults standardUserDefaults] integerForKey:@"oddForSplashAdScreen"];
     if (upperHand == 0)
@@ -106,12 +107,20 @@
     }
 }
 
+-(void)checkLoginUser{
+    //retrieve previously saved login user
+    NSString* basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *userFile = [basePath stringByAppendingPathComponent:@"currentLoginUser.dat"];
+    czzMySelf *currentLoginUser = [NSKeyedUnarchiver unarchiveObjectWithFile:userFile];
+    if (currentLoginUser)
+        self.currentLoginUser = currentLoginUser;
+}
 #pragma mark - GADInterstitialDelegate
 -(void)interstitialWillPresentScreen:(GADInterstitial *)ad{
     NSInteger odd = [[NSUserDefaults standardUserDefaults] integerForKey:@"oddForSplashAdScreen"];
     if (odd == 0)
         odd = 2;
-    NSString *infoString = [NSString stringWithFormat:@"开启广告掉宝几率：%d%%", (NSInteger)((1.0 / odd) * 100)];
+    NSString *infoString = [NSString stringWithFormat:@"起始广告掉宝几率：%d%%", (NSInteger)((1.0 / odd) * 100)];
     [self.window makeToast:infoString duration:2.0 position:@"bottom"];
 }
 
