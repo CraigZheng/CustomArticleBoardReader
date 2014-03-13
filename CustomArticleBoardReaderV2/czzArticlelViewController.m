@@ -55,6 +55,7 @@
         [self startDownloadingArticle];
     else
         [self.articleWebView loadHTMLString:myArticle.htmlBody baseURL:nil];
+    self.navigationController.toolbar.hidden = YES;
     [self addBannerDescViewToTop];
     [self showAdRandomly];
 }

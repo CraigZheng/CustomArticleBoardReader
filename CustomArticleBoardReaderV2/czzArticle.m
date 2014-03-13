@@ -8,6 +8,7 @@
 
 #import "czzArticle.h"
 #import "czzAppDelegate.h"
+#import "NSString+HTML.h"
 
 #define RANDOM_STRING @"%$^&^$%2$%^&%7#!@#^%#&#*"
 
@@ -60,7 +61,7 @@
     self.name = [dataDict objectForKey:@"name"];
     self.desc = [dataDict objectForKey:@"desc"];
     if (self.desc)
-        self.desc = [self.desc stringByReplacingOccurrencesOfString:@"<br/>" withString:@"\n"];
+        self.desc = [self.desc stringByConvertingHTMLToPlainText];
     self.previewUrl = [dataDict objectForKey:@"previewurl"];
     self.viewCount = [[dataDict objectForKey:@"viewernum"] integerValue];
     self.favouriteCount = [[dataDict objectForKey:@"collectnum"] integerValue];
@@ -93,6 +94,50 @@
     return oldHTML;
 }
 
+-(NSArray*)prepareHTMLForFragments:(NSString*)htmlString{
+    NSRange r;
+    //remove everything between < and >
+    NSMutableArray *fragments = [NSMutableArray new];
+    while ((r = [htmlString rangeOfString:@"<[^>]+>" options:NSRegularExpressionSearch]).location != NSNotFound) {
+        NSString *subString = [htmlString substringWithRange:r];
+        
+        NSDataDetector *linkDetector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:nil];
+        NSArray *matches = [linkDetector matchesInString:subString
+                                                 options:0
+                                                   range:NSMakeRange(0, subString.length)];
+        if (matches.count > 0){
+            for (NSTextCheckingResult *match in matches) {
+                if ([match resultType] == NSTextCheckingTypeLink) {
+                    NSURL *url = [match URL];
+                    if ([url.absoluteString.lastPathComponent rangeOfString:@"jpg" options:NSCaseInsensitiveSearch].location != NSNotFound ||
+                        [url.absoluteString.lastPathComponent rangeOfString:@"jpeg" options:NSCaseInsensitiveSearch].location != NSNotFound ||
+                        [url.absoluteString.lastPathComponent rangeOfString:@"gif" options:NSCaseInsensitiveSearch].location != NSNotFound ||
+                        [url.absoluteString.lastPathComponent rangeOfString:@"png"options:NSCaseInsensitiveSearch].location != NSNotFound){
+                        [fragments addObject:url];
+                    }
+                }
+            }
+        } else if ([subString hasPrefix:@"<img"]){
+            NSString *emoconURL = [self extractString:subString toLookFor:@"\"" skipForwardX:1 toStopBefore:@"\""];
+            if (emoconURL.length > 0 && [emoconURL rangeOfString:@"emotion"].location != NSNotFound)
+            {
+                NSURL *emoURL = [NSURL URLWithString:[NSString stringWithFormat:@"\"http://www.acfun.tv%@", emoconURL]];
+                [fragments addObject:emoURL];
+            }
+
+        }
+        htmlString = [htmlString stringByReplacingCharactersInRange:r withString:@""];
+        NSString *fragment = [htmlString substringWithRange:NSMakeRange(0, r.location)];
+        fragment = [[fragment stringByDecodingHTMLEntities] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        if (fragment.length > 0)
+            [fragments addObject:fragment];
+        htmlString = [htmlString stringByReplacingCharactersInRange:NSMakeRange(0, r.location) withString:@""];
+        
+    }
+    
+    return fragments;
+}
+/*
 -(NSMutableArray*)prepareHTMLForFragments:(NSString*)oldHtml{
     NSMutableArray *fragments = [NSMutableArray new];
     oldHtml = [self markFormattingTags:oldHtml];
@@ -165,7 +210,7 @@
     }
     return fragments;
 }
-
+*/
 -(NSString *)stringByApplyingSimpleHTMLFormat:(NSString*)htmlString {
     NSRange r;
     //remove everything between < and >

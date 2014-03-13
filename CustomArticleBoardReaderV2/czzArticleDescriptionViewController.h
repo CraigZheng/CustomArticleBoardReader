@@ -16,5 +16,5 @@
 @property (strong, nonatomic) IBOutlet UILabel *infoLabel;
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *descLabel;
-@property (nonatomic) czzArticlelViewController *parentViewController;
+@property (nonatomic) UIViewController *parentViewController;
 @end
