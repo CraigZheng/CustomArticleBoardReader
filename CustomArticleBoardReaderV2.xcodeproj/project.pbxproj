@@ -26,13 +26,11 @@
 		442FFEC318A78B5C001ECDAA /* czzArticleListDownloader.m in Sources */ = {isa = PBXBuildFile; fileRef = 442FFEBF18A78B5C001ECDAA /* czzArticleListDownloader.m */; };
 		442FFECB18A83D73001ECDAA /* Toast+UIView.m in Sources */ = {isa = PBXBuildFile; fileRef = 442FFECA18A83D73001ECDAA /* Toast+UIView.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		442FFECF18A84275001ECDAA /* czzArticleListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 442FFECE18A84275001ECDAA /* czzArticleListViewController.m */; };
-		442FFED218A844B2001ECDAA /* czzAdTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 442FFED118A844B2001ECDAA /* czzAdTableViewCell.m */; };
 		442FFEE318A84560001ECDAA /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 442FFEE218A84560001ECDAA /* AdSupport.framework */; };
 		442FFEE518A84567001ECDAA /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 442FFEE418A84567001ECDAA /* AudioToolbox.framework */; };
 		442FFEE718A8456D001ECDAA /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 442FFEE618A8456D001ECDAA /* AVFoundation.framework */; };
 		442FFEE918A8457A001ECDAA /* CoreTelephony.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 442FFEE818A8457A001ECDAA /* CoreTelephony.framework */; };
 		442FFEEB18A84580001ECDAA /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 442FFEEA18A84580001ECDAA /* MessageUI.framework */; };
-		442FFEED18A84586001ECDAA /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 442FFEEC18A84586001ECDAA /* StoreKit.framework */; };
 		442FFEEF18A8458E001ECDAA /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 442FFEEE18A8458E001ECDAA /* SystemConfiguration.framework */; };
 		442FFEF218A867EA001ECDAA /* czzArticlelViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 442FFEF118A867EA001ECDAA /* czzArticlelViewController.m */; };
 		442FFEF518A8B140001ECDAA /* czzAcUserDownloader.m in Sources */ = {isa = PBXBuildFile; fileRef = 442FFEF418A8B140001ECDAA /* czzAcUserDownloader.m */; };
@@ -130,14 +128,11 @@
 		442FFECA18A83D73001ECDAA /* Toast+UIView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "Toast+UIView.m"; sourceTree = "<group>"; };
 		442FFECD18A84275001ECDAA /* czzArticleListViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = czzArticleListViewController.h; sourceTree = "<group>"; };
 		442FFECE18A84275001ECDAA /* czzArticleListViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = czzArticleListViewController.m; sourceTree = "<group>"; };
-		442FFED018A844B2001ECDAA /* czzAdTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = czzAdTableViewCell.h; sourceTree = "<group>"; };
-		442FFED118A844B2001ECDAA /* czzAdTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = czzAdTableViewCell.m; sourceTree = "<group>"; };
 		442FFEE218A84560001ECDAA /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
 		442FFEE418A84567001ECDAA /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		442FFEE618A8456D001ECDAA /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		442FFEE818A8457A001ECDAA /* CoreTelephony.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreTelephony.framework; path = System/Library/Frameworks/CoreTelephony.framework; sourceTree = SDKROOT; };
 		442FFEEA18A84580001ECDAA /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
-		442FFEEC18A84586001ECDAA /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		442FFEEE18A8458E001ECDAA /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		442FFEF018A867EA001ECDAA /* czzArticlelViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = czzArticlelViewController.h; sourceTree = "<group>"; };
 		442FFEF118A867EA001ECDAA /* czzArticlelViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = czzArticlelViewController.m; sourceTree = "<group>"; };
@@ -230,7 +225,6 @@
 				44CCB76C18B7223D0024CBDB /* CoreData.framework in Frameworks */,
 				44CCB76A18B721180024CBDB /* MediaPlayer.framework in Frameworks */,
 				442FFEEF18A8458E001ECDAA /* SystemConfiguration.framework in Frameworks */,
-				442FFEED18A84586001ECDAA /* StoreKit.framework in Frameworks */,
 				442FFEEB18A84580001ECDAA /* MessageUI.framework in Frameworks */,
 				44CCB76618B71FEB0024CBDB /* libGoogleAdMobAds.a in Frameworks */,
 				442FFE8618A78A1D001ECDAA /* CoreGraphics.framework in Frameworks */,
@@ -280,7 +274,6 @@
 				44CCB76B18B7223D0024CBDB /* CoreData.framework */,
 				44CCB76918B721180024CBDB /* MediaPlayer.framework */,
 				442FFEEE18A8458E001ECDAA /* SystemConfiguration.framework */,
-				442FFEEC18A84586001ECDAA /* StoreKit.framework */,
 				442FFEEA18A84580001ECDAA /* MessageUI.framework */,
 				442FFEE818A8457A001ECDAA /* CoreTelephony.framework */,
 				442FFEE618A8456D001ECDAA /* AVFoundation.framework */,
@@ -356,7 +349,6 @@
 				442FFEC618A78B90001ECDAA /* czzArticle */,
 				442FFEC818A78BA5001ECDAA /* czzArticleDownloader */,
 				442FFEC718A78B9B001ECDAA /* czzArticleListDownloader */,
-				442FFED318A844B6001ECDAA /* czzAdTableVIewCell */,
 				442FFF0118AA6714001ECDAA /* czzComment */,
 				44CCB76818B71FF20024CBDB /* AdMob */,
 			);
@@ -409,15 +401,6 @@
 				442FFECA18A83D73001ECDAA /* Toast+UIView.m */,
 			);
 			name = Toast;
-			sourceTree = "<group>";
-		};
-		442FFED318A844B6001ECDAA /* czzAdTableVIewCell */ = {
-			isa = PBXGroup;
-			children = (
-				442FFED018A844B2001ECDAA /* czzAdTableViewCell.h */,
-				442FFED118A844B2001ECDAA /* czzAdTableViewCell.m */,
-			);
-			name = czzAdTableVIewCell;
 			sourceTree = "<group>";
 		};
 		442FFEF618A8B143001ECDAA /* czzAcUserDownloader */ = {
@@ -598,6 +581,11 @@
 				TargetAttributes = {
 					442FFE7F18A78A1D001ECDAA = {
 						DevelopmentTeam = 9EBE9MWW9X;
+						SystemCapabilities = {
+							com.apple.InAppPurchase = {
+								enabled = 0;
+							};
+						};
 					};
 					442FFEA018A78A1D001ECDAA = {
 						TestTargetID = 442FFE7F18A78A1D001ECDAA;
@@ -698,7 +686,6 @@
 				4485EF4818B061060031B3BC /* czzArticleDescriptionViewController.m in Sources */,
 				4485EFC118B4F58D0031B3BC /* czzCommentUploader.m in Sources */,
 				442FFEC318A78B5C001ECDAA /* czzArticleListDownloader.m in Sources */,
-				442FFED218A844B2001ECDAA /* czzAdTableViewCell.m in Sources */,
 				442FFF0018AA670D001ECDAA /* czzComment.m in Sources */,
 				442FFE9018A78A1D001ECDAA /* main.m in Sources */,
 				4485EFA618B2F46E0031B3BC /* czzLoginViewController.m in Sources */,
@@ -762,7 +749,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				ARCHS = (
+					armv7s,
+					armv7,
+				);
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -794,6 +784,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				VALID_ARCHS = "armv7 armv7s";
 			};
 			name = Debug;
 		};
@@ -801,7 +792,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
+				ARCHS = (
+					armv7s,
+					armv7,
+				);
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
@@ -827,12 +821,14 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
+				VALID_ARCHS = "armv7 armv7s";
 			};
 			name = Release;
 		};
 		442FFEB318A78A1D001ECDAA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-2";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "LaunchImage-2";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -843,11 +839,10 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					/Users/craig/Developer/CustomArticleBoardReaderV2/CustomArticleBoardReaderV2,
-					"/Users/craig/Developer/CustomArticleBoardReaderV2/CustomArticleBoardReaderV2/GoogleAdMobAdsSdkiOS-6.5.1/Add-ons/GoogleAnalyticsServicesiOS_3.0/GoogleAnalytics/Library",
-					"/Users/craig/Developer/CustomArticleBoardReaderV2/CustomArticleBoardReaderV2/GoogleAdMobAdsSdkiOS-6.5.1/Add-ons/GoogleAnalyticsServicesiOS_3.0",
-					"/Users/craig/Developer/CustomArticleBoardReaderV2/CustomArticleBoardReaderV2/GoogleAdMobAdsSdkiOS-6.5.1",
+					/Users/CraigZheng/Developer/customarticleboardreaderv2/CustomArticleBoardReaderV2,
+					"$(PROJECT_DIR)/CustomArticleBoardReaderV2",
 				);
+				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -860,6 +855,7 @@
 		442FFEB418A78A1D001ECDAA /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-2";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "LaunchImage-2";
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -870,10 +866,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					/Users/craig/Developer/CustomArticleBoardReaderV2/CustomArticleBoardReaderV2,
-					"/Users/craig/Developer/CustomArticleBoardReaderV2/CustomArticleBoardReaderV2/GoogleAdMobAdsSdkiOS-6.5.1/Add-ons/GoogleAnalyticsServicesiOS_3.0/GoogleAnalytics/Library",
-					"/Users/craig/Developer/CustomArticleBoardReaderV2/CustomArticleBoardReaderV2/GoogleAdMobAdsSdkiOS-6.5.1/Add-ons/GoogleAnalyticsServicesiOS_3.0",
-					"/Users/craig/Developer/CustomArticleBoardReaderV2/CustomArticleBoardReaderV2/GoogleAdMobAdsSdkiOS-6.5.1",
+					/Users/CraigZheng/Developer/customarticleboardreaderv2/CustomArticleBoardReaderV2,
+					"$(PROJECT_DIR)/CustomArticleBoardReaderV2",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -903,6 +897,7 @@
 				INFOPLIST_FILE = "CustomArticleBoardReaderV2Tests/CustomArticleBoardReaderV2Tests-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUNDLE_LOADER)";
+				VALID_ARCHS = "armv7 armv7s";
 				WRAPPER_EXTENSION = xctest;
 			};
 			name = Debug;
@@ -922,6 +917,7 @@
 				INFOPLIST_FILE = "CustomArticleBoardReaderV2Tests/CustomArticleBoardReaderV2Tests-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUNDLE_LOADER)";
+				VALID_ARCHS = "armv7 armv7s";
 				WRAPPER_EXTENSION = xctest;
 			};
 			name = Release;

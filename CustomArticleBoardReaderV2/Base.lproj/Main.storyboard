@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="4514" systemVersion="13C64" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="ahD-nA-Hnc">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="5053" systemVersion="13C64" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="ahD-nA-Hnc">
     <dependencies>
         <deployment defaultVersion="1536" identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3747"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3733"/>
     </dependencies>
     <scenes>
         <!--Navigation Controller-->
@@ -111,9 +111,6 @@
                                         <constraint firstAttribute="bottom" secondItem="Hgx-2i-Da6" secondAttribute="bottom" constant="11" id="Sdf-xE-BE9"/>
                                         <constraint firstAttribute="centerX" secondItem="Hgx-2i-Da6" secondAttribute="centerX" id="gIY-hO-UWg"/>
                                     </constraints>
-                                    <connections>
-                                        <outletCollection property="gestureRecognizers" destination="40I-ia-plh" appends="YES" id="eWs-FK-Qhq"/>
-                                    </connections>
                                 </tableViewCellContentView>
                             </tableViewCell>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="loading_cell_identifier" id="MtT-pu-7q1">
@@ -191,11 +188,6 @@
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="7TB-gx-Smj" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <tapGestureRecognizer id="40I-ia-plh">
-                    <connections>
-                        <action selector="loadMoreAction:" destination="DjU-UU-AGZ" id="5JT-A8-8zH"/>
-                    </connections>
-                </tapGestureRecognizer>
             </objects>
             <point key="canvasLocation" x="-285" y="-289"/>
         </scene>
@@ -478,6 +470,7 @@
                     </toolbarItems>
                     <nil key="simulatedStatusBarMetrics"/>
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+                    <size key="freeformSize" width="320" height="568"/>
                     <connections>
                         <outlet property="descLabel" destination="i2l-JD-EKy" id="rVl-ss-l1x"/>
                         <outlet property="infoLabel" destination="ASw-C0-1T2" id="CNW-xt-XpD"/>
@@ -704,9 +697,6 @@
                                         <constraint firstAttribute="bottom" secondItem="Se7-vN-JJA" secondAttribute="bottom" constant="11" id="kKJ-e5-IQQ"/>
                                     </constraints>
                                 </tableViewCellContentView>
-                                <connections>
-                                    <outletCollection property="gestureRecognizers" destination="pzi-aM-pB6" appends="YES" id="1gM-zn-nIu"/>
-                                </connections>
                             </tableViewCell>
                             <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="loading_cell_identifier" id="4JW-ah-f1O">
                                 <rect key="frame" x="0.0" y="174" width="320" height="44"/>
@@ -756,11 +746,6 @@
                     <navigationItem key="navigationItem" id="fDc-6n-D3V"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="bbk-0x-gem" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <tapGestureRecognizer id="pzi-aM-pB6">
-                    <connections>
-                        <action selector="loadMoreAction:" destination="Kxp-mo-cxL" id="1Ir-nx-6Ua"/>
-                    </connections>
-                </tapGestureRecognizer>
             </objects>
             <point key="canvasLocation" x="1230" y="407"/>
         </scene>
@@ -818,6 +803,6 @@
         <simulatedScreenMetrics key="destination" type="retina4"/>
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
-        <segue reference="7Zp-P2-C1l"/>
+        <segue reference="Kdc-a9-his"/>
     </inferredMetricsTieBreakers>
 </document>
