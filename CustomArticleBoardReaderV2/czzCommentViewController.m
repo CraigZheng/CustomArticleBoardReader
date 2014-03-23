@@ -41,6 +41,10 @@ typedef enum ScrollDirection {
     [self refreshComments];
     UIRefreshControl *refControl = [[UIRefreshControl alloc] init];
     [refControl addTarget:self action:@selector(refreshComments) forControlEvents:UIControlEventValueChanged];
+    //hide tool bar if ios 7
+    if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0) {
+        self.navigationController.toolbar.hidden = YES;
+    }
 }
 
 -(void)refreshComments{
@@ -115,6 +119,12 @@ typedef enum ScrollDirection {
     return MAX(tableView.rowHeight, preferHeight);
 }
 
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    //the last row is selected
+    if (indexPath.row == comments.count)
+        [self performSelector:@selector(loadMoreAction)];
+}
+
 #pragma mark - UIScrollViewDelegate
 -(void)scrollViewDidScroll:(UIScrollView *)scrollView{
     ScrollDirection scrollDirection;
@@ -149,7 +159,7 @@ typedef enum ScrollDirection {
     commentDownloader = nil;
 }
 
-- (IBAction)loadMoreAction:(id)sender {
+- (void)loadMoreAction {
     NSInteger cursor = comments.count;
     [self startDownloadingCommentWithCursor:cursor];
     NSIndexPath *lastRowIndexPath = [NSIndexPath indexPathForRow:comments.count inSection:0];

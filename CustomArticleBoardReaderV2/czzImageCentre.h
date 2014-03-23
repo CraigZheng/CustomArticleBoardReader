@@ -10,22 +10,18 @@
  it also serves as the service centre of local images, feeding images to appropriate view controllers, and preventing same image being downloaded twice.
  */
 #import <Foundation/Foundation.h>
+#import "czzImageDownloader.h"
 
 @interface czzImageCentre : NSObject
 @property NSMutableSet *currentImageDownloaders;
 @property NSMutableSet *currentLocalImages;
-@property NSMutableSet *currentLocalThumbnails;+
+@property Boolean isReady;
 
-(id)sharedInstance;
++(id)sharedInstance;
 
 -(void)scanCurrentLocalImages;
--(void)downloadThumbnailWithURL:(NSString*)imgURL;
 -(void)downloadImageWithURL:(NSString*)imgURL;
 -(Boolean)containsImageDownloaderWithURL:(NSString*)imgURL;
 -(void)stopAndRemoveImageDownloaderWithURL:(NSString*)imgURL;
 -(void)removeAllImages;
--(void)removeFullSizeImages;
--(void)removeThumbnails;
--(NSString*)totalSizeForFullSizeImages;
--(NSString*)totalSizeForThumbnails;
 @end

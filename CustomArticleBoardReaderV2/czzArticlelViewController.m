@@ -55,7 +55,11 @@
         [self startDownloadingArticle];
     else
         [self.articleWebView loadHTMLString:myArticle.htmlBody baseURL:nil];
-    self.navigationController.toolbar.hidden = YES;
+    //hide tool bar if ios 7
+    if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0) {
+        self.navigationController.toolbar.hidden = YES;
+    }
+
     [self addBannerDescViewToTop];
     [self showAdRandomly];
 }

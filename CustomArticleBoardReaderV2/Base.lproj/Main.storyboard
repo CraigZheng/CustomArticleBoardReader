@@ -619,13 +619,61 @@
                                     </constraints>
                                 </tableViewCellContentView>
                             </tableViewCell>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="downloading_image_cell_identifier" id="CZ5-7S-wWX">
+                                <rect key="frame" x="0.0" y="254" width="320" height="44"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="CZ5-7S-wWX" id="bA1-6U-AhZ">
+                                    <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="正在下载" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Nak-Vw-6Qs">
+                                            <rect key="frame" x="126" y="11" width="68" height="21"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="Ws1-RT-Mfn">
+                                            <rect key="frame" x="98" y="12" width="20" height="20"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        </activityIndicatorView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstAttribute="bottom" secondItem="Nak-Vw-6Qs" secondAttribute="bottom" constant="11" id="9lx-YB-f8v"/>
+                                        <constraint firstItem="Nak-Vw-6Qs" firstAttribute="leading" secondItem="Ws1-RT-Mfn" secondAttribute="trailing" constant="8" id="DIO-mu-NFb"/>
+                                        <constraint firstItem="Nak-Vw-6Qs" firstAttribute="leading" secondItem="Ws1-RT-Mfn" secondAttribute="trailing" constant="8" id="P62-aw-rwj"/>
+                                        <constraint firstItem="Ws1-RT-Mfn" firstAttribute="top" secondItem="bA1-6U-AhZ" secondAttribute="top" constant="12" id="VsZ-1Z-l1Z"/>
+                                        <constraint firstAttribute="bottom" secondItem="Ws1-RT-Mfn" secondAttribute="bottom" constant="11" id="YJE-Rb-5Hg"/>
+                                        <constraint firstAttribute="trailing" secondItem="Nak-Vw-6Qs" secondAttribute="trailing" constant="126" id="d5y-2d-pAu"/>
+                                        <constraint firstItem="Ws1-RT-Mfn" firstAttribute="leading" secondItem="bA1-6U-AhZ" secondAttribute="leading" constant="98" id="uof-je-FEf"/>
+                                        <constraint firstItem="Nak-Vw-6Qs" firstAttribute="top" secondItem="bA1-6U-AhZ" secondAttribute="top" constant="11" id="z20-Hd-eli"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                            </tableViewCell>
                         </prototypes>
                         <connections>
                             <outlet property="dataSource" destination="LTL-3h-VuO" id="kSY-H1-0Tk"/>
                             <outlet property="delegate" destination="LTL-3h-VuO" id="g8I-LZ-G9R"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="AcID" id="9TL-O3-0jU"/>
+                    <toolbarItems>
+                        <barButtonItem image="download.png" id="UMS-D8-h7Y"/>
+                        <barButtonItem style="plain" systemItem="flexibleSpace" id="JZG-aP-awa"/>
+                        <barButtonItem image="share.png" id="lFK-Hy-gTw"/>
+                        <barButtonItem style="plain" systemItem="flexibleSpace" id="JA4-DT-Nns"/>
+                        <barButtonItem image="chat.png" id="lJw-kb-D6Z">
+                            <connections>
+                                <segue destination="Kxp-mo-cxL" kind="push" id="327-po-gDH"/>
+                            </connections>
+                        </barButtonItem>
+                    </toolbarItems>
+                    <navigationItem key="navigationItem" title="AcID" id="9TL-O3-0jU">
+                        <barButtonItem key="rightBarButtonItem" image="like.png" id="TXk-x9-nnQ">
+                            <connections>
+                                <action selector="favouriteAction:" destination="LTL-3h-VuO" id="WTQ-qN-71L"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4r5-C5-KBY" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -803,6 +851,7 @@
         <simulatedScreenMetrics key="destination" type="retina4"/>
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
-        <segue reference="Kdc-a9-his"/>
+        <segue reference="7Zp-P2-C1l"/>
+        <segue reference="327-po-gDH"/>
     </inferredMetricsTieBreakers>
 </document>

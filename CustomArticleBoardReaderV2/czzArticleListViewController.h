@@ -21,6 +21,6 @@ typedef enum ScrollDirection {
     ScrollDirectionCrazy,
 } ScrollDirection;
 
-- (IBAction)loadMoreAction:(id)sender;
+- (void)loadMoreAction;
 - (IBAction)categorySelectedAction:(id)sender;
 @end

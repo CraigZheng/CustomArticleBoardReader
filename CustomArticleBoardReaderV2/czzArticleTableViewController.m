@@ -15,12 +15,15 @@
 #import "czzImageDownloader.h"
 #import "czzCommentViewController.h"
 #import "czzArticleListViewController.h"
+#import "czzImageCentre.h"
 
 
 @interface czzArticleTableViewController ()<UINavigationControllerDelegate, czzArticleDownloaderDelegate, czzImageDownloaderDelegate>
 @property czzArticleDownloader *articleDownloader;
 @property BOOL shouldAutomaticallyLoadImage;
 @property czzArticleDescriptionViewController *descViewController;
+@property czzImageCentre *imageCentre;
+@property NSInteger lastContentOffsetY;
 @end
 
 @implementation czzArticleTableViewController
@@ -28,6 +31,8 @@
 @synthesize articleDownloader;
 @synthesize shouldAutomaticallyLoadImage;
 @synthesize descViewController;
+@synthesize imageCentre;
+@synthesize lastContentOffsetY;
 
 - (void)viewDidLoad
 {
@@ -41,16 +46,26 @@
             NSLog(@"article nil");
         }
     }
+    imageCentre = [czzImageCentre sharedInstance];
     descViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"czz_description_view_controller"];
     
     descViewController.myArticle = myArticle;
     descViewController.parentViewController = self;
-
+    //hide tool bar if ios 7
+    if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0) {
+        self.navigationController.toolbar.hidden = YES;
+    }
 }
 
 -(void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
-    [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"这个浏览器正在紧张有序地开发中！" duration:1.0 position:@"bottom"];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(imageDownloaded:) name:@"ImageDownloaded" object:nil];
+}
+
+-(void)viewWillDisappear:(BOOL)animated{
+    [super viewWillDisappear:animated];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [[[czzAppDelegate sharedAppDelegate] window] hideToastActivity];
 }
 
 -(void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated{
@@ -89,8 +104,11 @@
             UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"image_ciew_cell_identifier" forIndexPath:indexPath];
             UIImageView *imageView = (UIImageView*)[cell viewWithTag:1];
             [imageView setImage:image];
-        } else
+        } else {
+            if ([imageCentre containsImageDownloaderWithURL:[(NSURL*)htmlFragment absoluteString]])
+                return [tableView dequeueReusableCellWithIdentifier:@"downloading_image_cell_identifier" forIndexPath:indexPath];
             return [tableView dequeueReusableCellWithIdentifier:@"clickable_url_cell_identifier" forIndexPath:indexPath];
+        }
     }
     //HTML cell
     NSString *CellIdentifier = @"html_fragment_cell_identifier";
@@ -137,11 +155,66 @@
     id htmlFragment = [myArticle.htmlFragments objectAtIndex:indexPath.row];
     if ([htmlFragment isKindOfClass:[NSURL class]]){
         NSLog(@"clicked URL: %@", htmlFragment);
+        NSString *imageURL = [(NSURL*)htmlFragment absoluteString];
+        [imageCentre downloadImageWithURL:imageURL];
+        [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+        /*
         czzImageDownloader *imgDownloader = [[czzImageDownloader alloc] init];
         imgDownloader.imageURLString = [(NSURL*)htmlFragment absoluteString];
         imgDownloader.delegate = self;
         [imgDownloader startDownloading];
+         */
     }
+}
+
+#pragma mark - UIScrollView delegate
+
+-(void)scrollViewDidScroll:(UIScrollView *)scrollView{
+    ScrollDirection scrollDirection;
+    //if user drag the finger up, the scroll view direction is down, else is up
+    if (self.lastContentOffsetY < scrollView.contentOffset.y){
+        scrollDirection = ScrollDirectionDown;
+    }
+    else {
+        scrollDirection = ScrollDirectionUp;
+    }
+    self.lastContentOffsetY = scrollView.contentOffset.y;
+    //if running on ios 7+ device and have not scroll to the top
+    if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0 && scrollView.contentOffset.y > 0) {
+        //show the toolbar if user moved the finger up, and the toolbar is currently hidden
+        if (scrollDirection == ScrollDirectionUp && self.navigationController.toolbar.hidden == YES){
+            [self showNavigationBarAndToolBar];
+        } else if (scrollDirection == ScrollDirectionDown && self.navigationController.toolbar.hidden == NO) {
+            [self hideNavigationBarAndToolBar];
+        }
+    }
+}
+
+#pragma mark - show and hide tool bar
+
+-(void)hideNavigationBarAndToolBar{
+    [[czzAppDelegate sharedAppDelegate] doSingleViewHideAnimation:self.navigationController.toolbar :kCATransitionFromBottom :0.2];
+    //[[czzAppDelegate sharedAppDelegate] doSingleViewHideAnimation:self.navigationController.navigationBar :kCATransitionFromTop :0.2];
+    
+}
+
+-(void)showNavigationBarAndToolBar{
+    [[czzAppDelegate sharedAppDelegate] doSingleViewShowAnimation:self.navigationController.toolbar :kCATransitionFromTop :0.2];
+    //[[czzAppDelegate sharedAppDelegate] doSingleViewShowAnimation:self.navigationController.navigationBar :kCATransitionFromBottom :0.2];
+}
+
+#pragma mark - push for segue
+//assign an article ID for the comment view controller
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender{
+    if ([segue.destinationViewController isKindOfClass:[czzCommentViewController class]]){
+        czzCommentViewController *incomingViewController = (czzCommentViewController*)segue.destinationViewController;
+        incomingViewController.articleID = self.myArticle.acId;
+    }
+}
+
+#pragma mark - ImageDownloader notification handler
+-(void)imageDownloaded:(NSNotification*)notification {
+    [self.tableView reloadData];
 }
 
 #pragma mark - czzImageDownloaderDelegate
@@ -149,6 +222,8 @@
     if (success){
         NSLog(@"download of image success");
         [self.tableView reloadData];
+    } else {
+        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"图片下载失败!"];
     }
 }
 
@@ -172,5 +247,12 @@
 
 -(void)refreshTableView{
     [self.tableView reloadData];
+}
+
+- (IBAction)favouriteAction:(id)sender {
+    NSString* basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString* favirouteFolder = [basePath stringByAppendingPathComponent:@"Faviroutes"];
+    [NSKeyedArchiver archiveRootObject:self.myArticle toFile:[favirouteFolder stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld.fav", (long)myArticle.acId]]];
+    [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"已收藏"];
 }
 @end

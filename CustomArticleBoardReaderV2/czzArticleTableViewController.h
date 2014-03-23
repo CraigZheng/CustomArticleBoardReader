@@ -11,4 +11,5 @@
 
 @interface czzArticleTableViewController : UITableViewController
 @property (nonatomic) czzArticle *myArticle;
+- (IBAction)favouriteAction:(id)sender;
 @end

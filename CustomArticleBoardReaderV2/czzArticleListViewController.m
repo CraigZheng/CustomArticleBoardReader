@@ -42,6 +42,10 @@
     UIRefreshControl *refControl = [UIRefreshControl new];
     [refControl addTarget:self action:@selector(refreshArticleList) forControlEvents:UIControlEventValueChanged];
     self.refreshControl = refControl;
+    //hide tool bar if ios 7
+    if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0) {
+        self.navigationController.toolbar.hidden = YES;
+    }
 }
 
 -(void)viewDidAppear:(BOOL)animated{
@@ -122,8 +126,10 @@
     selectedIndexPath = indexPath;
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"shouldUseExperimentalBrowser"])
         [self performSegueWithIdentifier:@"go_article_table_view_controller_identifier" sender:self];
-    else
+    else if (selectedIndexPath.row < articleList.count){
         [self performSegueWithIdentifier:@"go_article_view_controller_identifier" sender:self];
+    } else
+        [self performSelector:@selector(loadMoreAction)];
 }
 
 #pragma mark - Navigation
@@ -155,7 +161,7 @@
     [self.refreshControl endRefreshing];
 }
 
-- (IBAction)loadMoreAction:(id)sender {
+- (void)loadMoreAction {
     cursor = articleList.count + 1;
     [self startDownloadingWithCategory:selectedCategory.integerValue];
     NSIndexPath *lastRowIndexPath = [NSIndexPath indexPathForRow:articleList.count inSection:0];

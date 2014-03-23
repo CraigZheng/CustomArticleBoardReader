@@ -12,5 +12,5 @@
 @interface czzCommentViewController : UITableViewController
 @property NSInteger articleID;
 
-- (IBAction)loadMoreAction:(id)sender;
+- (void)loadMoreAction;
 @end

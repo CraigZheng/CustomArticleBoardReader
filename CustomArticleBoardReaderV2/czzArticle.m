@@ -73,10 +73,11 @@
     self.category = [dataDict objectForKey:@"category"];
     self.htmlBody = [dataDict objectForKey:@"txt"];
     if (self.htmlBody){
-        self.htmlBody = [self prepareHTMLForBetterVisual:self.htmlBody];
         if ([[NSUserDefaults standardUserDefaults] boolForKey:@"shouldUseExperimentalBrowser"]) {
             NSArray *fragments = [self prepareHTMLForFragments:[dataDict objectForKey:@"txt"]];
             [self.htmlFragments addObjectsFromArray:fragments];
+        } else {
+            self.htmlBody = [self prepareHTMLForBetterVisual:self.htmlBody];
         }
     }
 }
@@ -97,7 +98,7 @@
 -(NSArray*)prepareHTMLForFragments:(NSString*)htmlString{
     NSRange r;
     //remove everything between < and >
-    NSMutableArray *fragments = [NSMutableArray new];
+    NSMutableOrderedSet *fragments = [NSMutableOrderedSet new];
     while ((r = [htmlString rangeOfString:@"<[^>]+>" options:NSRegularExpressionSearch]).location != NSNotFound) {
         NSString *subString = [htmlString substringWithRange:r];
         
@@ -122,7 +123,8 @@
             if (emoconURL.length > 0 && [emoconURL rangeOfString:@"emotion"].location != NSNotFound)
             {
                 NSURL *emoURL = [NSURL URLWithString:[NSString stringWithFormat:@"\"http://www.acfun.tv%@", emoconURL]];
-                [fragments addObject:emoURL];
+                if (emoURL)
+                    [fragments addObject:emoURL];
             }
 
         }
@@ -135,82 +137,8 @@
         
     }
     
-    return fragments;
+    return [fragments array];
 }
-/*
--(NSMutableArray*)prepareHTMLForFragments:(NSString*)oldHtml{
-    NSMutableArray *fragments = [NSMutableArray new];
-    oldHtml = [self markFormattingTags:oldHtml];
-    //--- IMG TAG
-    NSString *imgTag = [self extractString:oldHtml toLookFor:@"<img" skipForwardX:0 toStopBefore:@">"];
-    NSInteger maximumTry = 999;
-    while (imgTag != nil && maximumTry >0) {
-        //to avoid loop lock
-        maximumTry--;
-        NSDataDetector *linkDetector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:nil];
-        NSArray *matches = [linkDetector matchesInString:imgTag
-                                                 options:0
-                                                   range:NSMakeRange(0, imgTag.length)];
-        if (matches.count > 0){
-            for (NSTextCheckingResult *match in matches) {
-                if ([match resultType] == NSTextCheckingTypeLink) {
-                    NSURL *url = [match URL];
-                    if ([url.absoluteString.lastPathComponent rangeOfString:@"jpg" options:NSCaseInsensitiveSearch].location != NSNotFound ||
-                        [url.absoluteString.lastPathComponent rangeOfString:@"jpeg" options:NSCaseInsensitiveSearch].location != NSNotFound ||
-                        [url.absoluteString.lastPathComponent rangeOfString:@"gif" options:NSCaseInsensitiveSearch].location != NSNotFound ||
-                        [url.absoluteString.lastPathComponent rangeOfString:@"png"options:NSCaseInsensitiveSearch].location != NSNotFound){
-                        //NSString *imgMark = [self embedString:url.absoluteString withString:RANDOM_STRING];
-                        oldHtml = [oldHtml stringByReplacingOccurrencesOfString:imgTag withString:url.absoluteString];
-                    }
-                }
-            }
-        } else {
-            
-            NSString *emoconURL = [self extractString:imgTag toLookFor:@"\"" skipForwardX:1 toStopBefore:@"\""];
-            if (emoconURL.length > 0 && [emoconURL rangeOfString:@"emotion"].location != NSNotFound)
-            {
-                oldHtml = [oldHtml stringByReplacingOccurrencesOfString:emoconURL withString:[NSString stringWithFormat:@"\"http://www.acfun.tv%@", emoconURL]];
-            }
-        }
-        imgTag = [self extractString:oldHtml toLookFor:@"<img" skipForwardX:0 toStopBefore:@">"];
-    }
-    //--- END IMG TAG
-    NSRange r;
-    //remove everything between < and >
-    while ((r = [oldHtml rangeOfString:@"<[^>]+>" options:NSRegularExpressionSearch]).location != NSNotFound)
-        oldHtml = [oldHtml stringByReplacingCharactersInRange:r withString:@""];
-    NSArray *pass1 = [oldHtml componentsSeparatedByString:[self embedString:@"PARAGRAPH TAG" withString:RANDOM_STRING]];
-    NSMutableArray *pass2 = [NSMutableArray new];
-    for (NSString *p1Frag in pass1) {
-        NSArray *tempP2 = [p1Frag componentsSeparatedByString:[self embedString:@"BR TAG" withString:RANDOM_STRING]];
-        [pass2 addObjectsFromArray:tempP2];
-    }
-    NSMutableOrderedSet *pass3 = [NSMutableOrderedSet new];
-    for (NSString *imgSrc in self.imageSrc){
-        for (NSString* p2Frag in pass2){
-            NSArray *tempP3 = [p2Frag componentsSeparatedByString:imgSrc];
-            if (tempP3.count > 1){
-                //it doesn't contain the given image mark, add itself
-                [pass3 addObject:p2Frag];
-                for (NSString *tempString in tempP3) {
-                    if (tempString.length == 0)
-                        [pass3 addObject:imgSrc];
-                    else
-                        [pass3 addObject:tempString];
-                }
-            } else {
-                [pass3 addObject:tempP3[0]];
-            }
-        }
-    }
-    for (NSString* fragment in pass3.array) {
-        if (fragment.length != 0) {
-            [fragments addObject:[fragment stringByReplacingOccurrencesOfString:@"\n" withString:@""]];
-        }
-    }
-    return fragments;
-}
-*/
 -(NSString *)stringByApplyingSimpleHTMLFormat:(NSString*)htmlString {
     NSRange r;
     //remove everything between < and >
