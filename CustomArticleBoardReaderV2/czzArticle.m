@@ -136,8 +136,23 @@
         htmlString = [htmlString stringByReplacingCharactersInRange:NSMakeRange(0, r.location) withString:@""];
         
     }
-    
-    return [fragments array];
+    NSArray *originalArray = [fragments array];
+    NSMutableArray *combinedArray = [NSMutableArray new];
+    NSMutableString *combinedString = [NSMutableString new];
+    for (id fragment in originalArray) {
+        if ([fragment isKindOfClass:[NSURL class]])
+            [combinedArray addObject:fragment];
+        else {
+            [combinedString appendString:fragment];
+            if (combinedString.length > 20) {
+                [combinedArray addObject:combinedString];
+                combinedString = [NSMutableString new];
+            }
+        }
+    }
+    if (combinedString.length > 0)
+        [combinedArray addObject:combinedString];
+    return combinedArray;
 }
 -(NSString *)stringByApplyingSimpleHTMLFormat:(NSString*)htmlString {
     NSRange r;
@@ -255,7 +270,7 @@
     return imgTagString;
 }
 
-- (NSString *)extractString:(NSString *)fullString toLookFor:(NSString *)lookFor skipForwardX:(NSInteger)skipForward toStopBefore:(NSString *)stopBefore
+- (NSString*)extractString:(NSString *)fullString toLookFor:(NSString *)lookFor skipForwardX:(NSInteger)skipForward toStopBefore:(NSString *)stopBefore
 {
     NSRange firstRange = [fullString rangeOfString:lookFor];
     if (firstRange.location != NSNotFound) {
@@ -266,6 +281,19 @@
         }
     }
     return nil;
+}
+
+- (NSRange)findRangeWithin:(NSString *)fullString toLookFor:(NSString *)lookFor skipForwardX:(NSInteger)skipForward toStopBefore:(NSString *)stopBefore
+{
+    NSRange firstRange = [fullString rangeOfString:lookFor];
+    if (firstRange.location != NSNotFound) {
+        NSRange secondRange = [[fullString substringFromIndex:firstRange.location + skipForward] rangeOfString:stopBefore];
+        if (secondRange.location != NSNotFound) {
+            NSRange finalRange = NSMakeRange(firstRange.location + skipForward, secondRange.location + [stopBefore length]);
+            return finalRange;
+        }
+    }
+    return NSMakeRange(NSNotFound, 0);
 }
 
 #pragma mark - getter for getting the htmlBodyWithouImage

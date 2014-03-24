@@ -124,12 +124,15 @@
 #pragma mark - UITableview delegate
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     selectedIndexPath = indexPath;
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"shouldUseExperimentalBrowser"])
+    if (selectedIndexPath.row != articleList.count) {
+        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"shouldUseExperimentalBrowser"])
         [self performSegueWithIdentifier:@"go_article_table_view_controller_identifier" sender:self];
-    else if (selectedIndexPath.row < articleList.count){
-        [self performSegueWithIdentifier:@"go_article_view_controller_identifier" sender:self];
-    } else
+        else
+            [self performSegueWithIdentifier:@"go_article_view_controller_identifier" sender:self];
+    }
+    else {
         [self performSelector:@selector(loadMoreAction)];
+    }
 }
 
 #pragma mark - Navigation

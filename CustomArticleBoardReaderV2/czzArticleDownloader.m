@@ -54,14 +54,18 @@
     NSString *receivedHTMLBody = [[NSJSONSerialization JSONObjectWithData:receivedData options:NSJSONReadingMutableContainers error:nil] valueForKey:@"txt"];
     NSError *error;
     NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"<img" options:NSRegularExpressionCaseInsensitive error:&error];
-    NSUInteger numberOfMatches = [regex numberOfMatchesInString:receivedHTMLBody options:0 range:NSMakeRange(0, [receivedHTMLBody length])];
-    if (!error && numberOfMatches > 200){
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"图片过多" message:[NSString stringWithFormat:@"文章中共有%ld张图片，可能用电脑来看更适合。你确定要打开这篇文章吗？", (long)numberOfMatches] delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确认", nil];
-        [alertView show];
-    } else {
-        articleProcessor = [[NSThread alloc] initWithTarget:self selector:@selector(prepareArticleInBackground) object:nil];
-        [articleProcessor start];
+    @try {
+        NSUInteger numberOfMatches = [regex numberOfMatchesInString:receivedHTMLBody options:0 range:NSMakeRange(0, [receivedHTMLBody length])];
+        if (!error && numberOfMatches > 200){
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"图片过多" message:[NSString stringWithFormat:@"文章中共有%ld张图片，可能用电脑来看更适合。你确定要打开这篇文章吗？", (long)numberOfMatches] delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确认", nil];
+            [alertView show];
+        }
     }
+    @catch (NSException *exception) {
+        NSLog(@"%@", exception);
+    }
+    articleProcessor = [[NSThread alloc] initWithTarget:self selector:@selector(prepareArticleInBackground) object:nil];
+    [articleProcessor start];
 }
 
 -(void)prepareArticleInBackground{
