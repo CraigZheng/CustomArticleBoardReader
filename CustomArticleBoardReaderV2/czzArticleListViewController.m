@@ -153,15 +153,17 @@
 #pragma mark - czzArticleListDownloader delegate
 -(void)articleListDownloaded:(NSArray *)articles withClass:(NSInteger)classNumber success:(BOOL)success{
     [[[czzAppDelegate sharedAppDelegate] window] hideToastActivity];
+    [self.refreshControl endRefreshing];
     if (success && articles.count > 0){
         [articleList addObjectsFromArray:articles];
         [self.tableView reloadData];
     }
     else
-        [[czzAppDelegate sharedAppDelegate] showToast:@"Download failed"];
+    {
+        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"无法下载文章列表，请重试！" duration:1.0 position:@"bottom" image:[UIImage imageNamed:@"warning"]];
+    }
     [articleListDownloader stop];
     articleListDownloader = nil;
-    [self.refreshControl endRefreshing];
 }
 
 - (void)loadMoreAction {

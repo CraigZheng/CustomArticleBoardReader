@@ -7,7 +7,7 @@
 //
 
 #import "czzFavriouteManagerViewController.h"
-#import "czzArticlelViewController.h"
+#import "czzArticleTableViewController.h"
 #import "czzArticle.h"
 
 @interface czzFavriouteManagerViewController ()
@@ -36,6 +36,16 @@
         czzArticle *article = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
         [favArticles addObject:article];
     }
+}
+
+-(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    self.navigationController.toolbar.hidden = YES;
+}
+
+-(void)viewWillDisappear:(BOOL)animated{
+    [super viewWillDisappear:animated];
+    self.navigationController.toolbar.hidden = NO;
 }
 
 #pragma mark - Table view data source
@@ -94,7 +104,6 @@
 // Override to support conditional editing of the table view.
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    // Return NO if you do not want the specified item to be editable.
     return YES;
 }
 
@@ -127,8 +136,8 @@
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
     // Get the new view controller using [segue destinationViewController].
-    if ([segue.identifier isEqualToString:@"go_article_view_controller_identifier"]){
-        czzArticlelViewController *articleViewController = (czzArticlelViewController*)segue.destinationViewController;
+    if ([segue.identifier isEqualToString:@"go_article_table_view_controller_identifier"]){
+        czzArticleTableViewController *articleViewController = (czzArticleTableViewController*)segue.destinationViewController;
         articleViewController.myArticle = [favArticles objectAtIndex:selectedIndexPath.row];
     }
 }

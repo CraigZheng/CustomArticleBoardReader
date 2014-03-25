@@ -18,7 +18,7 @@
 #import "czzImageCentre.h"
 
 
-@interface czzArticleTableViewController ()<UINavigationControllerDelegate, czzArticleDownloaderDelegate, czzImageDownloaderDelegate>
+@interface czzArticleTableViewController ()<UINavigationControllerDelegate, czzArticleDownloaderDelegate, czzImageDownloaderDelegate, UIDocumentInteractionControllerDelegate, UINavigationBarDelegate>
 @property czzArticleDownloader *articleDownloader;
 @property BOOL shouldAutomaticallyLoadImage;
 @property czzArticleDescriptionViewController *descViewController;
@@ -40,11 +40,13 @@
     self.navigationController.delegate = self;
     shouldAutomaticallyLoadImage = [[NSUserDefaults standardUserDefaults] boolForKey:@"shouldAutomaticallyLoadImage"];
     if (myArticle){
-        if (myArticle.htmlBody == nil)
+        if (myArticle.htmlFragments.count == 0) {
+            self.title = [NSString stringWithFormat:@"AcID:%d", myArticle.acId];
             [self startDownloadingArticle];
-        else {
-            NSLog(@"article nil");
         }
+    }
+    else {
+        NSLog(@"article nil");
     }
     imageCentre = [czzImageCentre sharedInstance];
     descViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"czz_description_view_controller"];
@@ -64,6 +66,7 @@
 
 -(void)viewWillDisappear:(BOOL)animated{
     [super viewWillDisappear:animated];
+    self.navigationController.delegate = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [[[czzAppDelegate sharedAppDelegate] window] hideToastActivity];
 }
@@ -72,6 +75,7 @@
     if ([viewController isKindOfClass:[czzArticleListViewController class]]){
         if (articleDownloader)
             [articleDownloader stop];
+        [imageCentre stopAllDownloader];
     }
 }
 
@@ -83,11 +87,6 @@
 #pragma mark - Table view data source
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    /*
-    NSLog(@"%d rows", myArticle.htmlFragments.count);
-    if (myArticle.htmlFragments.count > 0)
-        return myArticle.htmlFragments.count + 1;
-     */
     return myArticle.htmlFragments.count;
 }
 
@@ -95,6 +94,7 @@
 {
     id htmlFragment = [myArticle.htmlFragments objectAtIndex:indexPath.row];
     if ([htmlFragment isKindOfClass:[NSURL class]]){
+        NSString *imgURLString = [(NSURL*)htmlFragment absoluteString];
         NSString* basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
         basePath = [basePath
                     stringByAppendingPathComponent:@"Images"];
@@ -104,11 +104,23 @@
             UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"image_ciew_cell_identifier" forIndexPath:indexPath];
             UIImageView *imageView = (UIImageView*)[cell viewWithTag:1];
             [imageView setImage:image];
+            return cell;
         } else {
-            if ([imageCentre containsImageDownloaderWithURL:[(NSURL*)htmlFragment absoluteString]])
-                return [tableView dequeueReusableCellWithIdentifier:@"downloading_image_cell_identifier" forIndexPath:indexPath];
-            return [tableView dequeueReusableCellWithIdentifier:@"clickable_url_cell_identifier" forIndexPath:indexPath];
+            if ([imageCentre containsImageDownloaderWithURL:imgURLString])
+            {
+                UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"downloading_image_cell_identifier" forIndexPath:indexPath];
+                UIActivityIndicatorView *aiView = (UIActivityIndicatorView*)[cell viewWithTag:1];
+                [aiView startAnimating];
+                return cell;
+            }
         }
+        if (shouldAutomaticallyLoadImage){
+            //create a new downloader task in the background
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self downloadImage:imgURLString andReloadIndexPath:indexPath];
+            });
+        }
+        return [tableView dequeueReusableCellWithIdentifier:@"clickable_url_cell_identifier" forIndexPath:indexPath];
     }
     //HTML cell
     NSString *CellIdentifier = @"html_fragment_cell_identifier";
@@ -136,7 +148,7 @@
         NSString *filePath = [basePath stringByAppendingPathComponent:[(NSURL*)htmlFragment absoluteString].lastPathComponent];
         UIImage *image = [UIImage imageWithContentsOfFile:filePath];
         if (image) {
-            if (image.size.width > self.view.frame.size.width){
+            if (image.size.width > self.tableView.frame.size.width){
                 return image.size.height * (self.view.frame.size.width / image.size.width);
             } else {
                 return image.size.height;
@@ -156,15 +168,22 @@
     if ([htmlFragment isKindOfClass:[NSURL class]]){
         NSLog(@"clicked URL: %@", htmlFragment);
         NSString *imageURL = [(NSURL*)htmlFragment absoluteString];
-        [imageCentre downloadImageWithURL:imageURL];
-        [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-        /*
-        czzImageDownloader *imgDownloader = [[czzImageDownloader alloc] init];
-        imgDownloader.imageURLString = [(NSURL*)htmlFragment absoluteString];
-        imgDownloader.delegate = self;
-        [imgDownloader startDownloading];
-         */
+        NSString *localImagePath;
+        if ((localImagePath = [imageCentre containsImageInLocal:imageURL])) {
+            UIDocumentInteractionController *documentInteractionController = [UIDocumentInteractionController interactionControllerWithURL:[NSURL fileURLWithPath:localImagePath]];
+            documentInteractionController.delegate = self;
+            [documentInteractionController presentPreviewAnimated:YES];
+        } else {
+            [self downloadImage:imageURL andReloadIndexPath:indexPath];
+        }
     }
+}
+
+#pragma mark - download image
+-(void)downloadImage:(NSString*)imageURLString andReloadIndexPath:(NSIndexPath*)indexPath{
+    [imageCentre downloadImageWithURL:imageURLString];
+    if (indexPath)
+        [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
 #pragma mark - UIScrollView delegate
@@ -214,7 +233,13 @@
 
 #pragma mark - ImageDownloader notification handler
 -(void)imageDownloaded:(NSNotification*)notification {
-    [self.tableView reloadData];
+    for (UITableViewCell *cell in [self.tableView visibleCells]) {
+        NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
+        id fragment = [myArticle.htmlFragments objectAtIndex:indexPath.row];
+        if (indexPath && [fragment isKindOfClass:[NSURL class]]){
+            [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+        }
+    }
 }
 
 #pragma mark - czzImageDownloaderDelegate
@@ -229,8 +254,13 @@
 
 #pragma mark - czzArticleDownloaderDelegate
 -(void)articleDownloaded:(czzArticle *)article withArticleID:(NSInteger)articleID success:(BOOL)success{
-    [self setMyArticle:article];
     [[[czzAppDelegate sharedAppDelegate] window] hideToastActivity];
+    if (success) {
+        [self setMyArticle:article];
+    } else {
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"出错啦" message:@"无法下载文章，请重试！" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles: nil];
+        [alertView show];
+    }
 }
 
 #pragma mark - myArticle setter, also load the given html body if presented
@@ -239,9 +269,6 @@
     myArticle.parentViewController = self;
     if (myArticle.htmlFragments.count > 0){
         [self performSelectorOnMainThread:@selector(refreshTableView) withObject:nil waitUntilDone:YES];
-    }
-    if (shouldAutomaticallyLoadImage){
-        
     }
 }
 
@@ -254,5 +281,11 @@
     NSString* favirouteFolder = [basePath stringByAppendingPathComponent:@"Faviroutes"];
     [NSKeyedArchiver archiveRootObject:self.myArticle toFile:[favirouteFolder stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld.fav", (long)myArticle.acId]]];
     [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"已收藏"];
+}
+
+
+#pragma mark UIDocumentInteractionController delegate
+-(UIViewController *)documentInteractionControllerViewControllerForPreview:(UIDocumentInteractionController *)controller{
+    return self;
 }
 @end

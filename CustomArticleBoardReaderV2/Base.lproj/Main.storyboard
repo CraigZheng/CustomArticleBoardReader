@@ -403,6 +403,7 @@
                     </navigationItem>
                     <connections>
                         <segue destination="zin-gV-eV7" kind="push" identifier="go_article_view_controller_identifier" id="Kdc-a9-his"/>
+                        <segue destination="LTL-3h-VuO" kind="push" identifier="go_article_table_view_controller_identifier" id="wXd-rp-jSc"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="rCg-ZI-M9c" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -606,16 +607,17 @@
                                     <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <imageView userInteractionEnabled="NO" tag="1" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ac.png" translatesAutoresizingMaskIntoConstraints="NO" id="XJE-pP-LqI">
+                                        <imageView userInteractionEnabled="NO" tag="1" contentMode="scaleAspectFit" horizontalHuggingPriority="750" verticalHuggingPriority="750" image="ac.png" translatesAutoresizingMaskIntoConstraints="NO" id="XJE-pP-LqI">
                                             <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                            <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                                         </imageView>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstItem="XJE-pP-LqI" firstAttribute="leading" secondItem="0dB-6P-vYl" secondAttribute="leading" id="40E-gd-eNS"/>
-                                        <constraint firstAttribute="bottom" secondItem="XJE-pP-LqI" secondAttribute="bottom" id="Yhe-OM-3kQ"/>
-                                        <constraint firstItem="XJE-pP-LqI" firstAttribute="top" secondItem="0dB-6P-vYl" secondAttribute="top" id="kUS-mC-HmM"/>
-                                        <constraint firstAttribute="trailing" secondItem="XJE-pP-LqI" secondAttribute="trailing" id="y7D-sg-2SP"/>
+                                        <constraint firstAttribute="trailing" secondItem="XJE-pP-LqI" secondAttribute="trailing" id="DFv-Q8-ksX"/>
+                                        <constraint firstAttribute="bottom" secondItem="XJE-pP-LqI" secondAttribute="bottom" id="QPA-tl-SEb"/>
+                                        <constraint firstItem="XJE-pP-LqI" firstAttribute="leading" secondItem="0dB-6P-vYl" secondAttribute="leading" id="Rap-JF-LF2"/>
+                                        <constraint firstItem="XJE-pP-LqI" firstAttribute="top" secondItem="0dB-6P-vYl" secondAttribute="top" id="faZ-Ze-fnx"/>
                                     </constraints>
                                 </tableViewCellContentView>
                             </tableViewCell>
@@ -633,7 +635,7 @@
                                             <color key="textColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
-                                        <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="Ws1-RT-Mfn">
+                                        <activityIndicatorView opaque="NO" tag="1" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="Ws1-RT-Mfn">
                                             <rect key="frame" x="98" y="12" width="20" height="20"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         </activityIndicatorView>
@@ -657,8 +659,6 @@
                         </connections>
                     </tableView>
                     <toolbarItems>
-                        <barButtonItem image="download.png" id="UMS-D8-h7Y"/>
-                        <barButtonItem style="plain" systemItem="flexibleSpace" id="JZG-aP-awa"/>
                         <barButtonItem image="share.png" id="lFK-Hy-gTw"/>
                         <barButtonItem style="plain" systemItem="flexibleSpace" id="JA4-DT-Nns"/>
                         <barButtonItem image="chat.png" id="lJw-kb-D6Z">
@@ -760,7 +760,7 @@
                                             <color key="textColor" red="1" green="0.57347453749999999" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
-                                        <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="lua-fx-mAX">
+                                        <activityIndicatorView opaque="NO" tag="1" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="lua-fx-mAX">
                                             <rect key="frame" x="98" y="12" width="20" height="20"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                             <constraints>
@@ -851,7 +851,8 @@
         <simulatedScreenMetrics key="destination" type="retina4"/>
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
-        <segue reference="7Zp-P2-C1l"/>
+        <segue reference="Kdc-a9-his"/>
+        <segue reference="wXd-rp-jSc"/>
         <segue reference="327-po-gDH"/>
     </inferredMetricsTieBreakers>
 </document>

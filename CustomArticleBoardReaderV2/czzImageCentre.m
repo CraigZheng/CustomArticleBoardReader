@@ -38,7 +38,7 @@
 }
 - (id)init {
     if (self = [super init]) {
-        currentImageDownloaders = [NSMutableSet new];
+        currentImageDownloaders = [NSMutableOrderedSet new];
         NSString* libraryPath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
         imageFolder = [libraryPath stringByAppendingPathComponent:@"Images"];
         [self scanCurrentLocalImages];
@@ -76,12 +76,13 @@
 
 -(void)downloadImageWithURL:(NSString*)imgURL{
     //1. check local library for same image
+    /*
     for (NSString *file in currentLocalImages) {
         //if there's already an image file with the same name, then there is no need to redownload it
         if ([file.lastPathComponent.lowercaseString isEqualToString:imgURL.lastPathComponent.lowercaseString])
             return;
     }
-    
+    */
     //2. constrct an image downloader with the provided url
     czzImageDownloader *imgDown = [[czzImageDownloader alloc] init];
     imgDown.delegate = self;
@@ -108,6 +109,15 @@
     return NO;
 }
 
+-(NSString*)containsImageInLocal:(NSString *)imgURL{
+    if (self.isReady){
+        if ([currentLocalImages containsObject:[imageFolder stringByAppendingPathComponent:imgURL.lastPathComponent]]){
+            return [imageFolder stringByAppendingPathComponent:imgURL.lastPathComponent];
+        }
+    }
+    return nil;
+}
+
 //stop and remove the image downloader with given URL
 -(void)stopAndRemoveImageDownloaderWithURL:(NSString *)imgURL{
     //construct an img downloader with given URL
@@ -117,11 +127,18 @@
     //if image downloader with save target url is present, return YES
     if ([currentImageDownloaders containsObject:imgDown]){
         NSPredicate *sameTargetURL = [NSPredicate predicateWithFormat:@"targetURLString == %@", imgDown.targetURLString];
-        NSSet *downloadersWithSameTargetURL = [currentImageDownloaders filteredSetUsingPredicate:sameTargetURL];
+        NSOrderedSet *downloadersWithSameTargetURL = [currentImageDownloaders filteredOrderedSetUsingPredicate:sameTargetURL];
         for (czzImageDownloader *downloader in downloadersWithSameTargetURL) {
             [downloader stop];
             [currentImageDownloaders removeObject:downloader];
         }
+    }
+}
+
+-(void)stopAllDownloader{
+    for (czzImageDownloader *imgDownloader in currentImageDownloaders) {
+        [imgDownloader stop];
+        [currentImageDownloaders removeObject:imgDownloader];
     }
 }
 
@@ -144,7 +161,7 @@
 
     //delete the image downloader
     NSPredicate *sameImgURL = [NSPredicate predicateWithFormat:@"imageURLString == %@", imgDownloader.imageURLString];
-    NSSet *downloaderWithSameImageURLString = [currentImageDownloaders filteredSetUsingPredicate:sameImgURL];
+    NSOrderedSet *downloaderWithSameImageURLString = [currentImageDownloaders filteredOrderedSetUsingPredicate:sameImgURL];
     for (czzImageDownloader *imgDown in downloaderWithSameImageURLString) {
         [imgDown stop];
         [currentImageDownloaders removeObject:imgDown];

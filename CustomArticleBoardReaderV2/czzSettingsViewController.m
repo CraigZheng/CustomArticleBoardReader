@@ -10,6 +10,7 @@
 #import "czzArticleListDownloader.h"
 #import "Toast+UIView.h"
 #import "czzLoginViewController.h"
+#import "czzAppDelegate.h"
 
 @interface czzSettingsViewController ()<UIActionSheetDelegate>
 @property NSMutableArray *commands;
@@ -76,7 +77,7 @@
             NSString *filePath = [basePath stringByAppendingPathComponent:file];
             [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
         }
-        [self.view makeToast:@"缓存已清空"];
+        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"缓存已清空"];
     } else if ([command isEqualToString:@"登陆"]){
         //登陆
         czzLoginViewController *loginViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"login_view_controller"];

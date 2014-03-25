@@ -53,7 +53,6 @@ typedef enum ScrollDirection {
     [self startDownloadingCommentWithCursor:comments.count + 1];
 }
 -(void)startDownloadingCommentWithCursor:(NSInteger)cursor{
-    [[[czzAppDelegate sharedAppDelegate] window] makeToastActivity];
     commentDownloader = [[czzCommentDownloader alloc] initWithArticleID:self.articleID downloadMultipleReferedComment:YES delegate:self];
     commentDownloader.cursor = cursor;
     [commentDownloader startDownloadingComment];
@@ -61,7 +60,6 @@ typedef enum ScrollDirection {
 
 -(void)viewWillDisappear:(BOOL)animated{
     [super viewWillDisappear:animated];
-    [[[czzAppDelegate sharedAppDelegate] window] hideToastActivity];
     if (commentDownloader)
         [commentDownloader stop];
 }
@@ -80,6 +78,10 @@ typedef enum ScrollDirection {
         //if articleListDownloader is not nil, it means its currently downloading
         if (commentDownloader){
             last_row_identifier = @"loading_cell_identifier";
+            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:last_row_identifier];
+            UIActivityIndicatorView *aiView = (UIActivityIndicatorView*)[cell viewWithTag:1];
+            [aiView startAnimating];
+            return cell;
         }
         return [tableView dequeueReusableCellWithIdentifier:last_row_identifier];
     }
@@ -154,7 +156,6 @@ typedef enum ScrollDirection {
     }
     else
         [self.view makeToast:@"下载失败：请检查网络" duration:1.0 position:@"center" image:[UIImage imageNamed:@"warning"]];
-    [[[czzAppDelegate sharedAppDelegate] window] hideToastActivity];
     self.tableView.userInteractionEnabled = YES;
     commentDownloader = nil;
 }

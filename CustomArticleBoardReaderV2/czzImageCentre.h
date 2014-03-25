@@ -13,7 +13,7 @@
 #import "czzImageDownloader.h"
 
 @interface czzImageCentre : NSObject
-@property NSMutableSet *currentImageDownloaders;
+@property NSMutableOrderedSet *currentImageDownloaders;
 @property NSMutableSet *currentLocalImages;
 @property Boolean isReady;
 
@@ -22,6 +22,8 @@
 -(void)scanCurrentLocalImages;
 -(void)downloadImageWithURL:(NSString*)imgURL;
 -(Boolean)containsImageDownloaderWithURL:(NSString*)imgURL;
+-(NSString*)containsImageInLocal:(NSString*)imgURL;
+-(void)stopAllDownloader;
 -(void)stopAndRemoveImageDownloaderWithURL:(NSString*)imgURL;
 -(void)removeAllImages;
 @end

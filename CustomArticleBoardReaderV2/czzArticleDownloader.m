@@ -59,13 +59,15 @@
         if (!error && numberOfMatches > 200){
             UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"图片过多" message:[NSString stringWithFormat:@"文章中共有%ld张图片，可能用电脑来看更适合。你确定要打开这篇文章吗？", (long)numberOfMatches] delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确认", nil];
             [alertView show];
+        } else {
+            [self performSelectorInBackground:@selector(prepareArticleInBackground) withObject:nil];
         }
     }
     @catch (NSException *exception) {
         NSLog(@"%@", exception);
     }
-    articleProcessor = [[NSThread alloc] initWithTarget:self selector:@selector(prepareArticleInBackground) object:nil];
-    [articleProcessor start];
+    //articleProcessor = [[NSThread alloc] initWithTarget:self selector:@selector(prepareArticleInBackground) object:nil];
+    //[articleProcessor start];
 }
 
 -(void)prepareArticleInBackground{
@@ -90,11 +92,7 @@
 -(void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex{
     if ([alertView.title isEqualToString:@"图片过多"]){
         if ([[alertView buttonTitleAtIndex:buttonIndex] isEqualToString:@"确认"]){
-            czzArticle* newArticle = [[czzArticle alloc] initWithJSONData:receivedData];
-            if (newArticle)
-                [self.delegate articleDownloaded:newArticle withArticleID:self.articleID success:YES];
-            else
-                [self.delegate articleDownloaded:nil withArticleID:self.articleID success:NO];
+            [self performSelectorInBackground:@selector(prepareArticleInBackground) withObject:nil];
         } else {
             [self.delegate articleDownloaded:nil withArticleID:self.articleID success:NO];
         }

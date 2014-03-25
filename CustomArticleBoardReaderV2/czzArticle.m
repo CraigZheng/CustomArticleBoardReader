@@ -56,7 +56,7 @@
 }
 
 -(void)assignPropertyWithJSONDictonary:(NSDictionary*)dataDict{
-
+    
     self.acId = [[dataDict objectForKey:@"acId"] integerValue];
     self.name = [dataDict objectForKey:@"name"];
     self.desc = [dataDict objectForKey:@"desc"];
@@ -98,45 +98,45 @@
 -(NSArray*)prepareHTMLForFragments:(NSString*)htmlString{
     NSRange r;
     //remove everything between < and >
-    NSMutableOrderedSet *fragments = [NSMutableOrderedSet new];
+    NSMutableArray *fragments = [NSMutableArray new];
     while ((r = [htmlString rangeOfString:@"<[^>]+>" options:NSRegularExpressionSearch]).location != NSNotFound) {
-        NSString *subString = [htmlString substringWithRange:r];
-        
-        NSDataDetector *linkDetector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:nil];
-        NSArray *matches = [linkDetector matchesInString:subString
-                                                 options:0
-                                                   range:NSMakeRange(0, subString.length)];
-        if (matches.count > 0){
-            for (NSTextCheckingResult *match in matches) {
-                if ([match resultType] == NSTextCheckingTypeLink) {
-                    NSURL *url = [match URL];
-                    if ([url.absoluteString.lastPathComponent rangeOfString:@"jpg" options:NSCaseInsensitiveSearch].location != NSNotFound ||
-                        [url.absoluteString.lastPathComponent rangeOfString:@"jpeg" options:NSCaseInsensitiveSearch].location != NSNotFound ||
-                        [url.absoluteString.lastPathComponent rangeOfString:@"gif" options:NSCaseInsensitiveSearch].location != NSNotFound ||
-                        [url.absoluteString.lastPathComponent rangeOfString:@"png"options:NSCaseInsensitiveSearch].location != NSNotFound){
-                        [fragments addObject:url];
+        @autoreleasepool {
+            NSString *subString = [htmlString substringWithRange:r];
+            NSDataDetector *linkDetector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:nil];
+            NSArray *matches = [linkDetector matchesInString:subString
+                                                     options:0
+                                                       range:NSMakeRange(0, subString.length)];
+            if (matches.count > 0){
+                for (NSTextCheckingResult *match in matches) {
+                    if ([match resultType] == NSTextCheckingTypeLink) {
+                        NSURL *url = [match URL];
+                        if ([url.absoluteString.lastPathComponent rangeOfString:@"jpg" options:NSCaseInsensitiveSearch].location != NSNotFound ||
+                            [url.absoluteString.lastPathComponent rangeOfString:@"jpeg" options:NSCaseInsensitiveSearch].location != NSNotFound ||
+                            [url.absoluteString.lastPathComponent rangeOfString:@"gif" options:NSCaseInsensitiveSearch].location != NSNotFound ||
+                            [url.absoluteString.lastPathComponent rangeOfString:@"png"options:NSCaseInsensitiveSearch].location != NSNotFound){
+                            [fragments addObject:url];
+                        }
                     }
                 }
+            } else if ([subString hasPrefix:@"<img"]){
+                NSString *emoconURL = [self extractString:subString toLookFor:@"\"" skipForwardX:1 toStopBefore:@"\""];
+                if (emoconURL.length > 0 && [emoconURL rangeOfString:@"emotion"].location != NSNotFound)
+                {
+                    NSURL *emoURL = [NSURL URLWithString:[NSString stringWithFormat:@"\"http://www.acfun.tv%@", emoconURL]];
+                    if (emoURL)
+                        [fragments addObject:emoURL];
+                }
+                
             }
-        } else if ([subString hasPrefix:@"<img"]){
-            NSString *emoconURL = [self extractString:subString toLookFor:@"\"" skipForwardX:1 toStopBefore:@"\""];
-            if (emoconURL.length > 0 && [emoconURL rangeOfString:@"emotion"].location != NSNotFound)
-            {
-                NSURL *emoURL = [NSURL URLWithString:[NSString stringWithFormat:@"\"http://www.acfun.tv%@", emoconURL]];
-                if (emoURL)
-                    [fragments addObject:emoURL];
-            }
-
+            htmlString = [htmlString stringByReplacingCharactersInRange:r withString:@""];
+            NSString *fragment = [htmlString substringWithRange:NSMakeRange(0, r.location)];
+            fragment = [[fragment stringByDecodingHTMLEntities] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+            if (fragment.length > 0)
+                [fragments addObject:fragment];
+            htmlString = [htmlString stringByReplacingCharactersInRange:NSMakeRange(0, r.location) withString:@""];
         }
-        htmlString = [htmlString stringByReplacingCharactersInRange:r withString:@""];
-        NSString *fragment = [htmlString substringWithRange:NSMakeRange(0, r.location)];
-        fragment = [[fragment stringByDecodingHTMLEntities] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-        if (fragment.length > 0)
-            [fragments addObject:fragment];
-        htmlString = [htmlString stringByReplacingCharactersInRange:NSMakeRange(0, r.location) withString:@""];
-        
     }
-    NSArray *originalArray = [fragments array];
+    NSArray *originalArray = fragments;//[fragments array];
     NSMutableArray *combinedArray = [NSMutableArray new];
     NSMutableString *combinedString = [NSMutableString new];
     for (id fragment in originalArray) {
@@ -160,14 +160,14 @@
     while ((r = [htmlString rangeOfString:@"<[^>]+>" options:NSRegularExpressionSearch]).location != NSNotFound)
         htmlString = [htmlString stringByReplacingCharactersInRange:r withString:@""];
     NSString *newHTMLString = [NSString stringWithFormat:@"<html> \n"
-                                   "<head> \n"
-                                   "<style type=\"text/css\"> \n"
-                                   "body {font-family: \"%@\"; font-size: %@; width:100%% ;padding:0px; margin:0px; word-wrap: break-word;}\n"
-                                   "</style> \n"
-                                   "</head> \n"
-                                   "<body>%@</body> \n"
-                                   "</html>", @"helvetica", [NSNumber numberWithInt:16], htmlString];
-
+                               "<head> \n"
+                               "<style type=\"text/css\"> \n"
+                               "body {font-family: \"%@\"; font-size: %@; width:100%% ;padding:0px; margin:0px; word-wrap: break-word;}\n"
+                               "</style> \n"
+                               "</head> \n"
+                               "<body>%@</body> \n"
+                               "</html>", @"helvetica", [NSNumber numberWithInt:16], htmlString];
+    
     return newHTMLString;
 }
 
@@ -323,6 +323,7 @@
     [coder encodeObject:self.tags forKey:@"tags"];
     [coder encodeObject:self.category forKey:@"category"];
     [coder encodeObject:self.htmlBody forKey:@"htmlBody"];
+    [coder encodeObject:self.htmlFragments forKey:@"htmlFragments"];
     [coder encodeObject:self.imageSrc forKey:@"imageSrc"];
 }
 
@@ -343,6 +344,7 @@
         self.tags = [coder decodeObjectForKey:@"tags"];
         self.category = [coder decodeObjectForKey:@"category"];
         self.htmlBody = [coder decodeObjectForKey:@"htmlBody"];
+        self.htmlFragments = [coder decodeObjectForKey:@"htmlFragments"];
         self.imageSrc = [coder decodeObjectForKey:@"imageSrc"];
     }
     return self;
