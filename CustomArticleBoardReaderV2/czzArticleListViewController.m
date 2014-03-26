@@ -79,6 +79,10 @@
         //if articleListDownloader is not nil, it means its currently downloading
         if (articleListDownloader){
             last_row_identifier = @"loading_cell_identifier";
+            UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:last_row_identifier];
+            UIActivityIndicatorView *aiView = (UIActivityIndicatorView*)[cell viewWithTag:1];
+            [aiView startAnimating];
+            return cell;
         }
         return [tableView dequeueReusableCellWithIdentifier:last_row_identifier];
     }

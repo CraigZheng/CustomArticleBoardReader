@@ -76,7 +76,6 @@
             }
         }
         [[NSUserDefaults standardUserDefaults] synchronize];
-        //TODO: construct a login ac user
         [self downloadLoginUser];
         return NO;
     }

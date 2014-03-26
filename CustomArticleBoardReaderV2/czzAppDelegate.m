@@ -102,11 +102,15 @@
     NSString* imgFolder = [basePath
                            stringByAppendingPathComponent:@"Images"];
     NSString* favirouteFolder = [basePath stringByAppendingPathComponent:@"Faviroutes"];
+    NSString* cacheFolder = [basePath stringByAppendingPathComponent:@"Cache"];
     if (![[NSFileManager defaultManager] fileExistsAtPath:imgFolder]){
         [[NSFileManager defaultManager] createDirectoryAtPath:imgFolder withIntermediateDirectories:NO attributes:nil error:nil];
     }
     if (![[NSFileManager defaultManager] fileExistsAtPath:favirouteFolder]){
         [[NSFileManager defaultManager] createDirectoryAtPath:favirouteFolder withIntermediateDirectories:NO attributes:nil error:nil];
+    }
+    if (![[NSFileManager defaultManager] fileExistsAtPath:cacheFolder]){
+        [[NSFileManager defaultManager] createDirectoryAtPath:cacheFolder withIntermediateDirectories:NO attributes:nil error:nil];
     }
 }
 

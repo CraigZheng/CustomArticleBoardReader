@@ -139,14 +139,16 @@
     NSArray *originalArray = fragments;//[fragments array];
     NSMutableArray *combinedArray = [NSMutableArray new];
     NSMutableString *combinedString = [NSMutableString new];
-    for (id fragment in originalArray) {
-        if ([fragment isKindOfClass:[NSURL class]])
-            [combinedArray addObject:fragment];
-        else {
-            [combinedString appendString:fragment];
-            if (combinedString.length > 20) {
-                [combinedArray addObject:combinedString];
-                combinedString = [NSMutableString new];
+    @autoreleasepool {
+        for (id fragment in originalArray) {
+            if ([fragment isKindOfClass:[NSURL class]])
+                [combinedArray addObject:fragment];
+            else {
+                [combinedString appendString:fragment];
+                if (combinedString.length > 50) {
+                    [combinedArray addObject:combinedString];
+                    combinedString = [NSMutableString new];
+                }
             }
         }
     }

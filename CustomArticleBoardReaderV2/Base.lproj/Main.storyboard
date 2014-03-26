@@ -127,7 +127,7 @@
                                             <color key="textColor" red="1" green="0.57347453749999999" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
-                                        <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="0Dv-m6-Hi2">
+                                        <activityIndicatorView opaque="NO" tag="1" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" animating="YES" style="gray" translatesAutoresizingMaskIntoConstraints="NO" id="0Dv-m6-Hi2">
                                             <rect key="frame" x="98" y="12" width="20" height="20"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                             <constraints>
@@ -652,6 +652,14 @@
                                     </constraints>
                                 </tableViewCellContentView>
                             </tableViewCell>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="description_cell_identifier" id="ATn-zN-Djv">
+                                <rect key="frame" x="0.0" y="298" width="320" height="44"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="ATn-zN-Djv" id="eUE-v9-XNy">
+                                    <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </tableViewCellContentView>
+                            </tableViewCell>
                         </prototypes>
                         <connections>
                             <outlet property="dataSource" destination="LTL-3h-VuO" id="kSY-H1-0Tk"/>
@@ -800,7 +808,7 @@
         <!--Czz Post Comment View Controller - 回复：-->
         <scene sceneID="1DF-24-HVa">
             <objects>
-                <viewController id="Pax-gr-PaP" customClass="czzPostCommentViewController" sceneMemberID="viewController">
+                <viewController hidesBottomBarWhenPushed="YES" id="Pax-gr-PaP" customClass="czzPostCommentViewController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="hXA-VE-dw5"/>
                         <viewControllerLayoutGuide type="bottom" id="k1p-3H-cRI"/>
@@ -851,8 +859,8 @@
         <simulatedScreenMetrics key="destination" type="retina4"/>
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
-        <segue reference="Kdc-a9-his"/>
-        <segue reference="wXd-rp-jSc"/>
+        <segue reference="10x-mW-Vab"/>
+        <segue reference="7Zp-P2-C1l"/>
         <segue reference="327-po-gDH"/>
     </inferredMetricsTieBreakers>
 </document>

@@ -138,8 +138,9 @@
 -(void)stopAllDownloader{
     for (czzImageDownloader *imgDownloader in currentImageDownloaders) {
         [imgDownloader stop];
-        [currentImageDownloaders removeObject:imgDownloader];
     }
+    [currentImageDownloaders removeAllObjects];
+
 }
 
 #pragma mark czzImageDownloader delegate

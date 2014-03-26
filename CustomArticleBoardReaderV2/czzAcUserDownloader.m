@@ -57,7 +57,6 @@
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection{
-    //TODO: form a ac user outta json
     NSError *error;
     NSDictionary *jsonDict = [NSJSONSerialization JSONObjectWithData:receivedData options:NSJSONReadingMutableContainers error:&error];
     if (error) {

@@ -24,6 +24,8 @@
 @property czzArticleDescriptionViewController *descViewController;
 @property czzImageCentre *imageCentre;
 @property NSInteger lastContentOffsetY;
+@property NSString *libraryFolder;
+
 @end
 
 @implementation czzArticleTableViewController
@@ -33,13 +35,17 @@
 @synthesize descViewController;
 @synthesize imageCentre;
 @synthesize lastContentOffsetY;
+@synthesize libraryFolder;
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.navigationController.delegate = self;
+    libraryFolder = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     shouldAutomaticallyLoadImage = [[NSUserDefaults standardUserDefaults] boolForKey:@"shouldAutomaticallyLoadImage"];
     if (myArticle){
+        czzArticle* cachedArticle = [self readArticleFromCache:myArticle];
+        if (cachedArticle)
+            myArticle = cachedArticle;
         if (myArticle.htmlFragments.count == 0) {
             self.title = [NSString stringWithFormat:@"AcID:%d", myArticle.acId];
             [self startDownloadingArticle];
@@ -61,22 +67,45 @@
 
 -(void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
+    self.navigationController.delegate = self;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(imageDownloaded:) name:@"ImageDownloaded" object:nil];
 }
 
--(void)viewWillDisappear:(BOOL)animated{
-    [super viewWillDisappear:animated];
-    self.navigationController.delegate = nil;
+-(void)viewDidDisappear:(BOOL)animated{
+    [super viewDidDisappear:animated];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     [[[czzAppDelegate sharedAppDelegate] window] hideToastActivity];
 }
 
+#pragma mark - Caching
+-(void)saveArticleToCache:(czzArticle*)article{
+    if (article.htmlFragments.count > 0) {
+        NSString *cacheFolder = [libraryFolder stringByAppendingPathComponent:@"Cache"];
+        [NSKeyedArchiver archiveRootObject:article toFile:[cacheFolder stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld.fav", (long)article.acId]]];
+    }
+}
+
+-(czzArticle*)readArticleFromCache:(czzArticle*)article{
+    @try {
+        NSString *cacheFolder = [libraryFolder stringByAppendingPathComponent:@"Cache"];
+        czzArticle *cachedArticle = [NSKeyedUnarchiver unarchiveObjectWithFile:[cacheFolder stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld.fav", (long)article.acId]]];
+        return cachedArticle;
+    }
+    @catch (NSException *exception) {
+        NSLog(@"%@", exception);
+    }
+    return nil;
+}
+
+#pragma mark - UINavigationController delegate
 -(void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated{
     if ([viewController isKindOfClass:[czzArticleListViewController class]]){
         if (articleDownloader)
             [articleDownloader stop];
         [imageCentre stopAllDownloader];
+        [self performSelectorInBackground:@selector(saveArticleToCache:) withObject:self.myArticle];
     }
+    navigationController.delegate = nil;
 }
 
 -(void)startDownloadingArticle{
@@ -87,12 +116,20 @@
 #pragma mark - Table view data source
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return myArticle.htmlFragments.count;
+    return myArticle.htmlFragments.count + 1;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    id htmlFragment = [myArticle.htmlFragments objectAtIndex:indexPath.row];
+    //first row - description row
+    if (indexPath.row == 0) {
+        NSString *CellIdentifier = @"description_cell_identifier";
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
+        [cell addSubview:descViewController.view];
+        return cell;
+    }
+    //content rows
+    id htmlFragment = [myArticle.htmlFragments objectAtIndex:indexPath.row - 1];
     if ([htmlFragment isKindOfClass:[NSURL class]]){
         NSString *imgURLString = [(NSURL*)htmlFragment absoluteString];
         NSString* basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
@@ -135,12 +172,16 @@
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (indexPath.row == 0)
+        //height for the first row
+        return descViewController.view.frame.size.height;
+    
     CGFloat preferHeight = 0;
     UITextView *newHiddenTextView = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 1)];
     newHiddenTextView.hidden = YES;
     newHiddenTextView.font = [UIFont systemFontOfSize:16];
     [self.view addSubview:newHiddenTextView];
-    id htmlFragment = [myArticle.htmlFragments objectAtIndex:indexPath.row];
+    id htmlFragment = [myArticle.htmlFragments objectAtIndex:indexPath.row - 1];
     if ([htmlFragment isKindOfClass:[NSURL class]]){
         NSString* basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
         basePath = [basePath
@@ -164,7 +205,10 @@
 
 #pragma mark - UITableViewDelegate
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
-    id htmlFragment = [myArticle.htmlFragments objectAtIndex:indexPath.row];
+    //the first row is description row
+    if (indexPath.row == 0)
+        return;
+    id htmlFragment = [myArticle.htmlFragments objectAtIndex:indexPath.row - 1];
     if ([htmlFragment isKindOfClass:[NSURL class]]){
         NSLog(@"clicked URL: %@", htmlFragment);
         NSString *imageURL = [(NSURL*)htmlFragment absoluteString];
@@ -233,12 +277,17 @@
 
 #pragma mark - ImageDownloader notification handler
 -(void)imageDownloaded:(NSNotification*)notification {
-    for (UITableViewCell *cell in [self.tableView visibleCells]) {
-        NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
-        id fragment = [myArticle.htmlFragments objectAtIndex:indexPath.row];
-        if (indexPath && [fragment isKindOfClass:[NSURL class]]){
-            [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+    @try {
+        NSMutableArray *indexArray = [NSMutableArray new];
+        for (UITableViewCell *cell in [self.tableView visibleCells]) {
+            NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
+            [indexArray addObject:indexPath];
+            
         }
+        [self.tableView reloadRowsAtIndexPaths:indexArray withRowAnimation:UITableViewRowAnimationAutomatic];
+    }
+    @catch (NSException *exception) {
+        NSLog(@"%@", exception);
     }
 }
 
@@ -277,8 +326,7 @@
 }
 
 - (IBAction)favouriteAction:(id)sender {
-    NSString* basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-    NSString* favirouteFolder = [basePath stringByAppendingPathComponent:@"Faviroutes"];
+    NSString* favirouteFolder = [libraryFolder stringByAppendingPathComponent:@"Faviroutes"];
     [NSKeyedArchiver archiveRootObject:self.myArticle toFile:[favirouteFolder stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld.fav", (long)myArticle.acId]]];
     [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"已收藏"];
 }

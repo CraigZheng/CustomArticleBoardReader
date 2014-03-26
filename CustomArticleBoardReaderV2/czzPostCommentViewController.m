@@ -141,7 +141,7 @@
         [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"评论发表成功"];
         [self.navigationController popViewControllerAnimated:YES];
     } else {
-        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"评论发表不出来我浑身难受！这部分正在紧张有序的开发中"];
+        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"评论发表不出来我浑身难受！"];
     }
 }
 @end
