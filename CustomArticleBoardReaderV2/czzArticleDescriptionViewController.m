@@ -31,20 +31,28 @@
     infoLabel.text = infoString;
     descLabel.text = myArticle.desc;
     titleLabel.text = myArticle.name;
-    [self recalculateFrame:self.interfaceOrientation];
+    [self layoutTextViewsForInterfaceOrientation:self.interfaceOrientation];
 }
 
--(void)recalculateFrame:(UIInterfaceOrientation)interfaceOrientation{
+//layout the views according to interface orientation
+-(void)layoutTextViewsForInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation{
     //calculate frame
-    CGRect frame = CGRectMake(0, 0, parentViewController.view.frame.size.width, 1);
+    CGRect frame;;
     if (UIInterfaceOrientationIsLandscape(interfaceOrientation)){
-        frame = CGRectMake(0, 0, parentViewController.view.frame.size.height, 1);
-    }
+        frame = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.height, 1);
+    } else
+        frame = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 1);
+    titleLabel.preferredMaxLayoutWidth = frame.size.width;
     CGFloat height1 = titleLabel.frame.origin.y + titleLabel.intrinsicContentSize.height;
+    infoLabel.preferredMaxLayoutWidth = frame.size.width;
     CGFloat height2 = infoLabel.frame.origin.y + infoLabel.intrinsicContentSize.height;
+    descLabel.preferredMaxLayoutWidth = frame.size.width;
     CGFloat height3 = descLabel.frame.origin.y + descLabel.intrinsicContentSize.height;
-    frame.size.height = height1 + height2 + height3 - (parentViewController.navigationController.navigationBar.frame.size.height + parentViewController.navigationController.navigationBar.frame.origin.y);
+    CGFloat height4 = (UIInterfaceOrientationIsLandscape(interfaceOrientation) ? 44 : 64);//parentViewController.navigationController.navigationBar.frame.size.height + parentViewController.navigationController.navigationBar.frame.origin.y;
+    frame.size.height = height1 + height2 + height3 - height4;
     self.view.frame = frame;
+    NSLog(@"height 1 %f, height 2 %f, height 3 %f, height 4 %f", height1, height2, height3, height4);
+    NSLog(@"calculate height for description view: %f", frame.size.height);
 }
 
 @end

@@ -61,7 +61,7 @@
     self.name = [dataDict objectForKey:@"name"];
     self.desc = [dataDict objectForKey:@"desc"];
     if (self.desc)
-        self.desc = [self.desc stringByConvertingHTMLToPlainText];
+        self.desc = [[self.desc stringByDecodingHTMLEntities] stringByConvertingHTMLToPlainText];
     self.previewUrl = [dataDict objectForKey:@"previewurl"];
     self.viewCount = [[dataDict objectForKey:@"viewernum"] integerValue];
     self.favouriteCount = [[dataDict objectForKey:@"collectnum"] integerValue];
@@ -106,6 +106,7 @@
             NSArray *matches = [linkDetector matchesInString:subString
                                                      options:0
                                                        range:NSMakeRange(0, subString.length)];
+            NSString *matchedParagraph;
             if (matches.count > 0){
                 for (NSTextCheckingResult *match in matches) {
                     if ([match resultType] == NSTextCheckingTypeLink) {
@@ -120,22 +121,46 @@
                 }
             } else if ([subString hasPrefix:@"<img"]){
                 NSString *emoconURL = [self extractString:subString toLookFor:@"\"" skipForwardX:1 toStopBefore:@"\""];
+                emoconURL = [emoconURL stringByReplacingOccurrencesOfString:@"\"" withString:@""];
                 if (emoconURL.length > 0 && [emoconURL rangeOfString:@"emotion"].location != NSNotFound)
                 {
-                    NSURL *emoURL = [NSURL URLWithString:[NSString stringWithFormat:@"\"http://www.acfun.tv%@", emoconURL]];
+                    NSString *emoURLString = [NSString stringWithFormat:@"http://www.acfun.tv%@", emoconURL];
+                    NSURL *emoURL = [NSURL URLWithString:emoURLString];
                     if (emoURL)
                         [fragments addObject:emoURL];
                 }
                 
             }
+            if ([subString rangeOfString:@"<p"].location != NSNotFound ||
+                [subString rangeOfString:@"</p"].location != NSNotFound ||
+                [subString rangeOfString:@"<br"].location != NSNotFound)
+            {
+                matchedParagraph = [htmlString substringToIndex:r.location];
+                NSString *processedParagraph = [[matchedParagraph stringByDecodingHTMLEntities] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+                if (processedParagraph.length > 0)
+                {
+                    [fragments addObject:processedParagraph];
+                }
+            }
             htmlString = [htmlString stringByReplacingCharactersInRange:r withString:@""];
+            if (matchedParagraph.length > 0){
+                htmlString = [htmlString stringByReplacingOccurrencesOfString:matchedParagraph withString:@""];
+            }
+            //htmlString = [htmlString stringByReplacingOccurrencesOfString:subString withString:@""];
+            /*
             NSString *fragment = [htmlString substringWithRange:NSMakeRange(0, r.location)];
             fragment = [[fragment stringByDecodingHTMLEntities] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
             if (fragment.length > 0)
                 [fragments addObject:fragment];
             htmlString = [htmlString stringByReplacingCharactersInRange:NSMakeRange(0, r.location) withString:@""];
+             */
         }
     }
+    NSString *processedString = htmlString = [[htmlString stringByDecodingHTMLEntities] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if (processedString.length > 0){
+        [fragments addObject:processedString];
+    }
+    /*
     NSArray *originalArray = fragments;//[fragments array];
     NSMutableArray *combinedArray = [NSMutableArray new];
     NSMutableString *combinedString = [NSMutableString new];
@@ -155,6 +180,8 @@
     if (combinedString.length > 0)
         [combinedArray addObject:combinedString];
     return combinedArray;
+     */
+    return fragments;
 }
 -(NSString *)stringByApplyingSimpleHTMLFormat:(NSString*)htmlString {
     NSRange r;

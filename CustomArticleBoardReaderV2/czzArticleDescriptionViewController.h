@@ -17,4 +17,6 @@
 @property (strong, nonatomic) IBOutlet UILabel *titleLabel;
 @property (strong, nonatomic) IBOutlet UILabel *descLabel;
 @property (nonatomic) UIViewController *parentViewController;
+
+-(void)layoutTextViewsForInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
 @end

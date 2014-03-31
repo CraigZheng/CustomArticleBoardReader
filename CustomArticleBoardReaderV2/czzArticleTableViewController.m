@@ -331,6 +331,11 @@
     [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"已收藏"];
 }
 
+#pragma mark - should auto rotate
+-(void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration{
+    [descViewController layoutTextViewsForInterfaceOrientation:toInterfaceOrientation];
+}
+
 
 #pragma mark UIDocumentInteractionController delegate
 -(UIViewController *)documentInteractionControllerViewControllerForPreview:(UIDocumentInteractionController *)controller{

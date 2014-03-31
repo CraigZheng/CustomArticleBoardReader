@@ -84,6 +84,7 @@
 		44CCB76A18B721180024CBDB /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 44CCB76918B721180024CBDB /* MediaPlayer.framework */; };
 		44CCB76C18B7223D0024CBDB /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 44CCB76B18B7223D0024CBDB /* CoreData.framework */; };
 		44F66FA918B6E63E0053EAF1 /* czzArticleTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 44F66FA818B6E63E0053EAF1 /* czzArticleTableViewController.m */; };
+		5A7F77B918E97947009EAEE6 /* czzImageManagerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A7F77B818E97947009EAEE6 /* czzImageManagerViewController.m */; };
 		5AE09F3418D87B3300A9A591 /* libGoogleAdMobAds.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5AE09F3218D87B3300A9A591 /* libGoogleAdMobAds.a */; };
 		5AE09F3518D87B3300A9A591 /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = 5AE09F3318D87B3300A9A591 /* README.txt */; };
 		5AE09F3718D87B9F00A9A591 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5AE09F3618D87B9F00A9A591 /* StoreKit.framework */; };
@@ -204,6 +205,8 @@
 		44CCB76B18B7223D0024CBDB /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		44F66FA718B6E63E0053EAF1 /* czzArticleTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = czzArticleTableViewController.h; sourceTree = "<group>"; };
 		44F66FA818B6E63E0053EAF1 /* czzArticleTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = czzArticleTableViewController.m; sourceTree = "<group>"; };
+		5A7F77B718E97947009EAEE6 /* czzImageManagerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = czzImageManagerViewController.h; sourceTree = "<group>"; };
+		5A7F77B818E97947009EAEE6 /* czzImageManagerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = czzImageManagerViewController.m; sourceTree = "<group>"; };
 		5AE09F2918D87B3300A9A591 /* GADAdMobExtras.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GADAdMobExtras.h; sourceTree = "<group>"; };
 		5AE09F2A18D87B3300A9A591 /* GADAdNetworkExtras.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GADAdNetworkExtras.h; sourceTree = "<group>"; };
 		5AE09F2B18D87B3300A9A591 /* GADAdSize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GADAdSize.h; sourceTree = "<group>"; };
@@ -498,6 +501,8 @@
 		4485EFAB18B3373F0031B3BC /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				5A7F77B718E97947009EAEE6 /* czzImageManagerViewController.h */,
+				5A7F77B818E97947009EAEE6 /* czzImageManagerViewController.m */,
 				4485EFA418B2F46E0031B3BC /* czzLoginViewController.h */,
 				4485EFA518B2F46E0031B3BC /* czzLoginViewController.m */,
 				4485EF4918B0A4700031B3BC /* czzSettingsViewController.h */,
@@ -693,6 +698,7 @@
 				442FFF0018AA670D001ECDAA /* czzComment.m in Sources */,
 				442FFE9018A78A1D001ECDAA /* main.m in Sources */,
 				4485EFA618B2F46E0031B3BC /* czzLoginViewController.m in Sources */,
+				5A7F77B918E97947009EAEE6 /* czzImageManagerViewController.m in Sources */,
 				442FFEC218A78B5C001ECDAA /* czzArticleDownloader.m in Sources */,
 				4485EFC418B4FC910031B3BC /* czzPostCommentViewController.m in Sources */,
 				442FFEF218A867EA001ECDAA /* czzArticlelViewController.m in Sources */,

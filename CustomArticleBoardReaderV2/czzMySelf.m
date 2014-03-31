@@ -28,6 +28,13 @@
     return self;
 }
 
+-(NSString *)loginStatus{
+    if ([[NSDate new] compare:self.access_token_expiry_date]){
+        return @"已登陆";
+    }
+    return @"登陆过期";
+}
+
 -(void)encodeWithCoder:(NSCoder*)coder{
     [coder encodeInteger:self.userID forKey:@"userID"];
     [coder encodeObject:self.name forKey:@"name"];

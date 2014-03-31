@@ -10,21 +10,55 @@
 #import "czzArticleListDownloader.h"
 #import "Toast+UIView.h"
 #import "czzLoginViewController.h"
+#import "czzMySelf.h"
 #import "czzAppDelegate.h"
 
-@interface czzSettingsViewController ()<UIActionSheetDelegate>
+@interface czzSettingsViewController ()<UIActionSheetDelegate, UIAlertViewDelegate>
 @property NSMutableArray *commands;
+@property NSString *libraryFolder;
 @end
 
 @implementation czzSettingsViewController
 @synthesize commands;
+@synthesize libraryFolder;
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 
     // Uncomment the following line to preserve selection between presentations.
-    commands = [[NSMutableArray alloc] initWithObjects:@"自动下载图片", @"使用实验性的浏览器", @"文章排列顺序", @"清除图片缓存", @"登陆", nil];
+    libraryFolder = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+}
+
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self reloadCommand];
+}
+
+-(void)reloadCommand{
+    NSInteger ordering = [[NSUserDefaults standardUserDefaults] integerForKey:@"articleOrdering"];
+    NSDictionary *orderingDict = [NSDictionary dictionaryWithObjects:@[@"最新发布",
+                                                            @"今日热点",
+                                                            @"本周热点",
+                                                            @"最多回复",
+                                                            @"最新回复"]
+                                                  forKeys:@[[NSNumber numberWithInteger:DEFAULT_ORDER],
+                                                            [NSNumber numberWithInteger:MOST_CLICKED_DAILY],
+                                                            [NSNumber numberWithInteger:MOST_CLICKED_WEEKLY],
+                                                            [NSNumber numberWithInteger:MOST_COMMENTED_DAILY],
+                                                            [NSNumber numberWithInteger:NEWEST_RESPONDED]]];
+
+    NSString *articleOrderingCommand = [NSString stringWithFormat:@"文章排列顺序: %@", [orderingDict objectForKey:[NSNumber numberWithInteger:ordering]]];
+    
+    NSString *loginStatus = @"登陆";
+    czzMySelf *currentLoginUser = [[czzAppDelegate sharedAppDelegate] currentLoginUser];
+    if (currentLoginUser) {
+        loginStatus = [NSString stringWithFormat:@"%@ - %@", currentLoginUser.name, currentLoginUser.loginStatus];
+    }
+    commands = [[NSMutableArray alloc] initWithObjects:@"自动下载图片", @"使用实验性的浏览器",
+                articleOrderingCommand,
+                @"图片缓存", @"清空图片缓存", @"清空文章缓存", loginStatus, nil];
+    [self.tableView reloadData];
 }
 
 #pragma mark - Table view data source
@@ -66,22 +100,25 @@
     if ([command hasPrefix:@"文章排列顺序"]){
         UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:@"文章排列顺序" delegate:self cancelButtonTitle:@"取消" destructiveButtonTitle:nil otherButtonTitles:@"最新发布", @"今日热点", @"本周热点", @"最多回复", @"最新回复", nil];
         [actionSheet showInView:self.view];
-    } else if ([command isEqualToString:@"清除图片缓存"]){
+    } else if ([command isEqualToString:@"清空图片缓存"]){
         //清除图片缓存
-        NSString* basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-        //save to thumbnail folder or fullsize folder
-        basePath = [basePath
-                    stringByAppendingPathComponent:@"Images"];
-        NSArray* files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:basePath error:nil];
-        for (NSString *file in files) {
-            NSString *filePath = [basePath stringByAppendingPathComponent:file];
-            [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
-        }
-        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"缓存已清空"];
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"清空图片缓存" message:@"此操作不可逆，请确定" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
+        [alertView show];
+        
     } else if ([command isEqualToString:@"登陆"]){
         //登陆
         czzLoginViewController *loginViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"login_view_controller"];
         [self.navigationController pushViewController:loginViewController animated:YES];
+        return;
+    } else if ([command isEqualToString:@"清空文章缓存"]){
+        //清空文章缓存
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"清空文章缓存" message:@"此操作不可逆，请确定" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
+        [alertView show];
+    } else if ([command isEqualToString:@"图片缓存"]){
+        [self performSegueWithIdentifier:@"go_image_manager_view_controller_segue" sender:nil];
+    } else if (indexPath.row == commands.count - 1) {
+        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"退出登陆？" message:nil delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
+        [alertView show];
     }
 }
 
@@ -113,9 +150,40 @@
 
 #pragma mark - UIActionSheetDelegate
 -(void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex{
-    if ([actionSheet.title isEqualToString:@"文章排列顺序"] && buttonIndex != actionSheet.cancelButtonIndex){
+    if ([actionSheet.title hasPrefix:@"文章排列顺序"] && buttonIndex != actionSheet.cancelButtonIndex){
         [[NSUserDefaults standardUserDefaults] setInteger:buttonIndex forKey:@"articleOrdering"];
         [[NSUserDefaults standardUserDefaults] synchronize];
+        [self reloadCommand];
+    }
+}
+
+#pragma mark - UIAlertViewDelegate
+-(void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex{
+    if (buttonIndex == alertView.cancelButtonIndex)
+        return;
+    if ([alertView.title isEqualToString:@"清空文章缓存"]){
+        NSString *cacheFolder = [libraryFolder stringByAppendingPathComponent:@"Cache"];
+        NSArray* files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:cacheFolder error:nil];
+        for (NSString *file in files) {
+            NSString *filePath = [cacheFolder stringByAppendingPathComponent:file];
+            [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
+        }
+        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"缓存已清空"];
+    } else if ([alertView.title isEqualToString:@"清空图片缓存"]){
+        NSString* imageFolder = [libraryFolder
+                    stringByAppendingPathComponent:@"Images"];
+        NSArray* files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:imageFolder error:nil];
+        for (NSString *file in files) {
+            NSString *filePath = [imageFolder stringByAppendingPathComponent:file];
+            [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
+        }
+        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"缓存已清空"];
+    } else if ([alertView.title isEqualToString:@"退出登陆？"]) {
+        NSString *userFile = [libraryFolder stringByAppendingPathComponent:@"currentLoginUser.dat"];
+        [[NSFileManager defaultManager] removeItemAtPath:userFile error:nil];
+        [[czzAppDelegate sharedAppDelegate] setCurrentLoginUser:nil];
+        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"已退出登陆"];
+        [self reloadCommand];
     }
 }
 @end
