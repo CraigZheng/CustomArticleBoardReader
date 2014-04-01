@@ -73,8 +73,8 @@
     self.category = [dataDict objectForKey:@"category"];
     self.htmlBody = [dataDict objectForKey:@"txt"];
     if (self.htmlBody){
-        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"shouldUseExperimentalBrowser"]) {
-            NSArray *fragments = [self prepareHTMLForFragments:[dataDict objectForKey:@"txt"]];
+        if (YES)//[[NSUserDefaults standardUserDefaults] boolForKey:@"shouldUseExperimentalBrowser"]) {
+        {    NSArray *fragments = [self prepareHTMLForFragments:[dataDict objectForKey:@"txt"]];
             [self.htmlFragments addObjectsFromArray:fragments];
         } else {
             self.htmlBody = [self prepareHTMLForBetterVisual:self.htmlBody];

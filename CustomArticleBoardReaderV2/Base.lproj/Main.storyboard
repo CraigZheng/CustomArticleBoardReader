@@ -613,7 +613,6 @@
                                         <imageView userInteractionEnabled="NO" tag="1" contentMode="scaleAspectFit" horizontalHuggingPriority="750" verticalHuggingPriority="750" image="ac.png" translatesAutoresizingMaskIntoConstraints="NO" id="XJE-pP-LqI">
                                             <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                            <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
                                         </imageView>
                                     </subviews>
                                     <constraints>
@@ -661,6 +660,26 @@
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="ATn-zN-Djv" id="eUE-v9-XNy">
                                     <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
                                     <autoresizingMask key="autoresizingMask"/>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                            <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="image_download_failed_identifier" id="IQd-mu-GTg">
+                                <rect key="frame" x="0.0" y="342" width="320" height="44"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="IQd-mu-GTg" id="5qM-05-Kd2">
+                                    <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <imageView userInteractionEnabled="NO" tag="1" contentMode="scaleAspectFit" horizontalHuggingPriority="750" verticalHuggingPriority="750" image="ac.png" translatesAutoresizingMaskIntoConstraints="NO" id="iin-Ov-duv">
+                                            <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                        </imageView>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="iin-Ov-duv" firstAttribute="top" secondItem="5qM-05-Kd2" secondAttribute="top" id="7FZ-pF-hY8"/>
+                                        <constraint firstItem="iin-Ov-duv" firstAttribute="leading" secondItem="5qM-05-Kd2" secondAttribute="leading" id="B6k-zm-fxM"/>
+                                        <constraint firstAttribute="trailing" secondItem="iin-Ov-duv" secondAttribute="trailing" id="U5j-L6-jqK"/>
+                                        <constraint firstAttribute="bottom" secondItem="iin-Ov-duv" secondAttribute="bottom" id="io0-Yd-Fjx"/>
+                                    </constraints>
                                 </tableViewCellContentView>
                             </tableViewCell>
                         </prototypes>

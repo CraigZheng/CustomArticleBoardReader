@@ -13,12 +13,14 @@
 @interface czzImageCentre()<czzImageDownloaderDelegate>
 @property NSString *thumbnailFolder;
 @property NSString *imageFolder;
+@property NSMutableOrderedSet *currentDownloadingDownloaders;
 @end
 
 @implementation czzImageCentre
 @synthesize currentImageDownloaders;
 @synthesize currentLocalImages;
 @synthesize imageFolder;
+@synthesize currentDownloadingDownloaders;
 
 + (id)sharedInstance
 {
@@ -39,6 +41,7 @@
 - (id)init {
     if (self = [super init]) {
         currentImageDownloaders = [NSMutableOrderedSet new];
+        currentDownloadingDownloaders = [NSMutableOrderedSet new];
         NSString* libraryPath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
         imageFolder = [libraryPath stringByAppendingPathComponent:@"Images"];
         [self scanCurrentLocalImages];
@@ -89,11 +92,21 @@
     imgDown.imageURLString = imgURL;
     //3. check current image downloaders for image downloader with same target url
     //if image downloader with save target url is present, stop that one and add the new downloader in, and start the new one
-    if ([currentImageDownloaders containsObject:imgDown]){
-        [self stopAndRemoveImageDownloaderWithURL:imgURL];
-    }
-    [imgDown startDownloading];
     [currentImageDownloaders addObject:imgDown];
+    [self startFirstDownloaderInQueueIfHasAvailableSlot];
+}
+
+-(void)startFirstDownloaderInQueueIfHasAvailableSlot{
+    if (currentDownloadingDownloaders.count < MAXIMUM_CONCURRENT_DOWNLOADING) {
+        if (currentImageDownloaders.count > 0) {
+            czzImageDownloader *firstDownloader = [currentImageDownloaders firstObject];
+            [currentImageDownloaders removeObject:firstDownloader];
+            [firstDownloader startDownloading];
+            [currentDownloadingDownloaders addObject:firstDownloader];
+            NSLog(@"available slot presents, downloading...");
+            [self startFirstDownloaderInQueueIfHasAvailableSlot];
+        }
+    }
 }
 
 //Check if given image URL is currently being downloaded
@@ -103,7 +116,7 @@
     imgDown.delegate = self;
     imgDown.imageURLString = imgURL;
     //if image downloader with save target url is present, return YES
-    if ([currentImageDownloaders containsObject:imgDown]){
+    if ([currentImageDownloaders containsObject:imgDown] || [currentDownloadingDownloaders containsObject:imgDown]){
         return YES;
     }
     return NO;
@@ -128,6 +141,7 @@
     if ([currentImageDownloaders containsObject:imgDown]){
         NSPredicate *sameTargetURL = [NSPredicate predicateWithFormat:@"targetURLString == %@", imgDown.targetURLString];
         NSOrderedSet *downloadersWithSameTargetURL = [currentImageDownloaders filteredOrderedSetUsingPredicate:sameTargetURL];
+
         for (czzImageDownloader *downloader in downloadersWithSameTargetURL) {
             [downloader stop];
             [currentImageDownloaders removeObject:downloader];
@@ -139,7 +153,11 @@
     for (czzImageDownloader *imgDownloader in currentImageDownloaders) {
         [imgDownloader stop];
     }
+    for (czzImageDownloader *imgDownloader in currentDownloadingDownloaders) {
+        [imgDownloader stop];
+    }
     [currentImageDownloaders removeAllObjects];
+    [currentDownloadingDownloaders removeAllObjects];
 
 }
 
@@ -162,11 +180,13 @@
 
     //delete the image downloader
     NSPredicate *sameImgURL = [NSPredicate predicateWithFormat:@"imageURLString == %@", imgDownloader.imageURLString];
-    NSOrderedSet *downloaderWithSameImageURLString = [currentImageDownloaders filteredOrderedSetUsingPredicate:sameImgURL];
+    NSOrderedSet *downloaderWithSameImageURLString = [currentDownloadingDownloaders filteredOrderedSetUsingPredicate:sameImgURL];
     for (czzImageDownloader *imgDown in downloaderWithSameImageURLString) {
         [imgDown stop];
         [currentImageDownloaders removeObject:imgDown];
+        [currentDownloadingDownloaders removeObject:imgDown];
     }
+    [self startFirstDownloaderInQueueIfHasAvailableSlot];
 }
 
 -(void)downloaderProgressUpdated:(czzImageDownloader *)imgDownloader expectedLength:(NSUInteger)total downloadedLength:(NSUInteger)downloaded{

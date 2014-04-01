@@ -129,7 +129,7 @@
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     selectedIndexPath = indexPath;
     if (selectedIndexPath.row != articleList.count) {
-        if ([[NSUserDefaults standardUserDefaults] boolForKey:@"shouldUseExperimentalBrowser"])
+        if (YES)//[[NSUserDefaults standardUserDefaults] boolForKey:@"shouldUseExperimentalBrowser"])
         [self performSegueWithIdentifier:@"go_article_table_view_controller_identifier" sender:self];
         else
             [self performSegueWithIdentifier:@"go_article_view_controller_identifier" sender:self];

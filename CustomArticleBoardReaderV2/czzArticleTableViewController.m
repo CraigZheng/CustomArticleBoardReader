@@ -12,16 +12,17 @@
 #import "czzArticleDescriptionViewController.h"
 #import "czzAcUser.h"
 #import "czzArticleDownloader.h"
-#import "czzImageDownloader.h"
 #import "czzCommentViewController.h"
 #import "czzArticleListViewController.h"
 #import "czzImageCentre.h"
+#import "czzImageDownloader.h"
 
 
-@interface czzArticleTableViewController ()<UINavigationControllerDelegate, czzArticleDownloaderDelegate, czzImageDownloaderDelegate, UIDocumentInteractionControllerDelegate, UINavigationBarDelegate>
+@interface czzArticleTableViewController ()<UINavigationControllerDelegate, czzArticleDownloaderDelegate, UIDocumentInteractionControllerDelegate, UINavigationBarDelegate>
 @property czzArticleDownloader *articleDownloader;
 @property BOOL shouldAutomaticallyLoadImage;
 @property czzArticleDescriptionViewController *descViewController;
+@property NSMutableSet *failedImageDownload;
 @property czzImageCentre *imageCentre;
 @property NSInteger lastContentOffsetY;
 @property NSString *libraryFolder;
@@ -36,6 +37,7 @@
 @synthesize imageCentre;
 @synthesize lastContentOffsetY;
 @synthesize libraryFolder;
+@synthesize failedImageDownload;
 
 - (void)viewDidLoad
 {
@@ -59,6 +61,7 @@
     
     descViewController.myArticle = myArticle;
     descViewController.parentViewController = self;
+    failedImageDownload = [NSMutableSet new];
     //hide tool bar if ios 7
     if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0) {
         self.navigationController.toolbar.hidden = YES;
@@ -132,6 +135,10 @@
     id htmlFragment = [myArticle.htmlFragments objectAtIndex:indexPath.row - 1];
     if ([htmlFragment isKindOfClass:[NSURL class]]){
         NSString *imgURLString = [(NSURL*)htmlFragment absoluteString];
+        //if already previously failed to download
+        if ([failedImageDownload containsObject:imgURLString]){
+            return [tableView dequeueReusableCellWithIdentifier:@"image_download_failed_identifier" forIndexPath:indexPath];
+        }
         NSString* basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
         basePath = [basePath
                     stringByAppendingPathComponent:@"Images"];
@@ -152,10 +159,8 @@
             }
         }
         if (shouldAutomaticallyLoadImage){
-            //create a new downloader task in the background
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self downloadImage:imgURLString andReloadIndexPath:indexPath];
-            });
+            [self downloadImage:imgURLString andReloadIndexPath:indexPath];
+
         }
         return [tableView dequeueReusableCellWithIdentifier:@"clickable_url_cell_identifier" forIndexPath:indexPath];
     }
@@ -226,6 +231,8 @@
 #pragma mark - download image
 -(void)downloadImage:(NSString*)imageURLString andReloadIndexPath:(NSIndexPath*)indexPath{
     [imageCentre downloadImageWithURL:imageURLString];
+    [failedImageDownload removeObject:imageURLString];
+
     if (indexPath)
         [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
 }
@@ -278,27 +285,23 @@
 #pragma mark - ImageDownloader notification handler
 -(void)imageDownloaded:(NSNotification*)notification {
     @try {
+        Boolean success = [[notification.userInfo objectForKey:@"Success"] boolValue];
+        if (!success) {
+            [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"图片下载失败!"];
+            [failedImageDownload addObject: [((czzImageDownloader*)[notification.userInfo objectForKey:@"ImageDownloader"]) imageURLString]];
+        }
         NSMutableArray *indexArray = [NSMutableArray new];
         for (UITableViewCell *cell in [self.tableView visibleCells]) {
             NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
             [indexArray addObject:indexPath];
-            
         }
         [self.tableView reloadRowsAtIndexPaths:indexArray withRowAnimation:UITableViewRowAnimationAutomatic];
+        
     }
     @catch (NSException *exception) {
         NSLog(@"%@", exception);
     }
-}
 
-#pragma mark - czzImageDownloaderDelegate
--(void)downloadFinished:(czzImageDownloader *)imgDownloader success:(BOOL)success isThumbnail:(BOOL)thumbnail saveTo:(NSString *)path error:(NSError *)error{
-    if (success){
-        NSLog(@"download of image success");
-        [self.tableView reloadData];
-    } else {
-        [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"图片下载失败!"];
-    }
 }
 
 #pragma mark - czzArticleDownloaderDelegate

@@ -12,6 +12,8 @@
 #import <Foundation/Foundation.h>
 #import "czzImageDownloader.h"
 
+#define MAXIMUM_CONCURRENT_DOWNLOADING 3
+
 @interface czzImageCentre : NSObject
 @property NSMutableOrderedSet *currentImageDownloaders;
 @property NSMutableSet *currentLocalImages;
