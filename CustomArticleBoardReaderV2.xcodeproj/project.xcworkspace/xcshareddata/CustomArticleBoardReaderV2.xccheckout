@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>948FE7F2-6D5B-4331-B5CD-F7D0165A3272</string>
+	<key>IDESourceControlProjectName</key>
+	<string>CustomArticleBoardReaderV2</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>7E0985CC-96C0-4049-979E-1FEB1A9D5EF1</key>
+		<string>https://github.com/CraigZheng/CustomArticleBoardReader.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>CustomArticleBoardReaderV2.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>7E0985CC-96C0-4049-979E-1FEB1A9D5EF1</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/CraigZheng/CustomArticleBoardReader.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>7E0985CC-96C0-4049-979E-1FEB1A9D5EF1</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>7E0985CC-96C0-4049-979E-1FEB1A9D5EF1</string>
+			<key>IDESourceControlWCCName</key>
+			<string>customarticleboardreaderv2</string>
+		</dict>
+	</array>
+</dict>
+</plist>

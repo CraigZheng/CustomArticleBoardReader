@@ -24,8 +24,10 @@
 @property czzArticleDescriptionViewController *descViewController;
 @property NSMutableSet *failedImageDownload;
 @property czzImageCentre *imageCentre;
+@property NSIndexPath *fisrtVisibleCellIndex;
 @property NSInteger lastContentOffsetY;
 @property NSString *libraryFolder;
+@property NSMutableArray *heightsForRow;
 
 @end
 
@@ -37,7 +39,9 @@
 @synthesize imageCentre;
 @synthesize lastContentOffsetY;
 @synthesize libraryFolder;
+@synthesize heightsForRow;
 @synthesize failedImageDownload;
+@synthesize fisrtVisibleCellIndex;
 
 - (void)viewDidLoad
 {
@@ -62,6 +66,10 @@
     descViewController.myArticle = myArticle;
     descViewController.parentViewController = self;
     failedImageDownload = [NSMutableSet new];
+    heightsForRow = [NSMutableArray new];
+//    for (int i = 0; i < myArticle.htmlFragments.count + 1; i++) {
+//        [heightsForRow addObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
+//    };
     //hide tool bar if ios 7
     if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0) {
         self.navigationController.toolbar.hidden = YES;
@@ -143,7 +151,7 @@
         basePath = [basePath
                     stringByAppendingPathComponent:@"Images"];
         NSString *filePath = [basePath stringByAppendingPathComponent:[(NSURL*)htmlFragment absoluteString].lastPathComponent];
-        UIImage *image = [UIImage imageWithContentsOfFile:filePath];
+        UIImage *image = [[UIImage alloc] initWithContentsOfFile:filePath];
         if (image){
             UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"image_ciew_cell_identifier" forIndexPath:indexPath];
             UIImageView *imageView = (UIImageView*)[cell viewWithTag:1];
@@ -160,7 +168,6 @@
         }
         if (shouldAutomaticallyLoadImage){
             [self downloadImage:imgURLString andReloadIndexPath:indexPath];
-
         }
         return [tableView dequeueReusableCellWithIdentifier:@"clickable_url_cell_identifier" forIndexPath:indexPath];
     }
@@ -180,32 +187,45 @@
     if (indexPath.row == 0)
         //height for the first row
         return descViewController.view.frame.size.height;
-    
-    CGFloat preferHeight = 0;
-    UITextView *newHiddenTextView = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 1)];
-    newHiddenTextView.hidden = YES;
-    newHiddenTextView.font = [UIFont systemFontOfSize:16];
-    [self.view addSubview:newHiddenTextView];
+    CGFloat preferHeight = tableView.rowHeight;
+    if (indexPath.row < heightsForRow.count)
+        preferHeight = [[heightsForRow objectAtIndex:indexPath.row] floatValue];
+    if (preferHeight != tableView.rowHeight) {
+        return preferHeight;
+    }
     id htmlFragment = [myArticle.htmlFragments objectAtIndex:indexPath.row - 1];
     if ([htmlFragment isKindOfClass:[NSURL class]]){
         NSString* basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
         basePath = [basePath
                     stringByAppendingPathComponent:@"Images"];
         NSString *filePath = [basePath stringByAppendingPathComponent:[(NSURL*)htmlFragment absoluteString].lastPathComponent];
-        UIImage *image = [UIImage imageWithContentsOfFile:filePath];
+        UIImage *image = [[UIImage alloc] initWithContentsOfFile:filePath];
         if (image) {
             if (image.size.width > self.tableView.frame.size.width){
-                return image.size.height * (self.view.frame.size.width / image.size.width);
+                preferHeight = image.size.height * (self.view.frame.size.width / image.size.width);
             } else {
-                return image.size.height;
+                preferHeight = image.size.height;
             }
+        } else {
+            preferHeight = tableView.rowHeight;
         }
-        return tableView.rowHeight;
+    } else {
+
+        UITextView *newHiddenTextView = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 1)];
+        [self.view addSubview:newHiddenTextView];
+
+        newHiddenTextView.hidden = YES;
+        newHiddenTextView.font = [UIFont systemFontOfSize:16];
+
+        newHiddenTextView.text = [htmlFragment description];
+        preferHeight = [newHiddenTextView sizeThatFits:CGSizeMake(newHiddenTextView.frame.size.width, MAXFLOAT)].height;
+        [newHiddenTextView removeFromSuperview];
+        preferHeight = MAX(tableView.rowHeight, preferHeight);
     }
-    newHiddenTextView.text = [htmlFragment description];
-    preferHeight = [newHiddenTextView sizeThatFits:CGSizeMake(newHiddenTextView.frame.size.width, MAXFLOAT)].height;
-    [newHiddenTextView removeFromSuperview];
-    return MAX(tableView.rowHeight, preferHeight);
+    if (indexPath.row < heightsForRow.count)
+        [heightsForRow replaceObjectAtIndex:indexPath.row withObject:[NSNumber numberWithFloat:preferHeight]];
+
+    return preferHeight;
 }
 
 #pragma mark - UITableViewDelegate
@@ -230,11 +250,18 @@
 
 #pragma mark - download image
 -(void)downloadImage:(NSString*)imageURLString andReloadIndexPath:(NSIndexPath*)indexPath{
-    [imageCentre downloadImageWithURL:imageURLString];
-    [failedImageDownload removeObject:imageURLString];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        [imageCentre downloadImageWithURL:imageURLString];
+        [failedImageDownload removeObject:imageURLString];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (indexPath && [self.tableView.indexPathsForVisibleRows containsObject:indexPath]) {
+                [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+            }
+        });
 
-    if (indexPath)
-        [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+    });
+
 }
 
 #pragma mark - UIScrollView delegate
@@ -295,8 +322,9 @@
             NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
             [indexArray addObject:indexPath];
         }
-        [self.tableView reloadRowsAtIndexPaths:indexArray withRowAnimation:UITableViewRowAnimationAutomatic];
-        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.tableView reloadRowsAtIndexPaths:indexArray withRowAnimation:UITableViewRowAnimationAutomatic];
+        });
     }
     @catch (NSException *exception) {
         NSLog(@"%@", exception);
@@ -320,6 +348,11 @@
     myArticle = article;
     myArticle.parentViewController = self;
     if (myArticle.htmlFragments.count > 0){
+        heightsForRow = [NSMutableArray new];
+        for (int i = 0; i < myArticle.htmlFragments.count + 1; i++) {
+            [heightsForRow addObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
+        };
+
         [self performSelectorOnMainThread:@selector(refreshTableView) withObject:nil waitUntilDone:YES];
     }
 }
@@ -334,9 +367,18 @@
     [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"已收藏"];
 }
 
-#pragma mark - should auto rotate
+#pragma mark - rotation
 -(void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration{
     [descViewController layoutTextViewsForInterfaceOrientation:toInterfaceOrientation];
+    [heightsForRow removeAllObjects];
+    fisrtVisibleCellIndex = self.tableView.indexPathsForVisibleRows.firstObject;
+    for (int i = 0; i < myArticle.htmlFragments.count + 1; i++) {
+        [heightsForRow addObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
+    };
+}
+
+-(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
+    [self.tableView scrollToRowAtIndexPath:fisrtVisibleCellIndex atScrollPosition:UITableViewScrollPositionNone animated:YES];
 }
 
 
