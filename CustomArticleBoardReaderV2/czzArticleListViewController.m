@@ -21,6 +21,8 @@
 @property NSInteger cursor;
 @property NSNumber *selectedCategory;
 @property czzArticleListDownloader *articleListDownloader;
+@property NSMutableArray *heightsForRows;
+@property NSMutableArray *heightsForHorizontalRows;
 @end
 
 @implementation czzArticleListViewController
@@ -32,6 +34,8 @@
 @synthesize cursor;
 @synthesize selectedCategory;
 @synthesize categorySegmentControl;
+@synthesize heightsForRows;
+@synthesize heightsForHorizontalRows;
 
 - (void)viewDidLoad
 {
@@ -46,6 +50,8 @@
     if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0) {
         self.navigationController.toolbar.hidden = YES;
     }
+    heightsForRows = [NSMutableArray new];
+    heightsForHorizontalRows = [NSMutableArray new];
 }
 
 -(void)viewDidAppear:(BOOL)animated{
@@ -113,7 +119,17 @@
     if (indexPath.row >= articleList.count){
         return tableView.rowHeight;
     }
-    CGFloat preferHeight = 0;
+    NSMutableArray *heightsArray;
+    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation)) {
+        heightsArray = heightsForRows;
+    } else {
+        heightsArray = heightsForHorizontalRows;
+    }
+    CGFloat preferHeight = tableView.rowHeight;
+    if (indexPath.row < heightsArray.count) {
+        preferHeight = [[heightsArray objectAtIndex:indexPath.row] floatValue];
+        return preferHeight;
+    }
     UITextView *newHiddenTextView = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 1)];
     newHiddenTextView.hidden = YES;
     newHiddenTextView.font = [UIFont systemFontOfSize:15];
@@ -122,7 +138,9 @@
     newHiddenTextView.text = article.desc;
     preferHeight = [newHiddenTextView sizeThatFits:CGSizeMake(newHiddenTextView.frame.size.width, MAXFLOAT)].height + 20 + 16;
     [newHiddenTextView removeFromSuperview];
-    return MAX(tableView.rowHeight, preferHeight);
+    preferHeight = MAX(tableView.rowHeight, preferHeight);
+    [heightsArray addObject:[NSNumber numberWithFloat:preferHeight]];
+    return preferHeight;
 }
 
 #pragma mark - UITableview delegate
@@ -180,7 +198,9 @@
 - (IBAction)categorySelectedAction:(id)sender {
     cursor = 1;//reset cursor
     articleList = [NSMutableArray new]; //clear previously downloaded list
-    
+    heightsForRows = [NSMutableArray new];
+    heightsForHorizontalRows = [NSMutableArray new];
+
     [self.tableView reloadData];
     UISegmentedControl *segmentControl = (UISegmentedControl*)sender;
     NSString *selectedTitle = [segmentControl titleForSegmentAtIndex:segmentControl.selectedSegmentIndex];

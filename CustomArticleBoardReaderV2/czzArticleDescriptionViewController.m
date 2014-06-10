@@ -55,4 +55,7 @@
     NSLog(@"calculate height for description view: %f", frame.size.height);
 }
 
+-(void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
+    [self layoutTextViewsForInterfaceOrientation:toInterfaceOrientation];
+}
 @end

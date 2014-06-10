@@ -17,6 +17,9 @@
 @property czzCommentDownloader *commentDownloader;
 @property NSMutableArray *comments;
 @property NSInteger lastContentOffsetY;
+@property NSMutableArray *heightsForRows;
+@property NSMutableArray *heightsForHorizontalRows;
+@property NSIndexPath *fisrtVisibleCellIndex;
 
 typedef enum ScrollDirection {
     ScrollDirectionNone,
@@ -33,6 +36,9 @@ typedef enum ScrollDirection {
 @synthesize commentDownloader;
 @synthesize comments;
 @synthesize lastContentOffsetY;
+@synthesize heightsForRows;
+@synthesize heightsForHorizontalRows;
+@synthesize fisrtVisibleCellIndex;
 
 - (void)viewDidLoad
 {
@@ -49,6 +55,8 @@ typedef enum ScrollDirection {
 
 -(void)refreshComments{
     comments = [NSMutableArray new];
+    heightsForRows = [NSMutableArray new];
+    heightsForHorizontalRows = [NSMutableArray new];
     [self.tableView reloadData];
     [self startDownloadingCommentWithCursor:comments.count + 1];
 }
@@ -109,7 +117,17 @@ typedef enum ScrollDirection {
     if (indexPath.row >= comments.count){
         return tableView.rowHeight;
     }
-    CGFloat preferHeight = 0;
+    CGFloat preferHeight = tableView.rowHeight;
+    NSMutableArray *heightsArray;
+    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation)) {
+        heightsArray = heightsForRows;
+    } else {
+        heightsArray = heightsForHorizontalRows;
+    }
+    if (indexPath.row < heightsArray.count) {
+        preferHeight = [[heightsArray objectAtIndex:indexPath.row] floatValue];
+        return preferHeight;
+    }
     UITextView *newHiddenTextView = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 1)];
     newHiddenTextView.hidden = YES;
     newHiddenTextView.font = [UIFont systemFontOfSize:16];
@@ -118,7 +136,9 @@ typedef enum ScrollDirection {
     newHiddenTextView.text = comment.content;
     preferHeight = [newHiddenTextView sizeThatFits:CGSizeMake(newHiddenTextView.frame.size.width, MAXFLOAT)].height + 15;
     [newHiddenTextView removeFromSuperview];
-    return MAX(tableView.rowHeight, preferHeight);
+    preferHeight = MAX(tableView.rowHeight, preferHeight);
+    [heightsArray addObject:[NSNumber numberWithFloat:preferHeight]];
+    return preferHeight;
 }
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
@@ -148,6 +168,16 @@ typedef enum ScrollDirection {
         }
     }
 }
+
+#pragma mark - rotation
+-(void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration{
+    fisrtVisibleCellIndex = self.tableView.indexPathsForVisibleRows.firstObject;
+}
+
+-(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
+    [self.tableView scrollToRowAtIndexPath:fisrtVisibleCellIndex atScrollPosition:UITableViewScrollPositionNone animated:YES];
+}
+
 #pragma mark - czzCommentDownloaderDelegate
 -(void)commentDownloaded:(NSArray *)com withArticleID:(NSInteger)articleID success:(BOOL)success{
     if (success){
