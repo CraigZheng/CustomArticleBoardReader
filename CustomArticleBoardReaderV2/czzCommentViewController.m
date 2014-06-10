@@ -20,6 +20,7 @@
 @property NSMutableArray *heightsForRows;
 @property NSMutableArray *heightsForHorizontalRows;
 @property NSIndexPath *fisrtVisibleCellIndex;
+@property NSMutableArray *emotionFiles;
 
 typedef enum ScrollDirection {
     ScrollDirectionNone,
@@ -39,6 +40,7 @@ typedef enum ScrollDirection {
 @synthesize heightsForRows;
 @synthesize heightsForHorizontalRows;
 @synthesize fisrtVisibleCellIndex;
+@synthesize emotionFiles;
 
 - (void)viewDidLoad
 {
@@ -51,6 +53,12 @@ typedef enum ScrollDirection {
     if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0) {
         self.navigationController.toolbar.hidden = YES;
     }
+    NSString *emotionFolder = [[NSBundle mainBundle] bundlePath];
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSArray *dirContents = [fm contentsOfDirectoryAtPath:emotionFolder error:nil];
+    NSPredicate *fltr = [NSPredicate predicateWithFormat:@"self ENDSWITH '.gif'"];
+    NSArray *onlyJPGs = [dirContents filteredArrayUsingPredicate:fltr];
+    emotionFiles = [NSMutableArray arrayWithArray:onlyJPGs];
 }
 
 -(void)refreshComments{
