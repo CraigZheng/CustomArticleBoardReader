@@ -55,7 +55,7 @@
     if (currentLoginUser) {
         loginStatus = [NSString stringWithFormat:@"%@ - %@", currentLoginUser.name, currentLoginUser.loginStatus];
     }
-    commands = [[NSMutableArray alloc] initWithObjects:@"自动下载图片", @"使用实验性的浏览器",
+    commands = [[NSMutableArray alloc] initWithObjects:@"自动下载图片", /*@"使用实验性的浏览器",*/
                 articleOrderingCommand,
                 @"图片缓存", @"清空图片缓存", @"清空文章缓存", [NSString stringWithFormat:@"版本号: %@", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"]], loginStatus, nil];
     [self.tableView reloadData];
