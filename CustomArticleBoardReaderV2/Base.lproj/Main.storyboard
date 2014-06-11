@@ -735,22 +735,19 @@
                                             <color key="textColor" red="0.52551020408163263" green="0.52551020408163263" blue="0.52551020408163263" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
-                                        <textView clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" tag="2" contentMode="scaleToFill" editable="NO" text="Content" translatesAutoresizingMaskIntoConstraints="NO" id="EUf-NN-rdk">
+                                        <view tag="2" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vlm-x4-4BD" customClass="EmotionLabel">
                                             <rect key="frame" x="0.0" y="20" width="320" height="23"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                                            <fontDescription key="fontDescription" type="system" pointSize="16"/>
-                                            <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
-                                        </textView>
+                                        </view>
                                     </subviews>
                                     <constraints>
                                         <constraint firstItem="d5G-1E-DBO" firstAttribute="top" secondItem="UWi-4q-6QS" secondAttribute="top" id="6PW-jh-3l8"/>
-                                        <constraint firstAttribute="trailing" secondItem="EUf-NN-rdk" secondAttribute="trailing" id="FO6-Ds-Yj2"/>
                                         <constraint firstAttribute="trailing" secondItem="d5G-1E-DBO" secondAttribute="trailing" id="HGY-SD-1PU"/>
-                                        <constraint firstItem="EUf-NN-rdk" firstAttribute="leading" secondItem="UWi-4q-6QS" secondAttribute="leading" id="R33-ij-PIj"/>
+                                        <constraint firstItem="vlm-x4-4BD" firstAttribute="top" secondItem="UWi-4q-6QS" secondAttribute="top" constant="20" id="PRM-XB-VVW"/>
                                         <constraint firstItem="d5G-1E-DBO" firstAttribute="leading" secondItem="UWi-4q-6QS" secondAttribute="leading" id="Zy3-bq-Ks6"/>
-                                        <constraint firstItem="EUf-NN-rdk" firstAttribute="top" secondItem="UWi-4q-6QS" secondAttribute="top" constant="20" id="mfl-5x-ADE"/>
-                                        <constraint firstAttribute="bottom" secondItem="EUf-NN-rdk" secondAttribute="bottom" id="qoC-8c-rEO"/>
+                                        <constraint firstAttribute="bottom" secondItem="vlm-x4-4BD" secondAttribute="bottom" id="iXO-8H-mUZ"/>
+                                        <constraint firstItem="vlm-x4-4BD" firstAttribute="leading" secondItem="UWi-4q-6QS" secondAttribute="leading" id="jOD-nS-Of5"/>
+                                        <constraint firstAttribute="trailing" secondItem="vlm-x4-4BD" secondAttribute="trailing" id="pPc-O8-fvm"/>
                                     </constraints>
                                 </tableViewCellContentView>
                             </tableViewCell>

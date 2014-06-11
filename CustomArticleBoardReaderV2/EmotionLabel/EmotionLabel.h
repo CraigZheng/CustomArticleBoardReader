@@ -10,11 +10,12 @@
 #import "DTAttributedTextContentView.h"
 
 @interface EmotionLabel : DTAttributedTextContentView {
-    NSDictionary *emotions;
+//    NSDictionary *emotions;
 }
 
 @property (nonatomic ,strong) NSString *text;
 @property (nonatomic ,strong) NSString *orignText;
 @property (nonatomic ,strong) UIFont *font;
 
+-(void)setEmotions:(NSDictionary*)emos;
 @end

@@ -115,7 +115,17 @@
                             [url.absoluteString.lastPathComponent rangeOfString:@"jpeg" options:NSCaseInsensitiveSearch].location != NSNotFound ||
                             [url.absoluteString.lastPathComponent rangeOfString:@"gif" options:NSCaseInsensitiveSearch].location != NSNotFound ||
                             [url.absoluteString.lastPathComponent rangeOfString:@"png"options:NSCaseInsensitiveSearch].location != NSNotFound){
-                            [fragments addObject:url];
+                            BOOL inserted = NO;
+                            for (NSInteger i = 0; i < fragments.count; i++) {
+                                id fragment = [fragments objectAtIndex:i];
+                                if ([fragment isKindOfClass:[NSURL class]] && [[(NSURL*)fragment absoluteString].lastPathComponent isEqualToString:url.absoluteString.lastPathComponent]){
+                                    [fragments replaceObjectAtIndex:[fragments indexOfObject:fragment] withObject:url];
+                                    inserted = YES;
+                                    break;
+                                }
+                            }
+                            if (!inserted)
+                                [fragments addObject:url];
                         }
                     }
                 }

@@ -8,8 +8,12 @@
 
 #import "EmotionLabel.h"
 
-@implementation EmotionLabel
+@interface EmotionLabel()
+@property (nonatomic) NSDictionary *emotions;
+@end
 
+@implementation EmotionLabel
+@synthesize emotions;
 @synthesize orignText = _orignText;
 @synthesize text = _text;
 @synthesize font = _font;
@@ -23,14 +27,18 @@
 }
 
 - (NSDictionary *)getEmotions {
-    static NSDictionary *ems;
-    if (!ems) {
-        NSString *plistPath = [[NSBundle mainBundle] pathForResource:@"emotions" ofType:@"plist"];
-        ems = [[NSDictionary alloc] initWithContentsOfFile:plistPath];
-    }
-    
-    return ems;
-    
+//    static NSDictionary *ems;
+//    if (!ems) {
+//        NSString *plistPath = [[NSBundle mainBundle] pathForResource:@"emotions" ofType:@"plist"];
+//        ems = [[NSDictionary alloc] initWithContentsOfFile:plistPath];
+//    }
+//    
+//    return ems;
+    return emotions;
+}
+
+-(void)setEmotions:(NSDictionary *)emos {
+    emotions = emos;
 }
 
 - (void)setText:(NSString *)text {

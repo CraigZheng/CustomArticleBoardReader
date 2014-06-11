@@ -12,6 +12,7 @@
 #import "czzComment.h"
 #import "czzCommentDownloader.h"
 #import "czzPostCommentViewController.h"
+#import "EmotionLabel/EmotionLabel.h"
 
 @interface czzCommentViewController ()<czzCommentDownloaderDelegate>
 @property czzCommentDownloader *commentDownloader;
@@ -20,7 +21,9 @@
 @property NSMutableArray *heightsForRows;
 @property NSMutableArray *heightsForHorizontalRows;
 @property NSIndexPath *fisrtVisibleCellIndex;
-@property NSMutableArray *emotionFiles;
+@property NSMutableArray *aisEmotions;
+@property NSMutableArray *acEmotions;
+@property NSMutableDictionary *emotionDictionary;
 
 typedef enum ScrollDirection {
     ScrollDirectionNone,
@@ -40,7 +43,9 @@ typedef enum ScrollDirection {
 @synthesize heightsForRows;
 @synthesize heightsForHorizontalRows;
 @synthesize fisrtVisibleCellIndex;
-@synthesize emotionFiles;
+@synthesize aisEmotions;
+@synthesize acEmotions;
+@synthesize emotionDictionary;
 
 - (void)viewDidLoad
 {
@@ -53,12 +58,37 @@ typedef enum ScrollDirection {
     if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0) {
         self.navigationController.toolbar.hidden = YES;
     }
-    NSString *emotionFolder = [[NSBundle mainBundle] bundlePath];
+    
+    //emotions
+    emotionDictionary = [NSMutableDictionary new];
+    acEmotions = [NSMutableArray new];
+    aisEmotions = [NSMutableArray new];
+    NSString *acEmotionFolder = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:@"ac emotions01"];
+    NSString *aisEmotionFolder = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:@"ac emotions02"];
     NSFileManager *fm = [NSFileManager defaultManager];
-    NSArray *dirContents = [fm contentsOfDirectoryAtPath:emotionFolder error:nil];
+    NSArray *dirContents = [fm contentsOfDirectoryAtPath:acEmotionFolder error:nil];
     NSPredicate *fltr = [NSPredicate predicateWithFormat:@"self ENDSWITH '.gif'"];
-    NSArray *onlyJPGs = [dirContents filteredArrayUsingPredicate:fltr];
-    emotionFiles = [NSMutableArray arrayWithArray:onlyJPGs];
+    NSArray *emotions = [dirContents filteredArrayUsingPredicate:fltr];
+
+    for (NSString *emoFile in emotions) {
+        [acEmotions addObject:[acEmotionFolder.lastPathComponent stringByAppendingPathComponent:emoFile]];
+    }
+    dirContents = [fm contentsOfDirectoryAtPath:aisEmotionFolder error:nil];
+    emotions = [dirContents filteredArrayUsingPredicate:fltr];
+    for (NSString *emoFile in emotions) {
+        [aisEmotions addObject:[aisEmotionFolder.lastPathComponent stringByAppendingPathComponent:emoFile]];
+    }
+    //make emotion dictionary
+    for (NSInteger i = 0; i < acEmotions.count; i++){
+        NSString *key = [NSString stringWithFormat:@"emot=%@,%02d/", @"ac", i + 1];
+        [emotionDictionary setObject:[acEmotions objectAtIndex:i] forKey:key];
+    }
+    
+    for (NSInteger i = 0; i < aisEmotions.count; i++){
+        NSString *key = [NSString stringWithFormat:@"emot=%@,%02d/", @"ais", i + 1];
+        [emotionDictionary setObject:[aisEmotions objectAtIndex:i] forKey:key];
+    }
+    
 }
 
 -(void)refreshComments{
@@ -106,7 +136,7 @@ typedef enum ScrollDirection {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier forIndexPath:indexPath];
     if (cell){
         UILabel *authorLabel = (UILabel*)[cell viewWithTag:1];
-        UITextView *contentTextView = (UITextView*)[cell viewWithTag:2];
+        EmotionLabel *emotionLabel = (EmotionLabel*)[cell viewWithTag:2];
         czzComment *comment = [comments objectAtIndex:indexPath.row];
         NSString *authorString;
         if (comment.refCommentFlow.count > 0) {
@@ -116,7 +146,10 @@ typedef enum ScrollDirection {
         } else
         authorString = [NSString stringWithFormat:@"#%ld %@ 说：", (long)comment.floorIndex, comment.user.name];
         authorLabel.text = authorString;
-        contentTextView.text = comment.content;
+
+        emotionLabel.font = [UIFont systemFontOfSize:16];
+        [emotionLabel setEmotions:emotionDictionary];
+        emotionLabel.text = comment.content;
     }
     return cell;
 }

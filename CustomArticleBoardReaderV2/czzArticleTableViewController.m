@@ -51,8 +51,8 @@
     shouldAutomaticallyLoadImage = [[NSUserDefaults standardUserDefaults] boolForKey:@"shouldAutomaticallyLoadImage"];
     
     failedImageDownload = [NSMutableSet new];
-    heightsForRow = [NSMutableArray new];
-    heightsForHorizontalRows = [NSMutableArray new];
+    heightsForRow = [NSMutableArray arrayWithObject:[NSNull null]];
+    heightsForHorizontalRows = [NSMutableArray arrayWithObject:[NSNull null]];
     if (myArticle){
         czzArticle* cachedArticle = [self readArticleFromCache:myArticle];
         if (cachedArticle) {
@@ -217,22 +217,19 @@
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
     CGFloat preferHeight = tableView.rowHeight;
     NSMutableArray *heightsArray;
+
     if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
         heightsArray = heightsForRow;
     else
         heightsArray = heightsForHorizontalRows;
-    if (indexPath.row < heightsArray.count)
+    if (indexPath.row < heightsArray.count && [heightsArray objectAtIndex:indexPath.row] != [NSNull null]){
         preferHeight = [[heightsArray objectAtIndex:indexPath.row] floatValue];
-    if (preferHeight != tableView.rowHeight) {
         return preferHeight;
     }
     if (indexPath.row == 0) {
         preferHeight = descViewController.view.frame.size.height;
-        if (indexPath.row < heightsArray.count) {
-            [heightsArray replaceObjectAtIndex:indexPath.row withObject:[NSNumber numberWithFloat:preferHeight]];
-        } else {
-            [heightsArray addObject:[NSNumber numberWithFloat:preferHeight]];
-        }
+        [heightsForRow replaceObjectAtIndex:indexPath.row withObject:[NSNumber numberWithFloat:preferHeight]];
+        [heightsForHorizontalRows replaceObjectAtIndex:indexPath.row withObject:[NSNumber numberWithFloat:preferHeight]];
         return preferHeight;
     }
     id htmlFragment = [myArticle.htmlFragments objectAtIndex:indexPath.row - 1];
@@ -252,7 +249,6 @@
             preferHeight = tableView.rowHeight;
         }
     } else {
-
         UITextView *newHiddenTextView = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 1)];
         [self.view addSubview:newHiddenTextView];
 
@@ -261,8 +257,10 @@
 
         newHiddenTextView.text = [htmlFragment description];
         preferHeight = [newHiddenTextView sizeThatFits:CGSizeMake(newHiddenTextView.frame.size.width, MAXFLOAT)].height;
-        [newHiddenTextView removeFromSuperview];
         preferHeight = MAX(tableView.rowHeight, preferHeight);
+        
+        [newHiddenTextView removeFromSuperview];
+
     }
     if (indexPath.row < heightsArray.count)
         [heightsArray replaceObjectAtIndex:indexPath.row withObject:[NSNumber numberWithFloat:preferHeight]];
@@ -277,7 +275,7 @@
         return;
     id htmlFragment = [myArticle.htmlFragments objectAtIndex:indexPath.row - 1];
     if ([htmlFragment isKindOfClass:[NSURL class]]){
-        NSLog(@"clicked URL: %@", htmlFragment);
+//        NSLog(@"clicked URL: %@", htmlFragment);
         NSString *imageURL = [(NSURL*)htmlFragment absoluteString];
         NSString *localImagePath;
         if ((localImagePath = [imageCentre containsImageInLocal:imageURL])) {
@@ -390,11 +388,13 @@
     myArticle = article;
     myArticle.parentViewController = self;
     if (myArticle.htmlFragments.count > 0){
-        heightsForRow = [NSMutableArray new];
-        heightsForHorizontalRows = [NSMutableArray new];
+        heightsForRow = [NSMutableArray arrayWithObject:[NSNull null]];
+        heightsForHorizontalRows = [NSMutableArray arrayWithObject:[NSNull null]];
         for (int i = 0; i < myArticle.htmlFragments.count + 1; i++) {
-            [heightsForRow addObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
-            [heightsForHorizontalRows addObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
+            [heightsForRow addObject:[NSNull null]];
+            [heightsForHorizontalRows addObject:[NSNull null]];
+//            [heightsForRow addObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
+//            [heightsForHorizontalRows addObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
         };
         [self readHeightsBackToArrays:myArticle];
         [self performSelectorOnMainThread:@selector(refreshTableView) withObject:nil waitUntilDone:YES];
