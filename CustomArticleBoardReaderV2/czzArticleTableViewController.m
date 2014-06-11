@@ -51,9 +51,9 @@
     shouldAutomaticallyLoadImage = [[NSUserDefaults standardUserDefaults] boolForKey:@"shouldAutomaticallyLoadImage"];
     
     failedImageDownload = [NSMutableSet new];
-    heightsForRow = [NSMutableArray arrayWithObject:[NSNull null]];
-    heightsForHorizontalRows = [NSMutableArray arrayWithObject:[NSNull null]];
+    
     if (myArticle){
+
         czzArticle* cachedArticle = [self readArticleFromCache:myArticle];
         if (cachedArticle) {
             [self setMyArticle:cachedArticle];
@@ -67,10 +67,6 @@
         NSLog(@"article nil");
     }
     imageCentre = [czzImageCentre sharedInstance];
-    descViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"czz_description_view_controller"];
-    
-    descViewController.myArticle = myArticle;
-    descViewController.parentViewController = self;
 //    for (int i = 0; i < myArticle.htmlFragments.count + 1; i++) {
 //        [heightsForRow addObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
 //    };
@@ -167,6 +163,8 @@
     if (indexPath.row == 0) {
         NSString *CellIdentifier = @"description_cell_identifier";
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
+        if (descViewController.view.superview)
+            [descViewController.view removeFromSuperview];
         [cell.contentView addSubview:descViewController.view];
         return cell;
     }
@@ -222,16 +220,11 @@
         heightsArray = heightsForRow;
     else
         heightsArray = heightsForHorizontalRows;
-    if (indexPath.row < heightsArray.count && [heightsArray objectAtIndex:indexPath.row] != [NSNull null]){
+    if (indexPath.row < heightsArray.count && [[heightsArray objectAtIndex:indexPath.row] floatValue] != tableView.rowHeight){
         preferHeight = [[heightsArray objectAtIndex:indexPath.row] floatValue];
         return preferHeight;
     }
-    if (indexPath.row == 0) {
-        preferHeight = descViewController.view.frame.size.height;
-        [heightsForRow replaceObjectAtIndex:indexPath.row withObject:[NSNumber numberWithFloat:preferHeight]];
-        [heightsForHorizontalRows replaceObjectAtIndex:indexPath.row withObject:[NSNumber numberWithFloat:preferHeight]];
-        return preferHeight;
-    }
+    
     id htmlFragment = [myArticle.htmlFragments objectAtIndex:indexPath.row - 1];
     if ([htmlFragment isKindOfClass:[NSURL class]]){
         NSString* basePath = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
@@ -387,12 +380,22 @@
 -(void)setMyArticle:(czzArticle *)article{
     myArticle = article;
     myArticle.parentViewController = self;
+    
+    descViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"czz_description_view_controller"];
+    descViewController.myArticle = myArticle;
+    descViewController.parentViewController = self;
+    
+    heightsForRow = [NSMutableArray arrayWithObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
+    heightsForHorizontalRows = [NSMutableArray arrayWithObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
+    if (descViewController) {
+        [heightsForRow replaceObjectAtIndex:0 withObject:[NSNumber numberWithFloat:descViewController.view.frame.size.height]];
+        [heightsForHorizontalRows replaceObjectAtIndex:0 withObject:[NSNumber numberWithFloat:descViewController.view.frame.size.height]];
+    }
+
     if (myArticle.htmlFragments.count > 0){
-        heightsForRow = [NSMutableArray arrayWithObject:[NSNull null]];
-        heightsForHorizontalRows = [NSMutableArray arrayWithObject:[NSNull null]];
         for (int i = 0; i < myArticle.htmlFragments.count + 1; i++) {
-            [heightsForRow addObject:[NSNull null]];
-            [heightsForHorizontalRows addObject:[NSNull null]];
+            [heightsForRow addObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
+            [heightsForHorizontalRows addObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
 //            [heightsForRow addObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
 //            [heightsForHorizontalRows addObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
         };
