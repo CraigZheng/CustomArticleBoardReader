@@ -82,7 +82,8 @@
     [formatedResponse replaceOccurrencesOfString:@"\n" withString:@"<br />" options:0 range:NSMakeRange(0, formatedResponse.length)];
     NSData *data = [[NSString stringWithFormat:@"<p style='font-size:%fpt'>%@</p>", _font.pointSize, formatedResponse] dataUsingEncoding:NSUTF8StringEncoding];
     NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:[NSValue valueWithCGSize:/*CGSizeMake(_font.lineHeight, _font.lineHeight)*/CGSizeMake(50, 50)], DTMaxImageSize, @"System", DTDefaultFontFamily, nil];
-    NSAttributedString *string = [[NSAttributedString alloc] initWithHTML:data options:options documentAttributes:NULL];
+    NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithHTML:data options:options documentAttributes:NULL];
+
     self.attributedString = string;
 
 }

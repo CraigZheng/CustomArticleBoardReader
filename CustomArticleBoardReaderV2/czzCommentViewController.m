@@ -11,8 +11,8 @@
 #import "czzAppDelegate.h"
 #import "czzComment.h"
 #import "czzCommentDownloader.h"
+#import "DTCoreText/DTAttributedTextView.h"
 #import "czzPostCommentViewController.h"
-#import "EmotionLabel/EmotionLabel.h"
 
 @interface czzCommentViewController ()<czzCommentDownloaderDelegate>
 @property czzCommentDownloader *commentDownloader;
@@ -136,7 +136,7 @@ typedef enum ScrollDirection {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier forIndexPath:indexPath];
     if (cell){
         UILabel *authorLabel = (UILabel*)[cell viewWithTag:1];
-        EmotionLabel *emotionLabel = (EmotionLabel*)[cell viewWithTag:2];
+        DTAttributedTextView *dtAttributedTextView = (DTAttributedTextView*)[cell viewWithTag:2];
         czzComment *comment = [comments objectAtIndex:indexPath.row];
         NSString *authorString;
         if (comment.refCommentFlow.count > 0) {
@@ -146,10 +146,9 @@ typedef enum ScrollDirection {
         } else
         authorString = [NSString stringWithFormat:@"#%ld %@ 说：", (long)comment.floorIndex, comment.user.name];
         authorLabel.text = authorString;
-
-        emotionLabel.font = [UIFont systemFontOfSize:16];
-        [emotionLabel setEmotions:emotionDictionary];
-        emotionLabel.text = comment.content;
+        dtAttributedTextView.userInteractionEnabled = NO;
+        dtAttributedTextView.attributedString = [self scanEmotionTags:comment.content :emotionDictionary :[UIFont systemFontOfSize:16]];
+        
     }
     return cell;
 }
@@ -169,13 +168,17 @@ typedef enum ScrollDirection {
         preferHeight = [[heightsArray objectAtIndex:indexPath.row] floatValue];
         return preferHeight;
     }
-    UITextView *newHiddenTextView = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 1)];
+    DTAttributedTextView *newHiddenTextView = [[DTAttributedTextView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 1)];
     newHiddenTextView.hidden = YES;
-    newHiddenTextView.font = [UIFont systemFontOfSize:16];
+//    newHiddenTextView.font = [UIFont systemFontOfSize:16];
+
     [self.view addSubview:newHiddenTextView];
     czzComment *comment = [comments objectAtIndex:indexPath.row];
-    newHiddenTextView.text = comment.content;
-    preferHeight = [newHiddenTextView sizeThatFits:CGSizeMake(newHiddenTextView.frame.size.width, MAXFLOAT)].height + 15;
+//    newHiddenTextView.text = comment.content;
+    newHiddenTextView.attributedString = [self scanEmotionTags:comment.content :emotionDictionary :[UIFont systemFontOfSize:16]];
+
+//    preferHeight = [newHiddenTextView sizeThatFits:CGSizeMake(newHiddenTextView.frame.size.width, MAXFLOAT)].height + 15;
+    preferHeight = [[newHiddenTextView contentView] suggestedFrameSizeToFitEntireStringConstraintedToWidth:newHiddenTextView.frame.size.width] .height + 20;
     [newHiddenTextView removeFromSuperview];
     preferHeight = MAX(tableView.rowHeight, preferHeight);
     [heightsArray addObject:[NSNumber numberWithFloat:preferHeight]];
@@ -269,5 +272,52 @@ typedef enum ScrollDirection {
     [[czzAppDelegate sharedAppDelegate] doSingleViewShowAnimation:self.navigationController.toolbar :kCATransitionFromTop :0.2];
     //[[czzAppDelegate sharedAppDelegate] doSingleViewShowAnimation:self.navigationController.navigationBar :kCATransitionFromBottom :0.2];
 }
+
+#pragma mark - scan emotion tags
+- (NSAttributedString*)scanEmotionTags:(NSString *)originalText :(NSDictionary*)emoDict :(UIFont*)font{
+    
+    NSDictionary *emotions = emoDict;
+    NSString *text = originalText;
+    
+    NSString *replaced;
+    NSMutableString *formatedResponse = [NSMutableString string];
+    
+    NSScanner *emotionScanner = [NSScanner scannerWithString:text];
+    [emotionScanner setCharactersToBeSkipped:[NSCharacterSet characterSetWithCharactersInString:@""]];
+    while ([emotionScanner isAtEnd] == NO) {
+        
+        if([emotionScanner scanUpToString:@"[" intoString:&replaced]) {
+            [formatedResponse appendString:replaced];
+        }
+        if(![emotionScanner isAtEnd]) {
+            [emotionScanner scanString:@"[" intoString:nil];
+            replaced = @"";
+            [emotionScanner scanUpToString:@"]" intoString:&replaced];
+            NSString *em = [emotions valueForKey:replaced];
+            if (em) {
+                [formatedResponse appendFormat:@"<img src='%@' />", em];
+            }else {
+                [formatedResponse appendFormat:@"[%@]", replaced];
+            }
+            
+            [emotionScanner scanString:@"]" intoString:nil];
+        }
+        
+    }
+    
+    //NSLog(@"formatedResponse: %@", formatedResponse);
+    [formatedResponse replaceOccurrencesOfString:@"\n" withString:@"<br />" options:0 range:NSMakeRange(0, formatedResponse.length)];
+    NSData *data = [[NSString stringWithFormat:@"<p style='font-size:%fpt'>%@</p>", font.pointSize, formatedResponse] dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:[NSValue valueWithCGSize:/*CGSizeMake(_font.lineHeight, _font.lineHeight)*/CGSizeMake(50, 50)], DTMaxImageSize, @"System", DTDefaultFontFamily, nil];
+    NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithHTML:data options:options documentAttributes:NULL];
+    
+//    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle defaultParagraphStyle] mutableCopy];
+//    paragraphStyle.lineSpacing = 100;
+//    paragraphStyle.minimumLineHeight = font.lineHeight + 5;
+//    paragraphStyle.maximumLineHeight = font.lineHeight + 5;
+//    [string addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, string.length)];
+    return string;
+}
+
 
 @end

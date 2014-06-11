@@ -735,9 +735,13 @@
                                             <color key="textColor" red="0.52551020408163263" green="0.52551020408163263" blue="0.52551020408163263" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
-                                        <view tag="2" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vlm-x4-4BD" customClass="EmotionLabel">
+                                        <view tag="2" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vlm-x4-4BD" customClass="DTAttributedTextView">
                                             <rect key="frame" x="0.0" y="20" width="320" height="23"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="320" id="i4e-lZ-aau"/>
+                                                <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="23" id="z5o-dJ-wUF"/>
+                                            </constraints>
                                         </view>
                                     </subviews>
                                     <constraints>
