@@ -104,6 +104,10 @@ typedef enum ScrollDirection {
     [commentDownloader startDownloadingComment];
 }
 
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+}
+
 -(void)viewWillDisappear:(BOOL)animated{
     [super viewWillDisappear:animated];
     if (commentDownloader)
@@ -178,7 +182,7 @@ typedef enum ScrollDirection {
     newHiddenTextView.attributedString = [self scanEmotionTags:comment.content :emotionDictionary :[UIFont systemFontOfSize:16]];
 
 //    preferHeight = [newHiddenTextView sizeThatFits:CGSizeMake(newHiddenTextView.frame.size.width, MAXFLOAT)].height + 15;
-    preferHeight = [[newHiddenTextView contentView] suggestedFrameSizeToFitEntireStringConstraintedToWidth:newHiddenTextView.frame.size.width] .height + 20;
+    preferHeight = [[newHiddenTextView contentView] suggestedFrameSizeToFitEntireStringConstraintedToWidth:newHiddenTextView.frame.size.width] .height + 25;
     [newHiddenTextView removeFromSuperview];
     preferHeight = MAX(tableView.rowHeight, preferHeight);
     [heightsArray addObject:[NSNumber numberWithFloat:preferHeight]];
