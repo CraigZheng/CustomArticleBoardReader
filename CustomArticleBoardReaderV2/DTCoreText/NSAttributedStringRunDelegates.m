@@ -1,6 +1,6 @@
 //
 //  NSAttributedStringRunDelegates.m
-//  DTCoreText
+//  CoreTextExtensions
 //
 //  Created by Oliver on 14.01.11.
 //  Copyright 2011 Drobnik.com. All rights reserved.
@@ -18,7 +18,7 @@ CGFloat embeddedObjectGetAscentCallback(void *context)
 {
 	if ([(__bridge id)context isKindOfClass:[DTTextAttachment class]])
 	{
-		return [(__bridge DTTextAttachment *)context ascentForLayout];
+		return [(__bridge DTTextAttachment *)context displaySize].height;
 	}
 	return 0;
 }
@@ -26,7 +26,7 @@ CGFloat embeddedObjectGetDescentCallback(void *context)
 {
 	if ([(__bridge id)context isKindOfClass:[DTTextAttachment class]])
 	{
-		return [(__bridge DTTextAttachment *)context descentForLayout];
+		return 0;
 	}
 	return 0;
 }

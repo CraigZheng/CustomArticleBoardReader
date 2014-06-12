@@ -1,6 +1,6 @@
 //
 //  DTCoreTextLayoutLine.m
-//  DTCoreText
+//  CoreTextExtensions
 //
 //  Created by Oliver Drobnik on 1/24/11.
 //  Copyright 2011 Drobnik.com. All rights reserved.
@@ -11,59 +11,51 @@
 #import "DTCoreTextLayoutFrame.h"
 #import "DTCoreTextLayouter.h"
 #import "DTTextAttachment.h"
-#import "NSDictionary+DTCoreText.h"
-#import "DTTextBlock.h"
-#import "DTCoreTextConstants.h"
-#import "DTCoreTextFunctions.h"
 
 @interface DTCoreTextLayoutLine ()
 
 @property (nonatomic, strong) NSArray *glyphRuns;
+@property (nonatomic, assign) dispatch_semaphore_t layoutLock;
 
 @end
+
+#define SYNCHRONIZE_START(obj) dispatch_semaphore_wait(layoutLock, DISPATCH_TIME_FOREVER);
+#define SYNCHRONIZE_END(obj) dispatch_semaphore_signal(layoutLock);
+
 
 @implementation DTCoreTextLayoutLine
 {
 	CGRect _frame;
 	CTLineRef _line;
+	NSAttributedString *_attributedString;
 	
 	CGPoint _baselineOrigin;
 	
-	CGFloat _ascent;
-	CGFloat _descent;
-	CGFloat _leading;
-	CGFloat _width;
-	CGFloat _trailingWhitespaceWidth;
-	
-	CGFloat _underlineOffset;
-	CGFloat _lineHeight;
+	CGFloat ascent;
+	CGFloat descent;
+	CGFloat leading;
+	CGFloat width;
+	CGFloat trailingWhitespaceWidth;
 	
 	NSArray *_glyphRuns;
-	
+
 	BOOL _didCalculateMetrics;
-	
-	BOOL _writingDirectionIsRightToLeft;
-	BOOL _needsToDetectWritingDirection;
-	
-	BOOL _hasScannedGlyphRunsForValues;
+	NSInteger _stringLocationOffset;
 }
+@synthesize layoutLock;
 
-- (id)initWithLine:(CTLineRef)line
-{
-	return [self initWithLine:line stringLocationOffset:0];
-}
-
-- (id)initWithLine:(CTLineRef)line stringLocationOffset:(NSInteger)stringLocationOffset
+- (id)initWithLine:(CTLineRef)line layoutFrame:(DTCoreTextLayoutFrame *)layoutFrame origin:(CGPoint)origin;
 {
 	if ((self = [super init]))
 	{
 		_line = line;
 		CFRetain(_line);
-				
-		// writing direction
-		_needsToDetectWritingDirection = YES;
-				
-		_stringLocationOffset = stringLocationOffset;
+
+		NSAttributedString *globalString = [layoutFrame attributedStringFragment];
+		_attributedString = [[globalString attributedSubstringFromRange:[self stringRange]] copy];
+		
+		_baselineOrigin = origin;
+		layoutLock = dispatch_semaphore_create(1);
 	}
 	return self;
 }
@@ -71,17 +63,14 @@
 - (void)dealloc
 {
 	CFRelease(_line);
+	
+	dispatch_release(layoutLock);
 }
-
-#ifndef COVERAGE
-// exclude method from coverage testing
 
 - (NSString *)description
 {
-	return [NSString stringWithFormat:@"<%@ origin=%@ frame=%@ range=%@", [self class], NSStringFromCGPoint(_baselineOrigin), NSStringFromCGRect(self.frame), NSStringFromRange([self stringRange])];
+	return [NSString stringWithFormat:@"<%@ origin=%@ frame=%@ %@ '%@'>", [self class], NSStringFromCGPoint(_baselineOrigin), NSStringFromCGRect(self.frame), NSStringFromRange([self stringRange]), [_attributedString string]];
 }
-
-#endif
 
 - (NSRange)stringRange
 {
@@ -104,52 +93,11 @@
 	return ret;
 }
 
-#pragma mark - Drawing
 
-- (void)drawInContext:(CGContextRef)context
-{
-	CTLineDraw(_line, context);
-}
-
-- (CGPathRef)newPathWithGlyphs
-{
-	// mutable path for the line
-	CGMutablePathRef mutablePath = CGPathCreateMutable();
-	
-	for (DTCoreTextGlyphRun *oneRun in self.glyphRuns)
-	{
-		CGPathRef glyphPath = [oneRun newPathWithGlyphs];
-		
-		CGAffineTransform posTransform = CGAffineTransformMakeTranslation(_baselineOrigin.x, _baselineOrigin.y);
-		CGPathAddPath(mutablePath, &posTransform, glyphPath);
-		
-		CGPathRelease(glyphPath);
-	}
-	
-	return mutablePath;
-}
-
-#pragma mark - Creating Variants
-
-- (DTCoreTextLayoutLine *)justifiedLineWithFactor:(CGFloat)justificationFactor justificationWidth:(CGFloat)justificationWidth
-{
-	// make this line justified
-	CTLineRef justifiedLine = CTLineCreateJustifiedLine(_line, justificationFactor, justificationWidth);
-	
-	DTCoreTextLayoutLine *newLine = [[DTCoreTextLayoutLine alloc] initWithLine:justifiedLine];
-	
-	CFRelease(justifiedLine);
-	
-	return newLine;
-}
-
-
-#pragma mark - Calculations
-- (NSArray *)stringIndices
-{
+#pragma mark Calculations
+- (NSArray *)stringIndices {
 	NSMutableArray *array = [NSMutableArray array];
-	for (DTCoreTextGlyphRun *oneRun in self.glyphRuns)
-	{
+	for (DTCoreTextGlyphRun *oneRun in self.glyphRuns) {
 		[array addObjectsFromArray:[oneRun stringIndices]];
 	}
 	return array;
@@ -164,7 +112,7 @@
 		{
 			index -= count;
 		}
-		else
+		else 
 		{
 			return [oneRun frameOfGlyphAtIndex:index];
 		}
@@ -181,11 +129,8 @@
 	{
 		NSRange runRange = [oneRun stringRange];
 		
-		// intersect these ranges
-		NSRange intersectionRange = NSIntersectionRange(range, runRange);
-		
-		// if intersection is longer than zero length they intersect
-		if (intersectionRange.length)
+		// we only care about locations, assume that number of glyphs >= indexes
+		if (NSLocationInRange(runRange.location, range))
 		{
 			[tmpArray addObject:oneRun];
 		}
@@ -222,7 +167,7 @@
 		tmpRect.size.width = glyphFrame.origin.x + glyphFrame.size.width - tmpRect.origin.x;
 	}
 	
-	CGFloat maxX = CGRectGetMaxX(self.frame) - _trailingWhitespaceWidth;
+	CGFloat maxX = CGRectGetMaxX(self.frame) - trailingWhitespaceWidth;
 	if (CGRectGetMaxX(tmpRect) > maxX)
 	{
 		tmpRect.size.width = maxX - tmpRect.origin.x;
@@ -261,305 +206,251 @@
 	return index;
 }
 
-- (void)_calculateMetrics
+- (void)drawInContext:(CGContextRef)context
 {
-	@synchronized(self)
+	CTLineDraw(_line, context);
+}
+
+// fix for image squishing bug < iOS 4.2
+- (BOOL)correctAttachmentHeights:(CGFloat *)downShift
+{
+	// get the glyphRuns with attachments
+	NSArray *glyphRuns = [self glyphRuns];
+	
+	CGFloat necessaryDownShift = 0;
+	BOOL didShift = NO;
+	
+	NSMutableSet *correctedRuns = [[NSMutableSet alloc] init];
+	
+	
+	for (DTCoreTextGlyphRun *oneRun in glyphRuns)
+	{
+		DTTextAttachment *attachment = oneRun.attachment;
+		
+		if (attachment)
+		{
+			CGFloat currentGlyphHeight = oneRun.ascent;
+			CGFloat neededGlyphHeight = attachment.displaySize.height;
+			
+			if (neededGlyphHeight > currentGlyphHeight)
+			{
+				CGFloat ndownShift = neededGlyphHeight - currentGlyphHeight;
+				
+				if (ndownShift > necessaryDownShift)
+				{
+					necessaryDownShift = ndownShift;
+					didShift = YES;
+					
+					[correctedRuns addObject:oneRun];
+				}
+			}
+		}
+	}
+	
+	// now fix the ascent of these runs
+	for (DTCoreTextGlyphRun *oneRun in correctedRuns)
+	{
+		[oneRun fixMetricsFromAttachment];
+	}
+	
+	
+	// return executed shift
+	if (downShift)
+	{
+		*downShift = necessaryDownShift;
+	}
+	
+	return didShift;
+}
+
+- (void)calculateMetrics
+{
+	// calculate metrics
+	SYNCHRONIZE_START(self)
 	{
 		if (!_didCalculateMetrics)
 		{
-			_width = (CGFloat)CTLineGetTypographicBounds(_line, &_ascent, &_descent, &_leading);
-			_trailingWhitespaceWidth = (CGFloat)CTLineGetTrailingWhitespaceWidth(_line);
+			width = (CGFloat)CTLineGetTypographicBounds(_line, &ascent, &descent, &leading);
+			trailingWhitespaceWidth = (CGFloat)CTLineGetTrailingWhitespaceWidth(_line);
 			
 			_didCalculateMetrics = YES;
 		}
 	}
+	SYNCHRONIZE_END(self);
 }
 
-- (BOOL)isHorizontalRule
+// returns the maximum paragraph spacing for this line
+- (CGFloat)paragraphSpacing
 {
-	// HR is only a single \n
-	
-	if (self.stringRange.length>1)
+	// a paragraph spacing only is effective for last line in paragraph
+	if (![[_attributedString string] hasSuffix:@"\n"])
 	{
-		return NO;
+		return 0;
 	}
+
+	__block CGFloat retSpacing = 0;
+
+	NSRange allRange = NSMakeRange(0, [_attributedString length]);
+	[_attributedString enumerateAttribute:(id)kCTParagraphStyleAttributeName inRange:allRange options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired
+					   usingBlock:^(id value, NSRange range, BOOL *stop) {
+						   CTParagraphStyleRef paragraphStyle = (__bridge CTParagraphStyleRef)value;
+						   
+						   float paraSpacing;
+						   
+						   CTParagraphStyleGetValueForSpecifier(paragraphStyle, kCTParagraphStyleSpecifierParagraphSpacing, sizeof(paraSpacing), &paraSpacing);
+						   
+						   retSpacing = MAX(retSpacing, paraSpacing);
+					   }];
 	
-	NSArray *runs = self.glyphRuns;
-	
-	// thus only a single glyphRun
-	
-	if ([runs count]>1)
-	{
-		return NO;
-	}
-	
-	DTCoreTextGlyphRun *singleRun = [runs lastObject];
-	
-	if ([singleRun.attributes objectForKey:DTHorizontalRuleStyleAttribute])
-	{
-		return YES;
-	}
-	
-	return NO;
+	return retSpacing;
 }
 
-#pragma mark Determining Values from the glyph runs
 
-- (void)_scanGlyphRunsForValues
+// returns the calculated line height
+// http://stackoverflow.com/questions/5511830/how-does-line-spacing-work-in-core-text-and-why-is-it-different-from-nslayoutm
+- (CGFloat)lineHeight
 {
-	@synchronized(self)
+	if (!_didCalculateMetrics)
 	{
-		CGFloat maxOffset = 0;
-		CGFloat maxFontSize = 0;
-		
-		for (DTCoreTextGlyphRun *oneRun in self.glyphRuns)
+		[self calculateMetrics];
+	}
+	
+	CGFloat tmpLeading = roundf(MAX(0, leading));
+	
+	CGFloat lineHeight = roundf(ascent) + roundf(descent) + leading;
+	CGFloat ascenderDelta = 0;
+	
+	if (tmpLeading > 0)
+	{
+		// we have not see a non-zero leading ever before, oh well ...
+		ascenderDelta = 0;
+	}
+	else
+	{
+		// magically add an extra 20%
+		ascenderDelta = roundf(0.2f * lineHeight);
+	}
+	
+	return lineHeight + ascenderDelta;
+}
+
+
+// calculates the extra space that is before every line even though the leading is zero
+- (CGFloat)calculatedLeading
+{
+	CGFloat maxAscenderDelta = 0;
+	
+	for (DTCoreTextGlyphRun *oneRun in self.glyphRuns)
+	{
+		CGFloat tmpLeading = roundf(MAX(0, oneRun.leading));
+
+		if (tmpLeading <= 0)
 		{
-			CTFontRef usedFont = (__bridge CTFontRef)([oneRun.attributes objectForKey:(id)kCTFontAttributeName]);
-			
-			if (usedFont)
+			// we have not see a non-zero leading ever before, oh well ...
+			// for attachments the ascent equals the image height
+			// so we don't add the 20%
+			if (!oneRun.attachment)
 			{
-				maxOffset = MAX(maxOffset, fabs(CTFontGetUnderlinePosition(usedFont)));
+				CGFloat lineHeight = roundf(oneRun.ascent) + roundf(oneRun.descent) + tmpLeading;
+				CGFloat ascenderDelta = roundf(0.2f * lineHeight);
 				
-				maxFontSize = MAX(maxFontSize, CTFontGetSize(usedFont));
+				if (ascenderDelta > maxAscenderDelta)
+				{
+					maxAscenderDelta = ascenderDelta;
+				}
 			}
 		}
-		
-		_underlineOffset = maxOffset;
-		_lineHeight = maxFontSize;
-		
-		_hasScannedGlyphRunsForValues= YES;
 	}
+	
+	return maxAscenderDelta;
 }
 
-
-#pragma mark - Properties
+#pragma mark Properties
 - (NSArray *)glyphRuns
 {
-	@synchronized(self)
+	if (!_glyphRuns)
 	{
-		if (!_glyphRuns)
+		CFArrayRef runs = CTLineGetGlyphRuns(_line);
+		
+		CGFloat offset = 0;
+		
+		NSMutableArray *tmpArray = [[NSMutableArray alloc] initWithCapacity:CFArrayGetCount(runs)];
+		
+		for (id oneRun in (__bridge NSArray *)runs)
 		{
-			// run array is owned by line
-			CFArrayRef runs = CTLineGetGlyphRuns(_line);
-			CFIndex runCount = CFArrayGetCount(runs);
+			//CGPoint runOrigin = CGPointMake(_baselineOrigin.x + offset, _baselineOrigin.y);
 			
-			if (runCount)
-			{
-				NSMutableArray *tmpArray = [[NSMutableArray alloc] initWithCapacity:runCount];
-
-				for (CFIndex i=0; i<runCount; i++)
-				{
-					CTRunRef oneRun = CFArrayGetValueAtIndex(runs, i);
-					
-					CGPoint *positions = (CGPoint*)CTRunGetPositionsPtr(oneRun);
-					
-					BOOL shouldFreePositions = NO;
-					
-					if (positions == NULL) // Ptr gave NULL, we'll need to copy positions array and later free it
-					{
-						CFIndex glyphCount = CTRunGetGlyphCount(oneRun);
-						
-						shouldFreePositions = YES;
-						
-						size_t positionsBufferSize = sizeof(CGPoint) * glyphCount;
-						CGPoint *positionsBuffer = malloc(positionsBufferSize);
-						CTRunGetPositions(oneRun, CFRangeMake(0, 0), positionsBuffer);
-						positions = positionsBuffer;
-					}
-					
-					// assumption: position of first glyph is also the correct offset of the entire run
-					CGPoint position = positions[0];
-					
-					DTCoreTextGlyphRun *glyphRun = [[DTCoreTextGlyphRun alloc] initWithRun:oneRun layoutLine:self offset:position.x];
-					[tmpArray addObject:glyphRun];
-					
-					if ( shouldFreePositions )
-					{
-						free(positions);
-					}
-				}
-				
-				_glyphRuns = tmpArray;
-			}
+			DTCoreTextGlyphRun *glyphRun = [[DTCoreTextGlyphRun alloc] initWithRun:(__bridge CTRunRef)oneRun layoutLine:self offset:offset];
+			[tmpArray addObject:glyphRun];
+			
+			offset += glyphRun.frame.size.width;
 		}
 		
-		return _glyphRuns;
+		_glyphRuns = tmpArray;
 	}
+	
+	return _glyphRuns;
 }
 
 - (CGRect)frame
 {
 	if (!_didCalculateMetrics)
 	{
-		[self _calculateMetrics];
+		[self calculateMetrics];
 	}
 	
-	CGRect frame = CGRectMake(_baselineOrigin.x, _baselineOrigin.y - _ascent, _width, _ascent + _descent);
-	
-	// make sure that HR are extremely wide to be be picked up
-	if ([self isHorizontalRule])
-	{
-		frame.size.width = CGFLOAT_MAX;
-	}
-	
-	return frame;
+	return CGRectMake(_baselineOrigin.x, _baselineOrigin.y - ascent, width, ascent + descent);
 }
 
 - (CGFloat)width
 {
 	if (!_didCalculateMetrics)
 	{
-		[self _calculateMetrics];
+		[self calculateMetrics];
 	}
 	
-	return _width;
+	return width;
 }
-
-- (NSArray *)attachments
-{
-	NSMutableArray *tmpArray = [NSMutableArray array];
-	
-	for (DTCoreTextGlyphRun *oneRun in self.glyphRuns)
-	{
-		DTTextAttachment *attachment = oneRun.attachment;
-		
-		if (attachment)
-		{
-			[tmpArray addObject:attachment];
-		}
-	}
-	
-	if ([tmpArray count])
-	{
-		return tmpArray;
-	}
-	
-	return nil;
-}
-
 
 - (CGFloat)ascent
 {
 	if (!_didCalculateMetrics)
 	{
-		[self _calculateMetrics];
+		[self calculateMetrics];
 	}
 	
-	return _ascent;
+	return ascent;
 }
-
-- (void)setAscent:(CGFloat)ascent
-{
-	// need to get metrics because otherwise ascent gets overwritten
-	if (!_didCalculateMetrics)
-	{
-		[self _calculateMetrics];
-	}
-	
-	_ascent = ascent;
-}
-
 
 - (CGFloat)descent
 {
 	if (!_didCalculateMetrics)
 	{
-		[self _calculateMetrics];
+		[self calculateMetrics];
 	}
 	
-	return _descent;
+	return descent;
 }
 
 - (CGFloat)leading
 {
 	if (!_didCalculateMetrics)
 	{
-		[self _calculateMetrics];
+		[self calculateMetrics];
 	}
 	
-	return _leading;
+	return leading;
 }
 
-- (CGFloat)underlineOffset
-{
-	if (!_hasScannedGlyphRunsForValues)
-	{
-		[self _scanGlyphRunsForValues];
-	}
-	
-	return _underlineOffset;
-}
-
-- (CGFloat)lineHeight
-{
-	if (!_hasScannedGlyphRunsForValues)
-	{
-		[self _scanGlyphRunsForValues];
-	}
-	
-	return _lineHeight;
-}
-
-- (DTCoreTextParagraphStyle *)paragraphStyle
-{
-	// get paragraph style from any glyph
-	DTCoreTextGlyphRun *lastRun = [self.glyphRuns lastObject];
-	NSDictionary *attributes = lastRun.attributes;
-	
-	return [attributes paragraphStyle];
-}
-
-- (NSArray *)textBlocks
-{
-	// get text blocks from any glyph
-	DTCoreTextGlyphRun *lastRun = [self.glyphRuns lastObject];
-	NSDictionary *attributes = lastRun.attributes;
-	
-	return [attributes objectForKey:DTTextBlocksAttribute];
-}
-
-- (CGFloat)trailingWhitespaceWidth
-{
-	if (!_didCalculateMetrics)
-	{
-		[self _calculateMetrics];
-	}
-	
-	return _trailingWhitespaceWidth;
-}
-
-- (BOOL)writingDirectionIsRightToLeft
-{
-	if (_needsToDetectWritingDirection)
-	{
-		if ([self.glyphRuns count])
-		{
-			DTCoreTextGlyphRun *firstRun = [self.glyphRuns objectAtIndex:0];
-			
-			_writingDirectionIsRightToLeft = [firstRun writingDirectionIsRightToLeft];
-		}
-	}
-	
-	return _writingDirectionIsRightToLeft;
-}
-
-- (void)setWritingDirectionIsRightToLeft:(BOOL)writingDirectionIsRightToLeft
-{
-	_writingDirectionIsRightToLeft = writingDirectionIsRightToLeft;
-	_needsToDetectWritingDirection = NO;
-}
 
 @synthesize frame =_frame;
 @synthesize glyphRuns = _glyphRuns;
 
-@synthesize ascent = _ascent;
-@synthesize descent = _descent;
-@synthesize leading = _leading;
-@synthesize trailingWhitespaceWidth = _trailingWhitespaceWidth;
+@synthesize ascent;
+@synthesize descent;
+@synthesize leading;
+@synthesize trailingWhitespaceWidth;
 
 @synthesize baselineOrigin = _baselineOrigin;
-@synthesize writingDirectionIsRightToLeft = _writingDirectionIsRightToLeft;
-
-@synthesize stringLocationOffset = _stringLocationOffset;
 
 @end

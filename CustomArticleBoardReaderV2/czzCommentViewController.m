@@ -11,7 +11,8 @@
 #import "czzAppDelegate.h"
 #import "czzComment.h"
 #import "czzCommentDownloader.h"
-#import "DTCoreText/DTAttributedTextView.h"
+#import "DTAttributedTextView.h"
+#import "NSAttributedString+HTML.h"
 #import "czzPostCommentViewController.h"
 
 @interface czzCommentViewController ()<czzCommentDownloaderDelegate>
@@ -313,13 +314,14 @@ typedef enum ScrollDirection {
     [formatedResponse replaceOccurrencesOfString:@"\n" withString:@"<br />" options:0 range:NSMakeRange(0, formatedResponse.length)];
     NSData *data = [[NSString stringWithFormat:@"<p style='font-size:%fpt'>%@</p>", font.pointSize, formatedResponse] dataUsingEncoding:NSUTF8StringEncoding];
     NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:[NSValue valueWithCGSize:/*CGSizeMake(_font.lineHeight, _font.lineHeight)*/CGSizeMake(50, 50)], DTMaxImageSize, @"System", DTDefaultFontFamily, nil];
-    NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithHTML:data options:options documentAttributes:NULL];
+    NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithHTML:data options:options documentAttributes:nil
+                                         ];
     
-//    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle defaultParagraphStyle] mutableCopy];
-//    paragraphStyle.lineSpacing = 100;
-//    paragraphStyle.minimumLineHeight = font.lineHeight + 5;
-//    paragraphStyle.maximumLineHeight = font.lineHeight + 5;
-//    [string addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, string.length)];
+    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle defaultParagraphStyle] mutableCopy];
+    paragraphStyle.lineSpacing = 100;
+    paragraphStyle.minimumLineHeight = font.lineHeight + 5;
+    paragraphStyle.maximumLineHeight = font.lineHeight + 5;
+    [string addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, string.length)];
     return string;
 }
 
