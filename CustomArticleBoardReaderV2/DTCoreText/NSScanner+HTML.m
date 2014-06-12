@@ -1,271 +1,40 @@
 //
 //  NSScanner+HTML.m
-//  CoreTextExtensions
+//  DTCoreText
 //
 //  Created by Oliver Drobnik on 1/12/11.
 //  Copyright 2011 Drobnik.com. All rights reserved.
 //
 
+#import "DTCoreText.h"
 #import "NSScanner+HTML.h"
 #import "NSCharacterSet+HTML.h"
-#import "NSString+HTML.h"
+#import "DTColorFunctions.h"
 
 @implementation NSScanner (HTML)
 
-- (NSString *)peekNextTagSkippingClosingTags:(BOOL)skipClosingTags
-{
-	NSScanner *scanner = [self copy];
-	
-	do
-	{
-		NSString *textUpToNextTag = nil;
-		
-		if ([scanner scanUpToString:@"<" intoString:&textUpToNextTag])
-		{
-			// Check if there are alpha chars after the end tag
-			NSScanner *subScanner = [NSScanner scannerWithString:textUpToNextTag];
-			[subScanner scanUpToString:@">" intoString:NULL];
-			[subScanner scanString:@">" intoString:NULL];
-			
-			// Rest might be alpha
-			NSString *rest = [[textUpToNextTag substringFromIndex:subScanner.scanLocation] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-			
-			// We don't want a newline in this case so we send back any inline character
-			if ([rest length])
-			{
-				return @"b";
-			}
-		}
-		
-		[scanner scanString:@"<" intoString:NULL];
-	} while (skipClosingTags&&[scanner scanString:@"/" intoString:NULL]);
-	
-	NSString *nextTag = nil;
-	
-	[scanner scanCharactersFromSet:[NSCharacterSet tagNameCharacterSet] intoString:&nextTag];
-	
-	return [nextTag lowercaseString];
-}
-
-- (BOOL)scanHTMLTag:(NSString **)tagName attributes:(NSDictionary **)attributes isOpen:(BOOL *)isOpen isClosed:(BOOL *)isClosed
-{
-	NSInteger initialScanLocation = [self scanLocation];
-	
-	if (![self scanString:@"<" intoString:NULL])
-	{
-		[self setScanLocation:initialScanLocation];
-		return NO;
-	}
-	
-	BOOL tagOpen = YES;
-	BOOL immediatelyClosed = NO;
-	
-	NSCharacterSet *tagCharacterSet = [NSCharacterSet tagNameCharacterSet];
-	NSCharacterSet *tagAttributeNameCharacterSet = [NSCharacterSet tagAttributeNameCharacterSet];
-	NSCharacterSet *quoteCharacterSet = [NSCharacterSet quoteCharacterSet];
-	NSCharacterSet *whiteCharacterSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
-	NSCharacterSet *nonquoteAttributedEndCharacterSet = [NSCharacterSet nonQuotedAttributeEndCharacterSet];
-	
-	NSString *scannedTagName = nil;
-	NSMutableDictionary *tmpAttributes = [NSMutableDictionary dictionary];
-	
-	if ([self scanString:@"/" intoString:NULL])
-	{
-		// Close of tag
-		tagOpen = NO;
-	}
-	
-	[self scanCharactersFromSet:whiteCharacterSet intoString:NULL];
-	
-	// Read the tag name
-	if ([self scanCharactersFromSet:tagCharacterSet intoString:&scannedTagName])
-	{
-		// make tags lowercase
-		scannedTagName = [scannedTagName lowercaseString];
-		
-		[self scanCharactersFromSet:whiteCharacterSet intoString:NULL];
-	}
-	else
-	{
-		// might also be a comment
-		if ([self scanString:@"!--" intoString:NULL])
-		{
-			scannedTagName = @"#COMMENT#";
-			
-			NSString *commentStr = nil;
-			
-			if ([self scanUpToString:@"-->" intoString:&commentStr])
-			{
-				[tmpAttributes setObject:commentStr forKey:@"CommentText"];
-			}
-			
-			// skip closing
-			[self scanString:@"-->" intoString:NULL];
-			
-			tagOpen = NO;
-			immediatelyClosed = YES;
-		}
-		else
-		{
-			// not a valid tag, treat as text
-			[self setScanLocation:initialScanLocation];
-			return NO;
-		}
-	}
-	
-	// Read attributes of tag
-	while (![self isAtEnd] && !immediatelyClosed)
-	{
-		if ([self scanString:@"/" intoString:NULL])
-		{
-			
-			immediatelyClosed = YES;
-		}
-		
-		[self scanCharactersFromSet:whiteCharacterSet intoString:NULL];
-		
-		if ([self scanString:@">" intoString:NULL])
-		{
-			break;
-		}
-		
-		NSString *attrName = nil;
-		NSString *attrValue = nil;
-		
-		if (![self scanCharactersFromSet:tagAttributeNameCharacterSet intoString:&attrName])
-		{
-			immediatelyClosed = YES;
-			break;
-		}
-		
-		attrName = [attrName lowercaseString];
-		
-		[self scanCharactersFromSet:whiteCharacterSet intoString:NULL];
-		
-		if (![self scanString:@"=" intoString:nil])
-		{
-			// solo attribute
-			[tmpAttributes setObject:attrName forKey:attrName];
-		}
-		else 
-		{
-			// attribute = value
-			NSString *quote = nil;
-			
-			[self scanCharactersFromSet:whiteCharacterSet intoString:NULL];
-			
-			if ([self scanCharactersFromSet:quoteCharacterSet intoString:&quote])
-			{
-				if ([quote length]==1)
-				{
-					[self scanUpToString:quote intoString:&attrValue];	
-					[self scanString:quote intoString:NULL];
-				}
-				else
-				{
-					// most likely e.g. href=""
-					attrValue = @"";
-				}
-
-				// decode HTML entities
-				attrValue = [attrValue stringByReplacingHTMLEntities];
-				
-				[tmpAttributes setObject:attrValue forKey:attrName];
-			}
-			else 
-			{
-				// non-quoted attribute, ends at /, > or whitespace
-				if ([self scanUpToCharactersFromSet:nonquoteAttributedEndCharacterSet intoString:&attrValue])
-				{
-					// decode HTML entities
-					attrValue = [attrValue stringByReplacingHTMLEntities];
-
-					[tmpAttributes setObject:attrValue forKey:attrName];
-				}
-			}
-		}
-		
-		[self scanCharactersFromSet:whiteCharacterSet intoString:NULL];
-	}
-	
-	// Success 
-	if (isClosed)
-	{
-		*isClosed = immediatelyClosed;
-	}
-	
-	if (isOpen)
-	{
-		*isOpen = tagOpen;
-	}
-	
-	if (attributes)
-	{
-		// converting to immutable costs 10.4% of method
-		//*attributes = [NSDictionary dictionaryWithDictionary:tmpAttributes];
-		*attributes = tmpAttributes;
-	}
-	
-	if (tagName)
-	{
-		*tagName = scannedTagName;
-	}
-	
-	return YES;
-}
-
-
-- (BOOL)scanDOCTYPE:(NSString **)contents
-{
- 	NSInteger initialScanLocation = [self scanLocation];
-	
-	if (![self scanString:@"<!" intoString:NULL])
-	{
-		[self setScanLocation:initialScanLocation];
-		return NO;
-	}
-	
-	NSString *body = nil;
-	
-	if (![self scanUpToString:@">" intoString:&body])
-	{
-		[self setScanLocation:initialScanLocation];
-		return NO;
-	}
-	
-	if (![self scanString:@">" intoString:NULL])
-	{
-		[self setScanLocation:initialScanLocation];
-		return NO;
-	}
-	
-	if (contents)
-	{
-		*contents = body;
-	}
-	
-	return YES;
-}
-
-
 #pragma mark CSS
 
-
 // scan a single element from a style list
-- (BOOL)scanCSSAttribute:(NSString **)name value:(NSString **)value
+- (BOOL)scanCSSAttribute:(NSString * __autoreleasing*)name value:(id __autoreleasing*)value
 {
 	NSString *attrName = nil;
-	NSString *attrValue = nil;
 	
 	NSInteger initialScanLocation = [self scanLocation];
 	
 	NSCharacterSet *whiteCharacterSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
 	
+	NSMutableCharacterSet *nonWhiteCharacterSet = [[NSCharacterSet whitespaceAndNewlineCharacterSet] mutableCopy];
+	[nonWhiteCharacterSet formUnionWithCharacterSet:[NSCharacterSet characterSetWithCharactersInString:@";"]];
+	[nonWhiteCharacterSet invert];
+
+	NSMutableCharacterSet *nonWhiteCommaCharacterSet = [[NSCharacterSet whitespaceAndNewlineCharacterSet] mutableCopy];
+	[nonWhiteCommaCharacterSet formUnionWithCharacterSet:[NSCharacterSet characterSetWithCharactersInString:@";,"]];
+	[nonWhiteCommaCharacterSet invert];
+
 	
 	// alphanumeric plus -
 	NSCharacterSet *cssStyleAttributeNameCharacterSet = [NSCharacterSet cssStyleAttributeNameCharacterSet];
-	
-	
 	
 	if (![self scanCharactersFromSet:cssStyleAttributeNameCharacterSet intoString:&attrName])
 	{
@@ -276,7 +45,7 @@
 	[self scanCharactersFromSet:whiteCharacterSet intoString:NULL];
 	
 	// expect :
-	if (![self scanString:@":" intoString:NULL])
+	if (![self  scanString:@":" intoString:NULL])
 	{
 		[self setScanLocation:initialScanLocation];
 		return NO;
@@ -285,25 +54,130 @@
 	// skip whitespace
 	[self scanCharactersFromSet:whiteCharacterSet intoString:NULL];
 	
-	if (![self scanUpToString:@";" intoString:&attrValue])
+	NSMutableArray *results = [NSMutableArray array];
+	BOOL nextIterationAddsNewEntry = YES;
+	
+	while (![self isAtEnd] && ![self scanString:@";" intoString:NULL])
 	{
-		[self setScanLocation:initialScanLocation];
-		return NO;
+		// skip whitespace
+		[self scanCharactersFromSet:whiteCharacterSet intoString:NULL];
+
+		NSString *quote = nil;
+		if ([self scanCharactersFromSet:[NSCharacterSet quoteCharacterSet] intoString:&quote])
+		{
+			NSString *quotedValue = nil;
+			
+			// attribute is quoted
+			if (![self scanUpToString:quote intoString:&quotedValue])
+			{
+				[self setScanLocation:initialScanLocation];
+				return NO;
+			}
+			else
+			{
+				if (nextIterationAddsNewEntry)
+				{
+					[results addObject:quotedValue];
+					nextIterationAddsNewEntry = NO;
+				}
+				else
+				{
+					quotedValue = [NSString stringWithFormat:@"%@ %@%@%@", [results lastObject], quote, quotedValue, quote];
+					[results removeLastObject];
+					[results addObject:quotedValue];
+				}
+			}
+			
+			// skip ending quote
+			[self scanString:quote intoString:NULL];
+			
+			//TODO: decode unicode sequences like "\2022"
+		}
+		else
+		{
+			// attribute is not quoted, we append elements until we find a ; or the string is at the end
+			NSString *valueString = nil;
+			
+			if ([self scanString:@"rgb(" intoString:&valueString])
+			{
+				if ([valueString isEqualToString:@"rgb("])
+				{
+					[self scanUpToString:@";" intoString:&valueString];
+					NSString * formattedRGBString = [NSString stringWithFormat:@"rgb(%@", valueString];
+					
+					if (nextIterationAddsNewEntry)
+					{
+						[results addObject:formattedRGBString];
+						nextIterationAddsNewEntry = NO;
+					}
+					else
+					{
+						valueString = [NSString stringWithFormat:@"%@ %@", [results lastObject], formattedRGBString];
+						[results removeLastObject];
+						[results addObject:valueString];
+					}
+				}
+			}
+			else if ([self scanString:@"," intoString:&valueString])
+			{
+                BOOL isStringOnlyCSSProperty = NO;
+                
+				if (![valueString isEqualToString:@","])
+				{
+					[results addObject:valueString];
+				}
+				else if ([attrName isEqualToString:@"font"] ||
+						 ([attrName rangeOfString:@"color"].location != NSNotFound) ||
+						 ([attrName rangeOfString:@"shadow"].location != NSNotFound) ||
+						 ([attrName rangeOfString:@"background"].location != NSNotFound))
+				{
+					valueString = [NSString stringWithFormat:@"%@%@", [results lastObject], valueString];
+					[results removeLastObject];
+					[results addObject:valueString];
+                    
+                    isStringOnlyCSSProperty = YES;
+				}
+				
+				if ([valueString isEqualToString:@","] && !isStringOnlyCSSProperty)
+				{
+					nextIterationAddsNewEntry = YES;
+				}
+			}
+			else if ([self scanCharactersFromSet:nonWhiteCommaCharacterSet intoString:&valueString])
+			{
+				if ([valueString length] && ![valueString isEqualToString:@","])
+				{
+					if (nextIterationAddsNewEntry) {
+						[results addObject:valueString];
+						nextIterationAddsNewEntry = NO;
+					} else {
+						valueString = [NSString stringWithFormat:@"%@ %@", [results lastObject], valueString];
+						[results removeLastObject];
+						[results addObject:valueString];
+					}
+				}
+			}
+		}
+
+		// skip whitespace
+		[self scanCharactersFromSet:whiteCharacterSet intoString:NULL];
 	}
-	
-	// skip ending characters
-	[self scanString:@";" intoString:NULL];
-	
 	
 	// Success 
 	if (name)
 	{
-		*name = [attrName lowercaseString];
+		*name = attrName;
 	}
 	
 	if (value)
 	{
-		*value = attrValue;
+		if (results.count == 0) {
+			*value = @"";
+		} else if (results.count == 1) {
+			*value = [results objectAtIndex:0];
+		} else {
+			*value = results;
+		}
 	}
 	
 	return YES;
@@ -322,7 +196,7 @@
 
 // NOTE: Simplified, we assume that there are no quotes in the URL
 
-- (BOOL)scanCSSURL:(NSString **)urlString
+- (BOOL)scanCSSURL:(NSString * __autoreleasing*)urlString
 {
 	if (![self scanString:@"url(" intoString:NULL])
 	{
@@ -366,14 +240,67 @@
 	}
 	
 	return YES;
-	
-	
 }
 
-// for debugging scanner
-- (void)logPosition
+- (BOOL)scanHTMLColor:(DTColor * __autoreleasing*)color
 {
-	NSLog(@"%@", [[self string] substringFromIndex:[self scanLocation]]);
+	return [self scanHTMLColor:color HTMLName:NULL];
+}
+
+- (BOOL)scanHTMLColor:(DTColor * __autoreleasing*)color HTMLName:(NSString * __autoreleasing*)name
+{
+	NSUInteger indexBefore = [self scanLocation];
+	
+	NSString *colorName = nil;
+	
+	NSMutableCharacterSet *tokenEndSet = [[NSCharacterSet whitespaceAndNewlineCharacterSet] mutableCopy];
+	[tokenEndSet addCharactersInString:@","];
+	
+	if ([self scanString:@"#" intoString:NULL])
+	{
+		self.scanLocation = indexBefore;
+		
+		[self scanUpToCharactersFromSet:tokenEndSet intoString:&colorName];
+	}
+	else if ([self scanString:@"rgb" intoString:NULL])
+	{
+		if ([self scanUpToString:@")" intoString:NULL])
+		{
+			self.scanLocation++;
+			colorName = [[self string] substringWithRange:NSMakeRange(indexBefore, self.scanLocation - indexBefore)];
+			
+			colorName = [colorName stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+		}
+	}
+	else
+	{
+		// could be a plain html color name
+		[self scanCharactersFromSet:[NSCharacterSet alphanumericCharacterSet] intoString:&colorName];
+	}
+	
+	DTColor *foundColor = nil;
+	
+	if (colorName)
+	{
+		foundColor = DTColorCreateWithHTMLName(colorName);
+	}
+	
+	if (!foundColor)
+	{
+		self.scanLocation = indexBefore;
+		return NO;
+	}
+
+	if (color)
+	{
+		*color = foundColor;
+	}
+
+	if (name) {
+		*name = colorName;
+	}
+
+	return YES;
 }
 
 @end

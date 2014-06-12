@@ -28,6 +28,8 @@
 		*parEndIndex = endIndex;
 	}
 	
+	// endIndex is the first character of the following paragraph, so we don't need to add 1
+	
 	return NSMakeRange(beginIndex, endIndex - beginIndex);
 }
 
@@ -47,6 +49,26 @@
 	
 	// no beginning
 	return NO;
+}
+
+- (NSRange)rangeOfParagraphAtIndex:(NSUInteger)index
+{
+	return [self rangeOfParagraphsContainingRange:NSMakeRange(index, 1) parBegIndex:NULL parEndIndex:NULL];
+}
+
+- (NSUInteger)numberOfParagraphs
+{
+	NSUInteger retValue = 0;
+	
+	for (NSUInteger i=0; i<[self length]; i++)
+	{
+		if ([self characterAtIndex:i] == '\n')
+		{
+			retValue++;
+		}
+	}
+	
+	return retValue;
 }
 
 @end

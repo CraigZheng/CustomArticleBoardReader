@@ -1,14 +1,17 @@
 //
 //  DTLinkButton.m
-//  CoreTextExtensions
+//  DTCoreText
 //
 //  Created by Oliver Drobnik on 1/16/11.
 //  Copyright 2011 Drobnik.com. All rights reserved.
 //
 
 #import "DTLinkButton.h"
-#import "CGUtils.h"
-#import "UIColor+HTML.h"
+#import "DTCoreText.h"
+
+// constant for notification
+NSString *DTLinkButtonDidHighlightNotification = @"DTLinkButtonDidHighlightNotification";
+
 
 @interface DTLinkButton ()
 
@@ -19,10 +22,11 @@
 
 @implementation DTLinkButton
 {
-	NSURL *_url;
-    NSString *_guid;
+	NSURL *_URL;
+	NSString *_GUID;
 	
 	CGSize _minimumHitSize;
+	BOOL _showsTouchWhenHighlighted;
 }
 
 - (id)initWithFrame:(CGRect)frame
@@ -34,7 +38,9 @@
 		self.enabled = YES;
 		self.opaque = NO;
 		
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(highlightNotification:) name:@"DTLinkButtonDidHighlight" object:nil];
+		_showsTouchWhenHighlighted = YES;
+		
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(highlightNotification:) name:DTLinkButtonDidHighlightNotification object:nil];
 	}
 	
 	
@@ -44,10 +50,9 @@
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	
-	
 }
 
+#pragma mark Drawing the Run
 
 - (void)drawRect:(CGRect)rect
 {
@@ -55,21 +60,20 @@
 	
 	if (self.highlighted)
 	{
-		CGRect imageRect = [self contentRectForBounds:self.bounds];
-		
-		UIBezierPath *roundedPath = [UIBezierPath bezierPathWithRoundedRect:imageRect cornerRadius:3.0f];
-		CGContextSetGrayFillColor(ctx, 0.73f, 0.4f);
-		[roundedPath fill];							 
-		
-//		CGPathRef roundedRectPath = newPathForRoundedRect(imageRect, 3.0, YES, YES);
-//		CGContextAddPath(ctx, roundedRectPath);
-//		CGContextFillPath(ctx);
-//		
-//		CGPathRelease(roundedRectPath);
+		if (_showsTouchWhenHighlighted)
+		{
+			CGRect imageRect = [self contentRectForBounds:self.bounds];
+			
+			UIBezierPath *roundedPath = [UIBezierPath bezierPathWithRoundedRect:imageRect cornerRadius:3.0f];
+			CGContextSetGrayFillColor(ctx, 0.73f, 0.4f);
+			[roundedPath fill];
+		}
 	}
 }
 
-- (void)adjustBoundsIfNecessary
+#pragma mark Utilitiy
+
+- (void)_adjustBoundsIfNecessary
 {
 	CGRect bounds = self.bounds;
 	CGFloat widthExtend = 0;
@@ -78,19 +82,24 @@
 	if (bounds.size.width < _minimumHitSize.width)
 	{
 		widthExtend = _minimumHitSize.width - bounds.size.width;
-		bounds.size.width = _minimumHitSize.width;
 	}
 	
 	if (bounds.size.height < _minimumHitSize.height)
 	{
 		heightExtend = _minimumHitSize.height - bounds.size.height;
-		bounds.size.height = _minimumHitSize.height;
 	}
 	
 	if (widthExtend>0 || heightExtend>0)
 	{
-		self.contentEdgeInsets = UIEdgeInsetsMake(heightExtend/2.0f, widthExtend/2.0f, heightExtend/2.0f, widthExtend/2.0f);
+		UIEdgeInsets edgeInsets = UIEdgeInsetsMake(ceil(heightExtend/2.0f), ceil(widthExtend/2.0f), ceil(heightExtend/2.0f), ceil(widthExtend/2.0f));
+		
+		// extend bounds by the calculated necessary edge insets
+		bounds.size.width += edgeInsets.left + edgeInsets.right;
+		bounds.size.height += edgeInsets.top + edgeInsets.bottom;
+		
+		// apply bounds and insets
 		self.bounds = bounds;
+		self.contentEdgeInsets = edgeInsets;
 	}
 	else
 	{
@@ -111,7 +120,7 @@
 	
 	NSString *guid = [userInfo objectForKey:@"GUID"];
 	
-	if ([guid isEqualToString:_guid])
+	if ([guid isEqualToString:_GUID])
 	{
 		BOOL highlighted = [[userInfo objectForKey:@"Highlighted"] boolValue];
 		[super setHighlighted:highlighted];
@@ -128,13 +137,12 @@
 	[super setHighlighted:highlighted];
 	[self setNeedsDisplay];
 	
-	
 	// notify other parts of the same link
-	if (_guid)
+	if (_GUID)
 	{
-		NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:highlighted], @"Highlighted", _guid, @"GUID", nil];
+		NSDictionary *userInfo = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:highlighted], @"Highlighted", _GUID, @"GUID", nil];
 		
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"DTLinkButtonDidHighlight" object:self userInfo:userInfo];
+		[[NSNotificationCenter defaultCenter] postNotificationName:DTLinkButtonDidHighlightNotification object:self userInfo:userInfo];
 	}
 }
 
@@ -147,7 +155,7 @@
 		return;
 	}
 	
-	[self adjustBoundsIfNecessary];
+	[self _adjustBoundsIfNecessary];
 }
 
 
@@ -160,15 +168,13 @@
 	
 	_minimumHitSize = minimumHitSize;
 	
-	[self adjustBoundsIfNecessary];
-	
+	[self _adjustBoundsIfNecessary];
 }
 
-@synthesize url = _url;
-@synthesize guid = _guid;
+@synthesize URL = _URL;
+@synthesize GUID = _GUID;
 
 @synthesize minimumHitSize = _minimumHitSize;
-
-
+@synthesize showsTouchWhenHighlighted = _showsTouchWhenHighlighted;
 
 @end
