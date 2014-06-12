@@ -287,7 +287,7 @@ typedef enum ScrollDirection {
 - (NSAttributedString*)scanEmotionTags:(NSString *)originalText :(NSDictionary*)emoDict :(UIFont*)font{
     
     NSDictionary *emotions = emoDict;
-    NSString *text = originalText;
+    NSString *text = [originalText mutableCopy];
     
     NSString *replaced;
     NSMutableString *formatedResponse = [NSMutableString string];
@@ -315,19 +315,21 @@ typedef enum ScrollDirection {
         
     }
     
-    //NSLog(@"formatedResponse: %@", formatedResponse);
+    //render emotion tags
     [formatedResponse replaceOccurrencesOfString:@"\n" withString:@"<br />" options:0 range:NSMakeRange(0, formatedResponse.length)];
-    NSData *data = [[NSString stringWithFormat:@"<p style='font-size:%fpt'>%@</p>", font.pointSize, formatedResponse] dataUsingEncoding:NSUTF8StringEncoding];
+    NSString *stringWithEmotionTags = [NSString stringWithFormat:@"<p style='font-size:%fpt'>%@</p>", font.pointSize, formatedResponse];
+    //remove other [] tags
+    /*
+    NSRange r;
+    while ((r = [stringWithEmotionTags rangeOfString:@"\[.*?+\]" options:NSRegularExpressionSearch]).location != NSNotFound)
+        stringWithEmotionTags = [stringWithEmotionTags stringByReplacingCharactersInRange:r withString:@""];
+    */
     NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:[NSValue valueWithCGSize:/*CGSizeMake(_font.lineHeight, _font.lineHeight)*/CGSizeMake(50, 50)], DTMaxImageSize, @"System", DTDefaultFontFamily, nil];
     
-    NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithHTML:data options:options documentAttributes:nil
+    NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithHTML:[stringWithEmotionTags dataUsingEncoding:NSUTF8StringEncoding] options:options documentAttributes:nil
                                          ];
     
-//    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle defaultParagraphStyle] mutableCopy];
-//    paragraphStyle.lineSpacing = 5;
-//    paragraphStyle.minimumLineHeight = font.lineHeight;
-//    paragraphStyle.maximumLineHeight = font.lineHeight + 1;
-//    [string addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, string.length)];
+
     return string;
 }
 
