@@ -14,6 +14,7 @@
 #import "DTAttributedTextView.h"
 #import "NSAttributedString+HTML.h"
 #import "czzPostCommentViewController.h"
+#import "czzNavigationController.h"
 
 @interface czzCommentViewController ()<czzCommentDownloaderDelegate>
 @property czzCommentDownloader *commentDownloader;
@@ -107,12 +108,14 @@ typedef enum ScrollDirection {
 
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    [(czzNavigationController*)self.navigationController setShouldRotateViewController:NO];
 }
 
 -(void)viewWillDisappear:(BOOL)animated{
     [super viewWillDisappear:animated];
     if (commentDownloader)
         [commentDownloader stop];
+    [(czzNavigationController*)self.navigationController setShouldRotateViewController:YES];
 }
 
 #pragma mark - UITableViewDataSource
@@ -162,18 +165,20 @@ typedef enum ScrollDirection {
     if (indexPath.row >= comments.count){
         return tableView.rowHeight;
     }
+    CGFloat screenWidth = self.view.frame.size.width;
     CGFloat preferHeight = tableView.rowHeight;
     NSMutableArray *heightsArray;
     if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation)) {
         heightsArray = heightsForRows;
     } else {
         heightsArray = heightsForHorizontalRows;
+        screenWidth = [UIScreen mainScreen].bounds.size.height;
     }
     if (indexPath.row < heightsArray.count) {
         preferHeight = [[heightsArray objectAtIndex:indexPath.row] floatValue];
         return preferHeight;
     }
-    DTAttributedTextView *newHiddenTextView = [[DTAttributedTextView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 1)];
+    DTAttributedTextView *newHiddenTextView = [[DTAttributedTextView alloc] initWithFrame:CGRectMake(0, 0, screenWidth, 1)];
     newHiddenTextView.hidden = YES;
 //    newHiddenTextView.font = [UIFont systemFontOfSize:16];
 
@@ -314,16 +319,16 @@ typedef enum ScrollDirection {
     [formatedResponse replaceOccurrencesOfString:@"\n" withString:@"<br />" options:0 range:NSMakeRange(0, formatedResponse.length)];
     NSData *data = [[NSString stringWithFormat:@"<p style='font-size:%fpt'>%@</p>", font.pointSize, formatedResponse] dataUsingEncoding:NSUTF8StringEncoding];
     NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:[NSValue valueWithCGSize:/*CGSizeMake(_font.lineHeight, _font.lineHeight)*/CGSizeMake(50, 50)], DTMaxImageSize, @"System", DTDefaultFontFamily, nil];
+    
     NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithHTML:data options:options documentAttributes:nil
                                          ];
     
-    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle defaultParagraphStyle] mutableCopy];
-    paragraphStyle.lineSpacing = 100;
-    paragraphStyle.minimumLineHeight = font.lineHeight + 5;
-    paragraphStyle.maximumLineHeight = font.lineHeight + 5;
-    [string addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, string.length)];
+//    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle defaultParagraphStyle] mutableCopy];
+//    paragraphStyle.lineSpacing = 5;
+//    paragraphStyle.minimumLineHeight = font.lineHeight;
+//    paragraphStyle.maximumLineHeight = font.lineHeight + 1;
+//    [string addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, string.length)];
     return string;
 }
-
 
 @end

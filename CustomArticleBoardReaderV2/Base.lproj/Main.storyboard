@@ -5,10 +5,10 @@
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3733"/>
     </dependencies>
     <scenes>
-        <!--Navigation Controller-->
+        <!--Czz Navigation Controller-->
         <scene sceneID="oNU-L5-Vw4">
             <objects>
-                <navigationController definesPresentationContext="YES" toolbarHidden="NO" id="ahD-nA-Hnc" sceneMemberID="viewController">
+                <navigationController definesPresentationContext="YES" toolbarHidden="NO" id="ahD-nA-Hnc" customClass="czzNavigationController" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="3Ty-XF-C8u">
                         <rect key="frame" x="0.0" y="0.0" width="0.0" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -691,16 +691,16 @@
                     <toolbarItems>
                         <barButtonItem image="share.png" id="lFK-Hy-gTw"/>
                         <barButtonItem style="plain" systemItem="flexibleSpace" id="JA4-DT-Nns"/>
-                        <barButtonItem image="chat.png" id="lJw-kb-D6Z">
+                        <barButtonItem image="like.png" id="TXk-x9-nnQ">
                             <connections>
-                                <segue destination="Kxp-mo-cxL" kind="push" id="327-po-gDH"/>
+                                <action selector="favouriteAction:" destination="LTL-3h-VuO" id="WTQ-qN-71L"/>
                             </connections>
                         </barButtonItem>
                     </toolbarItems>
                     <navigationItem key="navigationItem" title="AcID" id="9TL-O3-0jU">
-                        <barButtonItem key="rightBarButtonItem" image="like.png" id="TXk-x9-nnQ">
+                        <barButtonItem key="rightBarButtonItem" image="chat.png" id="lJw-kb-D6Z">
                             <connections>
-                                <action selector="favouriteAction:" destination="LTL-3h-VuO" id="WTQ-qN-71L"/>
+                                <segue destination="Kxp-mo-cxL" kind="push" id="327-po-gDH"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
@@ -721,7 +721,7 @@
                             <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="comment_cell_identifier" id="WO0-7t-bpP">
                                 <rect key="frame" x="0.0" y="86" width="320" height="44"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="WO0-7t-bpP" id="UWi-4q-6QS">
+                                <tableViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="center" tableViewCell="WO0-7t-bpP" id="UWi-4q-6QS">
                                     <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
@@ -735,19 +735,22 @@
                                             <color key="textColor" red="0.52551020408163263" green="0.52551020408163263" blue="0.52551020408163263" alpha="1" colorSpace="calibratedRGB"/>
                                             <nil key="highlightedColor"/>
                                         </label>
-                                        <view tag="2" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vlm-x4-4BD" customClass="DTAttributedTextView">
+                                        <view clipsSubviews="YES" tag="2" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vlm-x4-4BD" customClass="DTAttributedTextView">
                                             <rect key="frame" x="0.0" y="20" width="320" height="23"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <constraints>
+                                                <constraint firstAttribute="width" priority="750" constant="480" id="Xfa-uA-1Ei"/>
+                                            </constraints>
                                         </view>
                                     </subviews>
                                     <constraints>
                                         <constraint firstItem="d5G-1E-DBO" firstAttribute="top" secondItem="UWi-4q-6QS" secondAttribute="top" id="6PW-jh-3l8"/>
+                                        <constraint firstItem="vlm-x4-4BD" firstAttribute="top" secondItem="UWi-4q-6QS" secondAttribute="top" constant="20" id="EQr-T7-wxk"/>
                                         <constraint firstAttribute="trailing" secondItem="d5G-1E-DBO" secondAttribute="trailing" id="HGY-SD-1PU"/>
-                                        <constraint firstItem="vlm-x4-4BD" firstAttribute="top" secondItem="UWi-4q-6QS" secondAttribute="top" constant="20" id="PRM-XB-VVW"/>
+                                        <constraint firstItem="vlm-x4-4BD" firstAttribute="leading" secondItem="UWi-4q-6QS" secondAttribute="leading" id="Z3Z-W2-E4G"/>
                                         <constraint firstItem="d5G-1E-DBO" firstAttribute="leading" secondItem="UWi-4q-6QS" secondAttribute="leading" id="Zy3-bq-Ks6"/>
-                                        <constraint firstAttribute="bottom" secondItem="vlm-x4-4BD" secondAttribute="bottom" id="iXO-8H-mUZ"/>
-                                        <constraint firstItem="vlm-x4-4BD" firstAttribute="leading" secondItem="UWi-4q-6QS" secondAttribute="leading" id="jOD-nS-Of5"/>
-                                        <constraint firstAttribute="trailing" secondItem="vlm-x4-4BD" secondAttribute="trailing" id="pPc-O8-fvm"/>
+                                        <constraint firstAttribute="trailing" secondItem="vlm-x4-4BD" secondAttribute="trailing" id="bD1-v3-MK0"/>
+                                        <constraint firstAttribute="bottom" secondItem="vlm-x4-4BD" secondAttribute="bottom" id="r3c-gW-8vV"/>
                                     </constraints>
                                 </tableViewCellContentView>
                             </tableViewCell>
@@ -922,8 +925,8 @@
         <simulatedScreenMetrics key="destination" type="retina4"/>
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
-        <segue reference="10x-mW-Vab"/>
         <segue reference="7Zp-P2-C1l"/>
+        <segue reference="10x-mW-Vab"/>
         <segue reference="327-po-gDH"/>
     </inferredMetricsTieBreakers>
 </document>

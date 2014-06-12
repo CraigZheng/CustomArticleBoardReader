@@ -118,6 +118,7 @@
 		5A9427CD1949E68400450742 /* NSURL+HTML.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A9427AD1949E68400450742 /* NSURL+HTML.m */; };
 		5A9427CE1949E68400450742 /* UIColor+HTML.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A9427AF1949E68400450742 /* UIColor+HTML.m */; };
 		5A9427CF1949E68400450742 /* UIDevice+DTVersion.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A9427B11949E68400450742 /* UIDevice+DTVersion.m */; };
+		5A9427D21949EA4D00450742 /* czzNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5A9427D11949EA4D00450742 /* czzNavigationController.m */; };
 		5AE09F3418D87B3300A9A591 /* libGoogleAdMobAds.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5AE09F3218D87B3300A9A591 /* libGoogleAdMobAds.a */; };
 		5AE09F3518D87B3300A9A591 /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = 5AE09F3318D87B3300A9A591 /* README.txt */; };
 		5AE09F3718D87B9F00A9A591 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5AE09F3618D87B9F00A9A591 /* StoreKit.framework */; };
@@ -307,6 +308,8 @@
 		5A9427AF1949E68400450742 /* UIColor+HTML.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIColor+HTML.m"; sourceTree = "<group>"; };
 		5A9427B01949E68400450742 /* UIDevice+DTVersion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIDevice+DTVersion.h"; sourceTree = "<group>"; };
 		5A9427B11949E68400450742 /* UIDevice+DTVersion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIDevice+DTVersion.m"; sourceTree = "<group>"; };
+		5A9427D01949EA4D00450742 /* czzNavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = czzNavigationController.h; sourceTree = "<group>"; };
+		5A9427D11949EA4D00450742 /* czzNavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = czzNavigationController.m; sourceTree = "<group>"; };
 		5AE09F2918D87B3300A9A591 /* GADAdMobExtras.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GADAdMobExtras.h; sourceTree = "<group>"; };
 		5AE09F2A18D87B3300A9A591 /* GADAdNetworkExtras.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GADAdNetworkExtras.h; sourceTree = "<group>"; };
 		5AE09F2B18D87B3300A9A591 /* GADAdSize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GADAdSize.h; sourceTree = "<group>"; };
@@ -405,6 +408,7 @@
 				442FFE9218A78A1D001ECDAA /* czzAppDelegate.h */,
 				442FFE9318A78A1D001ECDAA /* czzAppDelegate.m */,
 				442FFE9518A78A1D001ECDAA /* Main.storyboard */,
+				5A9427D31949EA5700450742 /* czzNavigationController */,
 				44932C6719480B9C00560C2B /* ac emotions01 */,
 				44932C6819480B9C00560C2B /* ac emotions02 */,
 				4485EFAB18B3373F0031B3BC /* Settings */,
@@ -732,6 +736,15 @@
 			path = DTCoreText;
 			sourceTree = "<group>";
 		};
+		5A9427D31949EA5700450742 /* czzNavigationController */ = {
+			isa = PBXGroup;
+			children = (
+				5A9427D01949EA4D00450742 /* czzNavigationController.h */,
+				5A9427D11949EA4D00450742 /* czzNavigationController.m */,
+			);
+			name = czzNavigationController;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -875,6 +888,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5A9427B41949E68400450742 /* DTAttributedTextContentView.m in Sources */,
+				5A9427D21949EA4D00450742 /* czzNavigationController.m in Sources */,
 				442FFF0418AA6830001ECDAA /* czzCommentDownloader.m in Sources */,
 				442FFECB18A83D73001ECDAA /* Toast+UIView.m in Sources */,
 				5A9427C41949E68400450742 /* NSAttributedString+HTML.m in Sources */,
