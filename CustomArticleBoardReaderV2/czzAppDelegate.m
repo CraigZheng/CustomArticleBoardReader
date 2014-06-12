@@ -19,22 +19,22 @@
     [self checkUserDefaults];
     [self checkLoginUser];
     //ran a number
-    NSInteger upperHand = [[NSUserDefaults standardUserDefaults] integerForKey:@"oddForSplashAdScreen"];
-    if (upperHand == 0)
-        upperHand = 2;
-    NSInteger r = arc4random_uniform(upperHand);
-    //NSLog(@"%u", r);
-    if (r == 1){
-        GADInterstitial *splashInterstitial_ = [[GADInterstitial alloc] init];
-        splashInterstitial_.adUnitID = @"a153030071f04ab";
-        splashInterstitial_.delegate = self;
-        GADRequest *request = [GADRequest request];
-        request.testing = YES;
-        
-        [splashInterstitial_ loadAndDisplayRequest:request
-                                       usingWindow:self.window
-                                      initialImage:nil];
-    }
+//    NSInteger upperHand = [[NSUserDefaults standardUserDefaults] integerForKey:@"oddForSplashAdScreen"];
+//    if (upperHand == 0)
+//        upperHand = 2;
+//    NSInteger r = arc4random_uniform(upperHand);
+//    //NSLog(@"%u", r);
+//    if (r == 1){
+//        GADInterstitial *splashInterstitial_ = [[GADInterstitial alloc] init];
+//        splashInterstitial_.adUnitID = @"a153030071f04ab";
+//        splashInterstitial_.delegate = self;
+//        GADRequest *request = [GADRequest request];
+//        request.testing = YES;
+//        
+//        [splashInterstitial_ loadAndDisplayRequest:request
+//                                       usingWindow:self.window
+//                                      initialImage:nil];
+//    }
 
     return YES;
 }
