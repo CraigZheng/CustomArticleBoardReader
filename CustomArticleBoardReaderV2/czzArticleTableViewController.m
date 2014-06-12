@@ -215,12 +215,20 @@
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
     CGFloat preferHeight = tableView.rowHeight;
     NSMutableArray *heightsArray;
-
+    CGFloat width = self.view.frame.size.width;
     if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
         heightsArray = heightsForRow;
-    else
+    else {
         heightsArray = heightsForHorizontalRows;
-    if (indexPath.row < heightsArray.count && [[heightsArray objectAtIndex:indexPath.row] floatValue] != tableView.rowHeight){
+        width = [UIScreen mainScreen].bounds.size.height;
+    }
+    
+    /* 3 criteria: 
+        1: index not out of bound
+        2: is not equals to default height
+        3: is not null
+     */
+    if (indexPath.row < heightsArray.count && [heightsArray objectAtIndex:indexPath.row] != [NSNull null] && [[heightsArray objectAtIndex:indexPath.row] floatValue] != tableView.rowHeight){
         preferHeight = [[heightsArray objectAtIndex:indexPath.row] floatValue];
         return preferHeight;
     }
@@ -233,8 +241,8 @@
         NSString *filePath = [basePath stringByAppendingPathComponent:[(NSURL*)htmlFragment absoluteString].lastPathComponent];
         UIImage *image = [[UIImage alloc] initWithContentsOfFile:filePath];
         if (image) {
-            if (image.size.width > self.tableView.frame.size.width){
-                preferHeight = image.size.height * (self.view.frame.size.width / image.size.width);
+            if (image.size.width > width){
+                preferHeight = image.size.height * (width / image.size.width);
             } else {
                 preferHeight = image.size.height;
             }
@@ -242,7 +250,7 @@
             preferHeight = tableView.rowHeight;
         }
     } else {
-        UITextView *newHiddenTextView = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 1)];
+        UITextView *newHiddenTextView = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, width, 1)];
         [self.view addSubview:newHiddenTextView];
 
         newHiddenTextView.hidden = YES;
@@ -385,19 +393,19 @@
     descViewController.myArticle = myArticle;
     descViewController.parentViewController = self;
     
-    heightsForRow = [NSMutableArray arrayWithObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
-    heightsForHorizontalRows = [NSMutableArray arrayWithObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
+//    heightsForRow = [NSMutableArray arrayWithObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
+//    heightsForHorizontalRows = [NSMutableArray arrayWithObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
+    heightsForRow = [NSMutableArray arrayWithObject:[NSNull null]];
+    heightsForHorizontalRows = [NSMutableArray arrayWithObject:[NSNull null]];
     if (descViewController) {
         [heightsForRow replaceObjectAtIndex:0 withObject:[NSNumber numberWithFloat:descViewController.view.frame.size.height]];
         [heightsForHorizontalRows replaceObjectAtIndex:0 withObject:[NSNumber numberWithFloat:descViewController.view.frame.size.height]];
     }
 
     if (myArticle.htmlFragments.count > 0){
-        for (int i = 0; i < myArticle.htmlFragments.count + 1; i++) {
-            [heightsForRow addObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
-            [heightsForHorizontalRows addObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
-//            [heightsForRow addObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
-//            [heightsForHorizontalRows addObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
+        for (int i = 0; i < myArticle.htmlFragments.count; i++) {
+            [heightsForRow addObject:[NSNull null]];
+            [heightsForHorizontalRows addObject:[NSNull null]];
         };
         [self readHeightsBackToArrays:myArticle];
         [self performSelectorOnMainThread:@selector(refreshTableView) withObject:nil waitUntilDone:YES];
