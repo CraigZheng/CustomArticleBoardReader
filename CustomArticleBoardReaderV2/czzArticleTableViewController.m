@@ -67,13 +67,16 @@
         NSLog(@"article nil");
     }
     imageCentre = [czzImageCentre sharedInstance];
-//    for (int i = 0; i < myArticle.htmlFragments.count + 1; i++) {
-//        [heightsForRow addObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
-//    };
     //hide tool bar if ios 7
     if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0) {
         self.navigationController.toolbar.hidden = YES;
     }
+}
+
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self.tableView reloadData];
+
 }
 
 -(void)viewDidAppear:(BOOL)animated{
@@ -425,7 +428,7 @@
 - (IBAction)shareAction:(id)sender {
     NSLog(@"shareButton pressed");
     
-    NSString *texttoshare = myArticle.desc; //this is your text string to share
+    NSString *texttoshare = [myArticle.desc stringByAppendingFormat:@"... http://www.acfun.com/a/ac%ld", (long)myArticle.acId]; //this is your text string to share
 //    UIImage *imagetoshare = _img; //this is your image to share
     NSArray *activityItems = @[texttoshare];//, imagetoshare];
     UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:nil];

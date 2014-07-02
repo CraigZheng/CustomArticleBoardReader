@@ -9,6 +9,7 @@
 #import "czzAppDelegate.h"
 #import "Toast+UIView.h"
 #import "czzArticleListDownloader.h"
+#import <BugSense-iOS/BugSenseController.h>
 
 @implementation czzAppDelegate
 @synthesize aisEmotions;
@@ -18,6 +19,10 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
+    //bugsense
+    [BugSenseController sharedControllerWithBugSenseAPIKey:@"067f8aa9"];
+    [BugSenseController setUserIdentifier:[UIDevice currentDevice].identifierForVendor.UUIDString];
+    
     [self checkStorages];
     [self checkUserDefaults];
     [self checkLoginUser];
@@ -35,7 +40,9 @@
         splashInterstitial_.adUnitID = @"a153030071f04ab";
         splashInterstitial_.delegate = self;
         GADRequest *request = [GADRequest request];
+#if DEBUG
         request.testing = YES;
+#endif
         
         [splashInterstitial_ loadAndDisplayRequest:request
                                        usingWindow:self.window
@@ -163,7 +170,7 @@
     if (odd == 0)
         odd = 2;
     NSString *infoString = [NSString stringWithFormat:@"起始广告掉宝几率：%d%%", (NSInteger)((1.0 / odd) * 100)];
-    [self.window makeToast:infoString duration:2.0 position:@"bottom"];
+    [self.window makeToast:infoString duration:2.0 position:@"center"];
 }
 
 #pragma mark - show and hide uitoolbar
