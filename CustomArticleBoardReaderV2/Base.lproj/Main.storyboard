@@ -861,10 +861,9 @@
                                     <rect key="frame" x="0.0" y="0.0" width="80" height="80"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
-                                        <imageView userInteractionEnabled="NO" tag="1" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="Icon.png" translatesAutoresizingMaskIntoConstraints="NO" id="SbG-d8-oMN">
+                                        <imageView userInteractionEnabled="NO" tag="1" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="ac.png" translatesAutoresizingMaskIntoConstraints="NO" id="SbG-d8-oMN">
                                             <rect key="frame" x="3" y="2" width="75" height="75"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                         </imageView>
                                     </subviews>
                                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -885,7 +884,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="Icon.png" width="20" height="20"/>
         <image name="ac.png" width="57" height="57"/>
         <image name="chat.png" width="20" height="20"/>
         <image name="comment.png" width="20" height="20"/>

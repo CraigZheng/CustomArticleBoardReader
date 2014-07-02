@@ -56,6 +56,9 @@ typedef enum ScrollDirection {
     if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0) {
         self.navigationController.toolbar.hidden = YES;
     }
+#if !DEBUG
+    self.navigationController.toolbar.hidden = YES;
+#endif
 }
 
 -(void)refreshComments{
@@ -186,6 +189,7 @@ typedef enum ScrollDirection {
     }
     self.lastContentOffsetY = scrollView.contentOffset.y;
     //if running on ios 7+ device and have not scroll to the top
+#if DEBUG
     if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0 && scrollView.contentOffset.y > 10) {
         //show the toolbar if user moved the finger up, and the toolbar is currently hidden
         if (scrollDirection == ScrollDirectionUp && self.navigationController.toolbar.hidden == YES){
@@ -194,6 +198,7 @@ typedef enum ScrollDirection {
             [self hideNavigationBarAndToolBar];
         }
     }
+#endif
 }
 
 #pragma mark - commentView creator method
