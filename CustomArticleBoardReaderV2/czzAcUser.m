@@ -10,6 +10,21 @@
 
 @implementation czzAcUser
 
+-(id)init {
+    self = [super init];
+    if (self) {
+        self.userID = -1;
+        self.name = @"";
+        self.avatar = @"";
+        self.bio = @"";
+        self.gender = -1;
+        self.location = @"";
+        self.qq = @"";
+        self.phone = @"";
+    }
+    return self;
+}
+
 -(id)initWithJSONDictionary:(NSDictionary *)dataDict{
     self = [super init];
     NSError *error;

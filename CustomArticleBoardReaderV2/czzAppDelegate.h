@@ -14,6 +14,10 @@
 
 @property (strong, nonatomic) UIWindow *window;
 @property (nonatomic) czzMySelf *currentLoginUser;
+@property NSMutableArray *aisEmotions;
+@property NSMutableArray *acEmotions;
+@property NSMutableDictionary *emotionDictionary;
+
 
 -(void)showToast:(NSString*)string;
 + (czzAppDelegate*) sharedAppDelegate;

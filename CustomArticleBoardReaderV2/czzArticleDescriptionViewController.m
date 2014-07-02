@@ -51,8 +51,8 @@
     CGFloat height4 = (UIInterfaceOrientationIsLandscape(interfaceOrientation) ? 44 : 64);//parentViewController.navigationController.navigationBar.frame.size.height + parentViewController.navigationController.navigationBar.frame.origin.y;
     frame.size.height = height1 + height2 + height3 - height4;
     self.view.frame = frame;
-    NSLog(@"height 1 %f, height 2 %f, height 3 %f, height 4 %f", height1, height2, height3, height4);
-    NSLog(@"calculate height for description view: %f", frame.size.height);
+//    NSLog(@"height 1 %f, height 2 %f, height 3 %f, height 4 %f", height1, height2, height3, height4);
+//    NSLog(@"calculate height for description view: %f", frame.size.height);
 }
 
 -(void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {

@@ -13,8 +13,8 @@
 #import "czzAcUserDownloader.h"
 #import "Toast+UIView.h"
 
-#define LOGIN_HOST @"https://ssl.acfun.tv/oauth2/authorize.aspx?state=0&response_type=token&client_id=hf2QkYjrqcT3ndr9&redirect_uri=https://ssl.acfun.tv/authSuccess.aspx&scope=0"
-#define REDIRECT_URL @"https://ssl.acfun.tv/authSuccess.aspx"
+#define LOGIN_HOST @"https://ssl.acfun.com/oauth2/authorize.aspx?state=0&response_type=token&client_id=hf2QkYjrqcT3ndr9&redirect_uri=https://ssl.acfun.tv/authSuccess.aspx&scope=0"
+#define REDIRECT_URL @"https://ssl.acfun.com/authSuccess.aspx"
 
 
 @interface czzLoginViewController ()<UIWebViewDelegate, czzAcUserDownloaderProtocol>
@@ -44,6 +44,7 @@
 #pragma mark - UIWebViewDelegate
 -(void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error{
     [[[czzAppDelegate sharedAppDelegate] window] hideToastActivity];
+    [[czzAppDelegate sharedAppDelegate].window makeToast:@"无法打开登录页面，请稍后重试" duration:2.0 position:@"center" image:[UIImage imageNamed:@"warning.png"]];
 }
 
 -(void)webViewDidStartLoad:(UIWebView *)webView{

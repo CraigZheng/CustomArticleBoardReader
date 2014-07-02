@@ -422,6 +422,18 @@
     [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"已收藏"];
 }
 
+- (IBAction)shareAction:(id)sender {
+    NSLog(@"shareButton pressed");
+    
+    NSString *texttoshare = myArticle.desc; //this is your text string to share
+//    UIImage *imagetoshare = _img; //this is your image to share
+    NSArray *activityItems = @[texttoshare];//, imagetoshare];
+    UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:nil];
+    activityVC.excludedActivityTypes = @[UIActivityTypeAssignToContact, UIActivityTypePrint];
+    [self presentViewController:activityVC animated:TRUE completion:nil];
+
+}
+
 #pragma mark - rotation
 -(void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration{
     [descViewController willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];

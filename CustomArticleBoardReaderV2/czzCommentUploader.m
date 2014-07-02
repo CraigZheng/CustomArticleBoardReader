@@ -30,32 +30,11 @@
     if (currentLoginUser){
         post_comment_url_string = [post_comment_url_string stringByAppendingFormat:@"?access_token=%@", currentLoginUser.access_token];
     }
-    NSLog(@"URL: %@", post_comment_url_string);
-    /*
-    post_comment_url_string = [post_comment_url_string stringByAppendingString:[NSString stringWithFormat:@"&content=%@", comment.content]];
-    if (comment.floorIndex){
-        post_comment_url_string = [post_comment_url_string stringByAppendingString:[NSString stringWithFormat:@"&quoteId=%ld", (long)comment.floorIndex]];
-    }
-     */
+//    NSLog(@"U÷RL: %@", post_comment_url_string);
     
     NSURL *post_comment_url = [NSURL URLWithString:post_comment_url_string];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:post_comment_url];
     [request setHTTPMethod:@"POST"];
-    /*
-    if (currentLoginUser){
-        [request setValue:currentLoginUser.access_token forHTTPHeaderField:@"Authorization: Token"];
-    } else {
-        if ([self.delegate respondsToSelector:@selector(sendComment:toVideo:)]){
-            [self.delegate sendComment:self.comment toVideo:self.videoID success:NO];
-        }
-    }
-    */
-    //NSString *contentData = [NSString stringWithFormat:@"content=\"%@\"", comment.content];
-    /*
-    NSString *contentString =[ NSString stringWithFormat:@"content=%@", comment.content];
-    id json = [NSJSONSerialization JSONObjectWithData:[contentString dataUsingEncoding:NSUTF8StringEncoding] options:0 error:nil];
-     */
-    //[request setHTTPBody:[contentData dataUsingEncoding:NSUTF8StringEncoding]];
     NSMutableDictionary *contentDict = [NSMutableDictionary dictionaryWithObjects:@[comment.content, @""] forKeys:@[@"content", @"quoteId"]];
     
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:contentDict options:0 error:0];
@@ -70,10 +49,6 @@
     BOOL success = NO;
     NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse*)response;
     NSLog(@"status code = %ld", (long)[httpResponse statusCode]);
-    //for (NSString *key in httpResponse.allHeaderFields.allKeys) {
-      //  NSLog(@"%@:%@", key, [httpResponse.allHeaderFields objectForKey:key]);
-    //}
-    //NSLog(@"%@", [NSHTTPURLResponse localizedStringForStatusCode:httpResponse.statusCode]);
     if ([httpResponse statusCode] == 200 ||
         [httpResponse statusCode] == 201 ||
         [httpResponse statusCode] == 202 ||

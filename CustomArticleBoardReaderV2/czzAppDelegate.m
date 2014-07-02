@@ -11,6 +11,9 @@
 #import "czzArticleListDownloader.h"
 
 @implementation czzAppDelegate
+@synthesize aisEmotions;
+@synthesize acEmotions;
+@synthesize emotionDictionary;
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -19,22 +22,54 @@
     [self checkUserDefaults];
     [self checkLoginUser];
     //ran a number
-//    NSInteger upperHand = [[NSUserDefaults standardUserDefaults] integerForKey:@"oddForSplashAdScreen"];
-//    if (upperHand == 0)
-//        upperHand = 2;
-//    NSInteger r = arc4random_uniform(upperHand);
-//    //NSLog(@"%u", r);
-//    if (r == 1){
-//        GADInterstitial *splashInterstitial_ = [[GADInterstitial alloc] init];
-//        splashInterstitial_.adUnitID = @"a153030071f04ab";
-//        splashInterstitial_.delegate = self;
-//        GADRequest *request = [GADRequest request];
-//        request.testing = YES;
-//        
-//        [splashInterstitial_ loadAndDisplayRequest:request
-//                                       usingWindow:self.window
-//                                      initialImage:nil];
-//    }
+    NSInteger upperHand = [[NSUserDefaults standardUserDefaults] integerForKey:@"oddForSplashAdScreen"];
+    if (upperHand == 0)
+        upperHand = 2;
+#if DEBUG
+    upperHand = 50;
+#endif
+    NSInteger r = arc4random_uniform(upperHand);
+    //NSLog(@"%u", r);
+    if (r == 1){
+        GADInterstitial *splashInterstitial_ = [[GADInterstitial alloc] init];
+        splashInterstitial_.adUnitID = @"a153030071f04ab";
+        splashInterstitial_.delegate = self;
+        GADRequest *request = [GADRequest request];
+        request.testing = YES;
+        
+        [splashInterstitial_ loadAndDisplayRequest:request
+                                       usingWindow:self.window
+                                      initialImage:nil];
+    }
+    //emotions
+    emotionDictionary = [NSMutableDictionary new];
+    acEmotions = [NSMutableArray new];
+    aisEmotions = [NSMutableArray new];
+    NSString *acEmotionFolder = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:@"ac emotions01"];
+    NSString *aisEmotionFolder = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:@"ac emotions02"];
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSArray *dirContents = [fm contentsOfDirectoryAtPath:acEmotionFolder error:nil];
+    NSPredicate *fltr = [NSPredicate predicateWithFormat:@"self ENDSWITH '.gif'"];
+    NSArray *emotions = [dirContents filteredArrayUsingPredicate:fltr];
+    
+    for (NSString *emoFile in emotions) {
+        [acEmotions addObject:[acEmotionFolder.lastPathComponent stringByAppendingPathComponent:emoFile]];
+    }
+    dirContents = [fm contentsOfDirectoryAtPath:aisEmotionFolder error:nil];
+    emotions = [dirContents filteredArrayUsingPredicate:fltr];
+    for (NSString *emoFile in emotions) {
+        [aisEmotions addObject:[aisEmotionFolder.lastPathComponent stringByAppendingPathComponent:emoFile]];
+    }
+    //make emotion dictionary
+    for (NSInteger i = 0; i < acEmotions.count; i++){
+        NSString *key = [NSString stringWithFormat:@"emot=%@,%02d/", @"ac", i + 1];
+        [emotionDictionary setObject:[acEmotions objectAtIndex:i] forKey:key];
+    }
+    
+    for (NSInteger i = 0; i < aisEmotions.count; i++){
+        NSString *key = [NSString stringWithFormat:@"emot=%@,%02d/", @"ais", i + 1];
+        [emotionDictionary setObject:[aisEmotions objectAtIndex:i] forKey:key];
+    }
 
     return YES;
 }

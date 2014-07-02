@@ -25,7 +25,7 @@
     self = [super init];
     if (self){
         shouldDownloadMultipleComment = YES;
-        self.quoteLimit = 10;
+        self.quoteLimit = 99; //default to 99
         self.cursor = 1;
     }
     return self;
@@ -81,18 +81,43 @@
         NSLog(@"%@", error);
         [self.delegate commentDownloaded:nil withArticleID:self.articleID success:NO];
     }
-    NSMutableArray *comments = [NSMutableArray new];
-    for (NSString *key in dataDict) {
-        if ([key isEqualToString:@"list"]){
-            for (NSDictionary *comment in [dataDict objectForKey:key]) {
-                [comments addObject:[[czzComment alloc] initWithJSONDictionary:comment]];
+    //render comments in background
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSMutableArray *comments = [NSMutableArray new];
+        for (NSString *key in dataDict) {
+            if ([key isEqualToString:@"list"]){
+                for (NSDictionary *comment in [dataDict objectForKey:key]) {
+                    [comments addObject:[[czzComment alloc] initWithJSONDictionary:comment]];
+                }
             }
         }
-    }
-    //newComment = [[czzComment alloc] initWithJSON:self.receivedData];
-    if (comments.count > 0)
-        [self.delegate commentDownloaded:comments withArticleID:self.articleID success:YES];
-    else
-        [self.delegate commentDownloaded:nil withArticleID:self.articleID success:NO];
+        //hide duplicate comments
+        for (NSInteger i = 0; i < comments.count; i ++) {
+            czzComment *currentComment = [comments objectAtIndex:i];
+            for (NSInteger j = 0; j < i; j++) {
+                //previous comments
+                czzComment *previousComment = [comments objectAtIndex:j];
+                if ([previousComment referredToComment:currentComment]) {
+                    czzComment *placeboComment = [czzComment new];
+                    placeboComment.renderedContent = [[NSAttributedString alloc] initWithString:@"* 重复的回复已省略 *"];
+                    NSArray *placeboArray;
+                    if (currentComment.refCommentFlow.count > 2) {
+                        placeboArray = @[placeboComment, currentComment.refCommentFlow.lastObject];
+                    } else {
+                        placeboArray = @[placeboComment];
+                    }
+                    currentComment.refCommentFlow = placeboArray;
+                    break;
+                }
+            }
+        }
+        //notify delegate in main thread
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (comments.count > 0)
+                [self.delegate commentDownloaded:comments withArticleID:self.articleID success:YES];
+            else
+                [self.delegate commentDownloaded:nil withArticleID:self.articleID success:NO];
+        });
+    });
 }
 @end

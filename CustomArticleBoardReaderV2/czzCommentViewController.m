@@ -11,21 +11,20 @@
 #import "czzAppDelegate.h"
 #import "czzComment.h"
 #import "czzCommentDownloader.h"
-#import "DTAttributedTextView.h"
+#import "DTAttributedTextContentView.h"
+#import "DTCoreTextLayouter.h"
 #import "NSAttributedString+HTML.h"
 #import "czzPostCommentViewController.h"
 #import "czzNavigationController.h"
+#import "czzAppDelegate.h"
 
-@interface czzCommentViewController ()<czzCommentDownloaderDelegate>
+@interface czzCommentViewController ()<czzCommentDownloaderDelegate, DTAttributedTextContentViewDelegate>
 @property czzCommentDownloader *commentDownloader;
 @property NSMutableArray *comments;
 @property NSInteger lastContentOffsetY;
 @property NSMutableArray *heightsForRows;
 @property NSMutableArray *heightsForHorizontalRows;
 @property NSIndexPath *fisrtVisibleCellIndex;
-@property NSMutableArray *aisEmotions;
-@property NSMutableArray *acEmotions;
-@property NSMutableDictionary *emotionDictionary;
 
 typedef enum ScrollDirection {
     ScrollDirectionNone,
@@ -45,9 +44,6 @@ typedef enum ScrollDirection {
 @synthesize heightsForRows;
 @synthesize heightsForHorizontalRows;
 @synthesize fisrtVisibleCellIndex;
-@synthesize aisEmotions;
-@synthesize acEmotions;
-@synthesize emotionDictionary;
 
 - (void)viewDidLoad
 {
@@ -60,37 +56,6 @@ typedef enum ScrollDirection {
     if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0) {
         self.navigationController.toolbar.hidden = YES;
     }
-    
-    //emotions
-    emotionDictionary = [NSMutableDictionary new];
-    acEmotions = [NSMutableArray new];
-    aisEmotions = [NSMutableArray new];
-    NSString *acEmotionFolder = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:@"ac emotions01"];
-    NSString *aisEmotionFolder = [[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:@"ac emotions02"];
-    NSFileManager *fm = [NSFileManager defaultManager];
-    NSArray *dirContents = [fm contentsOfDirectoryAtPath:acEmotionFolder error:nil];
-    NSPredicate *fltr = [NSPredicate predicateWithFormat:@"self ENDSWITH '.gif'"];
-    NSArray *emotions = [dirContents filteredArrayUsingPredicate:fltr];
-
-    for (NSString *emoFile in emotions) {
-        [acEmotions addObject:[acEmotionFolder.lastPathComponent stringByAppendingPathComponent:emoFile]];
-    }
-    dirContents = [fm contentsOfDirectoryAtPath:aisEmotionFolder error:nil];
-    emotions = [dirContents filteredArrayUsingPredicate:fltr];
-    for (NSString *emoFile in emotions) {
-        [aisEmotions addObject:[aisEmotionFolder.lastPathComponent stringByAppendingPathComponent:emoFile]];
-    }
-    //make emotion dictionary
-    for (NSInteger i = 0; i < acEmotions.count; i++){
-        NSString *key = [NSString stringWithFormat:@"emot=%@,%02d/", @"ac", i + 1];
-        [emotionDictionary setObject:[acEmotions objectAtIndex:i] forKey:key];
-    }
-    
-    for (NSInteger i = 0; i < aisEmotions.count; i++){
-        NSString *key = [NSString stringWithFormat:@"emot=%@,%02d/", @"ais", i + 1];
-        [emotionDictionary setObject:[aisEmotions objectAtIndex:i] forKey:key];
-    }
-    
 }
 
 -(void)refreshComments{
@@ -101,6 +66,7 @@ typedef enum ScrollDirection {
     [self startDownloadingCommentWithCursor:comments.count + 1];
 }
 -(void)startDownloadingCommentWithCursor:(NSInteger)cursor{
+    [[czzAppDelegate sharedAppDelegate].window makeToastActivity];
     commentDownloader = [[czzCommentDownloader alloc] initWithArticleID:self.articleID downloadMultipleReferedComment:YES delegate:self];
     commentDownloader.cursor = cursor;
     [commentDownloader startDownloadingComment];
@@ -143,20 +109,25 @@ typedef enum ScrollDirection {
     NSString *identifier = @"comment_cell_identifier";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier forIndexPath:indexPath];
     if (cell){
-        UILabel *authorLabel = (UILabel*)[cell viewWithTag:1];
-        DTAttributedTextView *dtAttributedTextView = (DTAttributedTextView*)[cell viewWithTag:2];
         czzComment *comment = [comments objectAtIndex:indexPath.row];
-        NSString *authorString;
-        if (comment.refCommentFlow.count > 0) {
-            czzComment *referedComment = comment.refCommentFlow.lastObject;
-            NSString *referedCommentString = [NSString stringWithFormat:@"#%ld %@", (long)referedComment.floorIndex, referedComment.user.name];
-            authorString = [NSString stringWithFormat:@"#%ld %@ 对 %@ 说：", (long)comment.floorIndex, comment.user.name, referedCommentString];
-        } else
-        authorString = [NSString stringWithFormat:@"#%ld %@ 说：", (long)comment.floorIndex, comment.user.name];
-        authorLabel.text = authorString;
-        dtAttributedTextView.userInteractionEnabled = NO;
-        dtAttributedTextView.attributedString = [self scanEmotionTags:comment.content :emotionDictionary :[UIFont systemFontOfSize:16]];
-        
+        UIView *commentView = [self createCommentViewWithComment:comment width:self.view.frame.size.width backgroundColor:nil isMainComment:YES];
+        //remove all subviews - on top of main comment view
+        [cell.contentView.subviews makeObjectsPerformSelector: @selector(removeFromSuperview)];
+        //add referred comment views
+        CGFloat lastYposition = 0; //commentView.frame.origin.y + commentView.frame.size.height;
+        for (czzComment *refComment in comment.refCommentFlow) {
+            UIView *refCommentView = [self createCommentViewWithComment:refComment width:self.view.frame.size.width backgroundColor:nil isMainComment:NO];
+            CGRect refCommentFrame = refCommentView.frame;
+            refCommentFrame.origin.y = lastYposition;
+            refCommentView.frame = refCommentFrame;
+            lastYposition = refCommentFrame.origin.y + refCommentFrame.size.height;
+            [cell.contentView addSubview:refCommentView];
+        }
+        //add main comment view
+        CGRect mainCommentFrame = commentView.frame;
+        mainCommentFrame.origin.y = lastYposition;
+        commentView.frame = mainCommentFrame;
+        [cell.contentView addSubview:commentView];
     }
     return cell;
 }
@@ -178,18 +149,20 @@ typedef enum ScrollDirection {
         preferHeight = [[heightsArray objectAtIndex:indexPath.row] floatValue];
         return preferHeight;
     }
-    DTAttributedTextView *newHiddenTextView = [[DTAttributedTextView alloc] initWithFrame:CGRectMake(0, 0, screenWidth, 1)];
-    newHiddenTextView.hidden = YES;
-//    newHiddenTextView.font = [UIFont systemFontOfSize:16];
-
-    [self.view addSubview:newHiddenTextView];
+    //main comment
     czzComment *comment = [comments objectAtIndex:indexPath.row];
-//    newHiddenTextView.text = comment.content;
-    newHiddenTextView.attributedString = [self scanEmotionTags:comment.content :emotionDictionary :[UIFont systemFontOfSize:16]];
-
-//    preferHeight = [newHiddenTextView sizeThatFits:CGSizeMake(newHiddenTextView.frame.size.width, MAXFLOAT)].height + 15;
-    preferHeight = [[newHiddenTextView contentView] suggestedFrameSizeToFitEntireStringConstraintedToWidth:newHiddenTextView.frame.size.width] .height + 25;
-    [newHiddenTextView removeFromSuperview];
+    UIView *hiddenCommentView = [self createCommentViewWithComment:comment width:self.view.frame.size.width backgroundColor:nil isMainComment:YES];
+    hiddenCommentView.hidden = YES;
+    [self.view addSubview:hiddenCommentView];
+    preferHeight = hiddenCommentView.frame.size.height;
+    [hiddenCommentView removeFromSuperview];
+    //refered comments
+    for (czzComment *refComment in comment.refCommentFlow) {
+        hiddenCommentView = [self createCommentViewWithComment:refComment width:self.view.frame.size.width backgroundColor:nil isMainComment:NO];
+        [self.view addSubview:hiddenCommentView];
+        preferHeight += hiddenCommentView.frame.size.height;
+        [hiddenCommentView removeFromSuperview];
+    }
     preferHeight = MAX(tableView.rowHeight, preferHeight);
     [heightsArray addObject:[NSNumber numberWithFloat:preferHeight]];
     return preferHeight;
@@ -223,6 +196,66 @@ typedef enum ScrollDirection {
     }
 }
 
+#pragma mark - commentView creator method
+-(UIView*)createCommentViewWithComment:(czzComment*)comment width:(CGFloat)width backgroundColor:(UIColor*)bgColor isMainComment:(BOOL)isMainComment {
+    if (!isMainComment) {
+        width -= 14; //padding
+    }
+    UIView *commentView = [[UIView alloc] initWithFrame:CGRectMake((self.view.frame.size.width - width) / 2, 0, width, 1)];
+    //author label
+    NSString *authorString;
+    if (comment.refCommentFlow.count > 0) {
+        czzComment *referedComment = comment.refCommentFlow.lastObject;
+        NSString *referedCommentString = [NSString stringWithFormat:@"#%ld %@", (long)referedComment.floorIndex, referedComment.user.name];
+        authorString = [NSString stringWithFormat:@"#%ld %@ 对 %@ 说：", (long)comment.floorIndex, comment.user.name, referedCommentString];
+    } else {
+        authorString = [NSString stringWithFormat:@"#%ld %@ 说：", (long)comment.floorIndex, comment.user.name];
+    }
+    UILabel *authorLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, width, 20)];
+    authorLabel.font = [UIFont systemFontOfSize:12];
+    authorLabel.textColor = [UIColor colorWithRed:238/255.0 green:145/255.0 blue:40/255.0 alpha:1.0];
+    authorLabel.backgroundColor = [UIColor clearColor];
+    authorLabel.text = authorString;
+    authorLabel.numberOfLines = 1;
+    //comment section
+    DTAttributedTextContentView *dtAttributedTextContentView;
+    if (isMainComment) {
+         dtAttributedTextContentView = [[DTAttributedTextContentView alloc] initWithAttributedString:comment.renderedContent width:width];
+    } else {
+        NSMutableAttributedString *refComContent = [[NSMutableAttributedString alloc] initWithAttributedString:comment.renderedContent];
+        [refComContent addAttribute:NSFontAttributeName value:[UIFont systemFontOfSize:14] range:NSMakeRange(0, refComContent.length)];
+        dtAttributedTextContentView = [[DTAttributedTextContentView alloc] initWithAttributedString:refComContent width:width - 8];
+    }
+    
+    CGRect frame = dtAttributedTextContentView.frame;
+    //adjust the views to allow some paddings
+    if (!isMainComment) {
+        frame.origin.x += 4;
+        CGRect authorLabelFram = authorLabel.frame;
+        authorLabelFram.origin.x += 4;
+        authorLabel.frame = authorLabelFram;
+    }
+    frame.origin.y = 20;
+    dtAttributedTextContentView.frame = frame;
+    dtAttributedTextContentView.backgroundColor = [UIColor clearColor];
+    //add both to comment view
+    [commentView addSubview:authorLabel];
+    [commentView addSubview:dtAttributedTextContentView];
+    //resize commentview
+    CGRect commentViewFrame = commentView.frame;
+    commentViewFrame.size.height = dtAttributedTextContentView.frame.origin.y + dtAttributedTextContentView.frame.size.height;
+    commentView.frame = commentViewFrame;
+    if (!bgColor)
+        bgColor = [UIColor clearColor];
+    commentView.backgroundColor = bgColor;
+    if (!isMainComment)
+    {
+        authorLabel.textColor = [UIColor grayColor];
+        commentView.backgroundColor = [UIColor colorWithRed:245/255.0 green:245/255.0 blue:245/255.0 alpha:0.9];
+    }
+    return commentView;
+}
+
 #pragma mark - rotation
 -(void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration{
     fisrtVisibleCellIndex = self.tableView.indexPathsForVisibleRows.firstObject;
@@ -242,6 +275,7 @@ typedef enum ScrollDirection {
         [self.view makeToast:@"下载失败：请检查网络" duration:1.0 position:@"center" image:[UIImage imageNamed:@"warning"]];
     self.tableView.userInteractionEnabled = YES;
     commentDownloader = nil;
+    [[czzAppDelegate sharedAppDelegate].window hideToastActivity];
 }
 
 - (void)loadMoreAction {
@@ -283,54 +317,5 @@ typedef enum ScrollDirection {
     //[[czzAppDelegate sharedAppDelegate] doSingleViewShowAnimation:self.navigationController.navigationBar :kCATransitionFromBottom :0.2];
 }
 
-#pragma mark - scan emotion tags
-- (NSAttributedString*)scanEmotionTags:(NSString *)originalText :(NSDictionary*)emoDict :(UIFont*)font{
-    
-    NSDictionary *emotions = emoDict;
-    NSString *text = [originalText mutableCopy];
-    
-    NSString *replaced;
-    NSMutableString *formatedResponse = [NSMutableString string];
-    
-    NSScanner *emotionScanner = [NSScanner scannerWithString:text];
-    [emotionScanner setCharactersToBeSkipped:[NSCharacterSet characterSetWithCharactersInString:@""]];
-    while ([emotionScanner isAtEnd] == NO) {
-        
-        if([emotionScanner scanUpToString:@"[" intoString:&replaced]) {
-            [formatedResponse appendString:replaced];
-        }
-        if(![emotionScanner isAtEnd]) {
-            [emotionScanner scanString:@"[" intoString:nil];
-            replaced = @"";
-            [emotionScanner scanUpToString:@"]" intoString:&replaced];
-            NSString *em = [emotions valueForKey:replaced];
-            if (em) {
-                [formatedResponse appendFormat:@"<img src='%@' />", em];
-            }else {
-                [formatedResponse appendFormat:@"[%@]", replaced];
-            }
-            
-            [emotionScanner scanString:@"]" intoString:nil];
-        }
-        
-    }
-    
-    //render emotion tags
-    [formatedResponse replaceOccurrencesOfString:@"\n" withString:@"<br />" options:0 range:NSMakeRange(0, formatedResponse.length)];
-    NSString *stringWithEmotionTags = [NSString stringWithFormat:@"<p style='font-size:%fpt'>%@</p>", font.pointSize, formatedResponse];
-    //remove other [] tags
-    /*
-    NSRange r;
-    while ((r = [stringWithEmotionTags rangeOfString:@"\[.*?+\]" options:NSRegularExpressionSearch]).location != NSNotFound)
-        stringWithEmotionTags = [stringWithEmotionTags stringByReplacingCharactersInRange:r withString:@""];
-    */
-    NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:[NSValue valueWithCGSize:/*CGSizeMake(_font.lineHeight, _font.lineHeight)*/CGSizeMake(50, 50)], DTMaxImageSize, @"System", DTDefaultFontFamily, nil];
-    
-    NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithHTML:[stringWithEmotionTags dataUsingEncoding:NSUTF8StringEncoding] options:options documentAttributes:nil
-                                         ];
-    
-
-    return string;
-}
 
 @end

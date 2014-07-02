@@ -16,7 +16,9 @@
 @property NSInteger commentID;
 @property NSInteger floorIndex;
 @property NSArray *refCommentFlow;
+@property NSAttributedString *renderedContent;
 
 -(id)initWithJSONDictionary:(NSDictionary*)dict;
 -(id)initWithJSONData:(NSData*)data;
+-(BOOL)referredToComment:(czzComment*)comment;
 @end
