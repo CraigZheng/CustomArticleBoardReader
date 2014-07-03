@@ -29,9 +29,9 @@
     //ran a number
     NSInteger upperHand = [[NSUserDefaults standardUserDefaults] integerForKey:@"oddForSplashAdScreen"];
     if (upperHand == 0)
-        upperHand = 2;
+        upperHand = 9;
 #if DEBUG
-    upperHand = 50;
+    upperHand = 1;
 #endif
     NSInteger r = arc4random_uniform(upperHand);
     //NSLog(@"%u", r);
