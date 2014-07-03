@@ -257,6 +257,7 @@ typedef enum ScrollDirection {
     {
         authorLabel.textColor = [UIColor grayColor];
         commentView.backgroundColor = [UIColor colorWithRed:245/255.0 green:245/255.0 blue:245/255.0 alpha:0.9];
+        dtAttributedTextContentView.backgroundColor = [UIColor colorWithRed:230/255.0 green:230/255.0 blue:230/255.0 alpha:1.0];
     }
     return commentView;
 }
