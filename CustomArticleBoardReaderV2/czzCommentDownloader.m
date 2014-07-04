@@ -99,13 +99,15 @@
                 czzComment *previousComment = [comments objectAtIndex:j];
                 if ([previousComment referredToComment:currentComment]) {
                     czzComment *placeboComment = [czzComment new];
-                    placeboComment.renderedContent = [[NSAttributedString alloc] initWithString:@"* 重复的回复已省略 *"];
+                    placeboComment.renderedContent = [[NSAttributedString alloc] initWithString:@"* 重复引用的回复已省略 *"];
                     NSArray *placeboArray;
+                    //hide duplicate comments when ref comment has more than 2 comments
                     if (currentComment.refCommentFlow.count > 2) {
                         placeboArray = @[placeboComment, currentComment.refCommentFlow.lastObject];
-                    } else {
-                        placeboArray = @[placeboComment];
                     }
+//                    else {
+//                        placeboArray = @[placeboComment];
+//                    }
                     currentComment.refCommentFlow = placeboArray;
                     break;
                 }
