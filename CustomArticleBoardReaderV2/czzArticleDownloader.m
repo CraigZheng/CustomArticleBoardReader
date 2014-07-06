@@ -8,15 +8,17 @@
 
 #import "czzArticleDownloader.h"
 
-@interface czzArticleDownloader()<NSURLConnectionDelegate>
+@interface czzArticleDownloader()<NSURLConnectionDelegate, czzArticleProtocol>
 @property NSURLConnection *urlConn;
 @property NSMutableData *receivedData;
+@property czzArticle* downloadingArticle;
 @end
 
 @implementation czzArticleDownloader
 @synthesize urlConn;
 @synthesize receivedData;
 @synthesize articleProcessor;
+@synthesize downloadingArticle;
 
 -(id)initWithArticleID:(NSInteger)articleID delegate:(id<czzArticleDownloaderDelegate>)delegate startImmediately:(BOOL)start{
     self = [super init];
@@ -66,17 +68,21 @@
     @catch (NSException *exception) {
         NSLog(@"%@", exception);
     }
-    //articleProcessor = [[NSThread alloc] initWithTarget:self selector:@selector(prepareArticleInBackground) object:nil];
-    //[articleProcessor start];
 }
 
 -(void)prepareArticleInBackground{
     @try {
-        czzArticle* newArticle = [[czzArticle alloc] initWithJSONData:receivedData];
-        if (newArticle)
-            [self.delegate articleDownloaded:newArticle withArticleID:self.articleID success:YES];
-        else
-            [self.delegate articleDownloaded:nil withArticleID:self.articleID success:NO];
+        downloadingArticle = [czzArticle new];
+        downloadingArticle.delegate = self;
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            [downloadingArticle processJSONData:receivedData];
+        });
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (downloadingArticle)
+                [self.delegate articleDownloaded:downloadingArticle withArticleID:self.articleID success:YES];
+            else
+                [self.delegate articleDownloaded:nil withArticleID:self.articleID success:NO];
+        });
     }
     @catch (NSException *exception) {
         NSLog(@"%@", exception);
@@ -84,8 +90,17 @@
     }
 }
 
+#pragma mark - czzArticleDelegate - to respond to long article processing
+-(void)articleProcessUpdated:(CGFloat)percent {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.delegate articleProcessUpdated:downloadingArticle percent:percent];
+    });
+}
+
 -(void)stop{
     [urlConn cancel];
+    [downloadingArticle stop];
+    downloadingArticle = nil;
 }
 
 #pragma mark - UIAlertView delegate

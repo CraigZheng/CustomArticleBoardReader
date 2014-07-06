@@ -29,6 +29,7 @@
 @property NSString *libraryFolder;
 @property NSMutableArray *heightsForRow;
 @property NSMutableArray *heightsForHorizontalRows;
+@property NSDate *lastRefreshTime;
 @end
 
 @implementation czzArticleTableViewController
@@ -43,6 +44,7 @@
 @synthesize heightsForRow;
 @synthesize failedImageDownload;
 @synthesize fisrtVisibleCellIndex;
+@synthesize lastRefreshTime;
 
 - (void)viewDidLoad
 {
@@ -55,7 +57,7 @@
     if (myArticle){
 
         czzArticle* cachedArticle = [self readArticleFromCache:myArticle];
-        if (cachedArticle) {
+        if (cachedArticle.isProcessed) {
             [self setMyArticle:cachedArticle];
         }
         if (myArticle.htmlFragments.count == 0) {
@@ -143,7 +145,8 @@
         if (articleDownloader)
             [articleDownloader stop];
         [imageCentre stopAllDownloader];
-        [self saveHeightsToCache:myArticle];
+        if (myArticle.isProcessed)
+            [self saveHeightsToCache:myArticle];
         [self performSelectorInBackground:@selector(saveArticleToCache:) withObject:self.myArticle];
     }
     navigationController.delegate = nil;
@@ -385,6 +388,16 @@
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"出错啦" message:@"无法下载文章，请重试！" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles: nil];
         [alertView show];
     }
+}
+
+-(void)articleProcessUpdated:(czzArticle *)article percent:(CGFloat)percent {
+    [self.tableView reloadData];
+
+//    if (!lastRefreshTime || [[NSDate new] timeIntervalSinceDate:lastRefreshTime] > 3 || article.isProcessed) {
+//        lastRefreshTime = [NSDate new];
+//        NSLog(@"tableview data reloaded");
+//    }
+//    NSLog(@"processed fragment = %d", article.htmlFragments.count);
 }
 
 #pragma mark - myArticle setter, also load the given html body if presented

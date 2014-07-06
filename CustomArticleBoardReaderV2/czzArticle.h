@@ -9,6 +9,11 @@
 #import <Foundation/Foundation.h>
 #import "czzAcUser.h"
 
+@protocol czzArticleProtocol <NSObject>
+@optional
+-(void)articleProcessUpdated:(CGFloat)percent;
+@end
+
 @interface czzArticle : NSObject
 @property NSInteger acId;
 @property NSString *name;
@@ -25,12 +30,16 @@
 @property NSString *htmlBody;
 @property (nonatomic) NSString *htmlBodyWithouImage;
 @property NSMutableArray *imageSrc;
+@property id<czzArticleProtocol> delegate;
+@property BOOL isProcessed;
 
 @property NSMutableArray *htmlFragments;
 @property UIViewController *parentViewController;
 
--(id)initWithJSONData:(NSData*)jsonData;
+-(id)initWithJSONData:(NSData*)jsonData andDelegate:(id<czzArticleProtocol>)del;
+-(void)processJSONData:(NSData*)jsonData;
 -(id)initWithJSONDictonary:(NSDictionary*)jsonDict;
 //replace the temporary [IMAGE] anchor in the content to an <img> tag with local inage
 -(void)notifyImageDownloaded:(NSString*)imgURL saveTo:(NSString*)savePath;
+-(void)stop;
 @end

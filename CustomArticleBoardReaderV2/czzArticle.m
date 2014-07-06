@@ -15,12 +15,14 @@
 @interface czzArticle()
 @property NSMutableArray *paragraphTags;
 @property NSMutableArray *imageTags;
+@property BOOL shouldStop;
 @end
 
 @implementation czzArticle
 @synthesize paragraphTags;
 @synthesize imageTags;
 @synthesize htmlFragments;
+@synthesize shouldStop;
 
 -(id)init{
     self = [super init];
@@ -37,7 +39,18 @@
     return self;
 }
 
--(id)initWithJSONData:(NSData *)jsonData{
+-(void)processJSONData:(NSData *)jsonData {
+    NSError *error;
+    NSMutableDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&error];
+    if (error){
+        NSLog(@"%@", error);
+    }
+    if (self) {
+        [self assignPropertyWithJSONDictonary:dataDict];
+    }
+}
+
+-(id)initWithJSONData:(NSData *)jsonData andDelegate:(id<czzArticleProtocol>)del{
     self = [self init];
     NSError *error;
     NSMutableDictionary *dataDict = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&error];
@@ -45,8 +58,15 @@
         NSLog(@"%@", error);
         return nil;
     }
+    if (del)
+        self.delegate = del;
     [self assignPropertyWithJSONDictonary:dataDict];
     return self;
+}
+
+-(void)stop {
+    shouldStop = YES;
+    self.delegate = nil;
 }
 
 -(id)initWithJSONDictonary:(NSDictionary *)jsonDict{
@@ -56,7 +76,7 @@
 }
 
 -(void)assignPropertyWithJSONDictonary:(NSDictionary*)dataDict{
-    
+    shouldStop = NO;
     self.acId = [[dataDict objectForKey:@"acId"] integerValue];
     self.name = [dataDict objectForKey:@"name"];
     self.desc = [dataDict objectForKey:@"desc"];
@@ -74,8 +94,10 @@
     self.htmlBody = [dataDict objectForKey:@"txt"];
     if (self.htmlBody){
         if (YES)//[[NSUserDefaults standardUserDefaults] boolForKey:@"shouldUseExperimentalBrowser"]) {
-        {    NSArray *fragments = [self prepareHTMLForFragments:[dataDict objectForKey:@"txt"]];
-            [self.htmlFragments addObjectsFromArray:fragments];
+//        {    NSArray *fragments = [self prepareHTMLForFragments:[dataDict objectForKey:@"txt"]];
+//            [self.htmlFragments addObjectsFromArray:fragments];
+        {
+            [self prepareHTMLForFragments:[dataDict objectForKey:@"txt"]];
         } else {
             self.htmlBody = [self prepareHTMLForBetterVisual:self.htmlBody];
         }
@@ -95,10 +117,13 @@
     return oldHTML;
 }
 
--(NSArray*)prepareHTMLForFragments:(NSString*)htmlString{
+-(void)prepareHTMLForFragments:(NSString*)htmlString{
     NSRange r;
     //remove everything between < and >
-    NSMutableArray *fragments = [NSMutableArray new];
+//    NSMutableArray *fragments = [NSMutableArray new];
+    htmlFragments = [NSMutableArray new];
+    self.isProcessed = NO;
+    NSInteger originalLength = htmlString.length;
     while ((r = [htmlString rangeOfString:@"<[^>]+>" options:NSRegularExpressionSearch]).location != NSNotFound) {
         @autoreleasepool {
             NSString *subString = [htmlString substringWithRange:r];
@@ -116,16 +141,18 @@
                             [url.absoluteString.lastPathComponent rangeOfString:@"gif" options:NSCaseInsensitiveSearch].location != NSNotFound ||
                             [url.absoluteString.lastPathComponent rangeOfString:@"png"options:NSCaseInsensitiveSearch].location != NSNotFound){
                             BOOL inserted = NO;
-                            for (NSInteger i = 0; i < fragments.count; i++) {
-                                id fragment = [fragments objectAtIndex:i];
+                            for (NSInteger i = 0; i < htmlFragments.count; i++) {
+                                id fragment = [htmlFragments objectAtIndex:i];
                                 if ([fragment isKindOfClass:[NSURL class]] && [[(NSURL*)fragment absoluteString].lastPathComponent isEqualToString:url.absoluteString.lastPathComponent]){
-                                    [fragments replaceObjectAtIndex:[fragments indexOfObject:fragment] withObject:url];
+                                    [htmlFragments replaceObjectAtIndex:[htmlFragments indexOfObject:fragment] withObject:url];
                                     inserted = YES;
                                     break;
                                 }
                             }
-                            if (!inserted)
-                                [fragments addObject:url];
+                            if (!inserted) {
+                                [self addFragmentToHTMLFragmentsArray:url];
+                            }
+//                                [htmlFragments addObject:url];
                         }
                     }
                 }
@@ -137,7 +164,8 @@
                     NSString *emoURLString = [NSString stringWithFormat:@"http://www.acfun.tv%@", emoconURL];
                     NSURL *emoURL = [NSURL URLWithString:emoURLString];
                     if (emoURL)
-                        [fragments addObject:emoURL];
+                        [self addFragmentToHTMLFragmentsArray:emoURL];
+//                        [htmlFragments addObject:emoURL];
                 }
                 
             }
@@ -149,50 +177,38 @@
                 NSString *processedParagraph = [[matchedParagraph stringByDecodingHTMLEntities] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
                 if (processedParagraph.length > 0)
                 {
-                    [fragments addObject:processedParagraph];
+                    [self addFragmentToHTMLFragmentsArray:processedParagraph];
+//                    [htmlFragments addObject:processedParagraph];
                 }
             }
             htmlString = [htmlString stringByReplacingCharactersInRange:r withString:@""];
             if (matchedParagraph.length > 0){
                 htmlString = [htmlString stringByReplacingOccurrencesOfString:matchedParagraph withString:@""];
             }
-            //htmlString = [htmlString stringByReplacingOccurrencesOfString:subString withString:@""];
-            /*
-            NSString *fragment = [htmlString substringWithRange:NSMakeRange(0, r.location)];
-            fragment = [[fragment stringByDecodingHTMLEntities] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-            if (fragment.length > 0)
-                [fragments addObject:fragment];
-            htmlString = [htmlString stringByReplacingCharactersInRange:NSMakeRange(0, r.location) withString:@""];
-             */
+            //calculate percentage
+            CGFloat percent = 1.0 - (CGFloat)htmlString.length / (CGFloat)originalLength;
+            if (self.delegate && [self.delegate respondsToSelector:@selector(articleProcessUpdated:)]) {
+                [self.delegate articleProcessUpdated:percent];
+            }
+            if (shouldStop) {
+                return;
+            }
         }
     }
     NSString *processedString = htmlString = [[htmlString stringByDecodingHTMLEntities] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     if (processedString.length > 0){
-        [fragments addObject:processedString];
+        [self addFragmentToHTMLFragmentsArray:processedString];
     }
-    /*
-    NSArray *originalArray = fragments;//[fragments array];
-    NSMutableArray *combinedArray = [NSMutableArray new];
-    NSMutableString *combinedString = [NSMutableString new];
-    @autoreleasepool {
-        for (id fragment in originalArray) {
-            if ([fragment isKindOfClass:[NSURL class]])
-                [combinedArray addObject:fragment];
-            else {
-                [combinedString appendString:fragment];
-                if (combinedString.length > 50) {
-                    [combinedArray addObject:combinedString];
-                    combinedString = [NSMutableString new];
-                }
-            }
-        }
-    }
-    if (combinedString.length > 0)
-        [combinedArray addObject:combinedString];
-    return combinedArray;
-     */
-    return fragments;
+    self.isProcessed = YES;
 }
+
+-(void)addFragmentToHTMLFragmentsArray:(id)fragment {
+    [htmlFragments addObject:fragment];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(articleProcessUpdated:)]) {
+        [self.delegate articleProcessUpdated:1.0];
+    }
+}
+
 -(NSString *)stringByApplyingSimpleHTMLFormat:(NSString*)htmlString {
     NSRange r;
     //remove everything between < and >
@@ -364,6 +380,7 @@
     [coder encodeObject:self.htmlBody forKey:@"htmlBody"];
     [coder encodeObject:self.htmlFragments forKey:@"htmlFragments"];
     [coder encodeObject:self.imageSrc forKey:@"imageSrc"];
+    [coder encodeBool:self.isProcessed forKey:@"isProcessed"];
 }
 
 - (id) initWithCoder: (NSCoder *) coder
@@ -385,6 +402,7 @@
         self.htmlBody = [coder decodeObjectForKey:@"htmlBody"];
         self.htmlFragments = [coder decodeObjectForKey:@"htmlFragments"];
         self.imageSrc = [coder decodeObjectForKey:@"imageSrc"];
+        self.isProcessed = [coder decodeBoolForKey:@"isProcessed"];
     }
     return self;
 }
