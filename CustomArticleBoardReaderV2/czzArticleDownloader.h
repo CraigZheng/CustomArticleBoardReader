@@ -16,7 +16,6 @@
 
 @protocol czzArticleDownloaderDelegate <NSObject>
 -(void)articleDownloaded:(czzArticle*)article withArticleID:(NSInteger)articleID success:(BOOL)success;
--(void)articleProcessUpdated:(czzArticle*)article percent:(CGFloat)percent;
 @end
 
 @interface czzArticleDownloader : NSObject<UIAlertViewDelegate>
