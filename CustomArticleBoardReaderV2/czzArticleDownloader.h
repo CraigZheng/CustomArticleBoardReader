@@ -16,11 +16,11 @@
 
 @protocol czzArticleDownloaderDelegate <NSObject>
 -(void)articleDownloaded:(czzArticle*)article withArticleID:(NSInteger)articleID success:(BOOL)success;
+-(void)articleProcessUpdated:(czzArticle*)article finished:(BOOL)finished;
 @end
 
 @interface czzArticleDownloader : NSObject<UIAlertViewDelegate>
 @property NSInteger articleID;
-@property NSThread *articleProcessor;
 @property id<czzArticleDownloaderDelegate> delegate;
 
 -(id)initWithArticleID:(NSInteger)articleID delegate:(id<czzArticleDownloaderDelegate>)delegate startImmediately:(BOOL)start;

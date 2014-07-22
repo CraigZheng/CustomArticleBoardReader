@@ -19,6 +19,7 @@
 @synthesize delegate;
 @synthesize htmlBody;
 @synthesize htmlFragments;
+@synthesize shouldStop;
 
 -(id)initWithArticle:(czzArticle *)arty andHTMLBody:(NSString *)html andDelegate:(id<czzArticleProcessorDelegate>)del{
     self = [super init];
@@ -42,7 +43,7 @@
     NSRange r;
     //remove everything between < and >
 //    htmlFragments = [NSMutableArray new];
-    while ((r = [htmlString rangeOfString:@"<[^>]+>" options:NSRegularExpressionSearch]).location != NSNotFound) {
+    while ((r = [htmlString rangeOfString:@"<[^>]+>" options:NSRegularExpressionSearch]).location != NSNotFound && !shouldStop) {
         @autoreleasepool {
             NSString *subString = [htmlString substringWithRange:r];
             NSDataDetector *linkDetector = [NSDataDetector dataDetectorWithTypes:NSTextCheckingTypeLink error:nil];
@@ -100,7 +101,8 @@
                 htmlString = [htmlString stringByReplacingOccurrencesOfString:matchedParagraph withString:@""];
             }
             if (self.delegate && [self.delegate respondsToSelector:@selector(articleUpdated:isFinished:)]) {
-                [self.delegate articleUpdated:article isFinished:NO];
+                if (htmlFragments.count >= 10)
+                    [self.delegate articleUpdated:article isFinished:NO];
             }
         }
     }

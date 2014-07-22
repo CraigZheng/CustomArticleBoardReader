@@ -17,6 +17,7 @@
 @interface czzArticleProcessor : NSObject
 @property czzArticle *article;
 @property id<czzArticleProcessorDelegate> delegate;
+@property BOOL shouldStop;
 
 -(id)initWithArticle:(czzArticle*)articleToUpdate andHTMLBody:(NSString*)htmlBody andDelegate:(id<czzArticleProcessorDelegate>)del;
 @end

@@ -7,16 +7,18 @@
 //
 
 #import "czzArticleDownloader.h"
+#import "czzArticleProcessor.h"
 
-@interface czzArticleDownloader()<NSURLConnectionDelegate>
+@interface czzArticleDownloader()<NSURLConnectionDelegate, czzArticleProcessorDelegate>
 @property NSURLConnection *urlConn;
 @property NSMutableData *receivedData;
+@property czzArticleProcessor *processor;
 @end
 
 @implementation czzArticleDownloader
 @synthesize urlConn;
 @synthesize receivedData;
-@synthesize articleProcessor;
+@synthesize processor;
 
 -(id)initWithArticleID:(NSInteger)articleID delegate:(id<czzArticleDownloaderDelegate>)delegate startImmediately:(BOOL)start{
     self = [super init];
@@ -75,11 +77,16 @@
 
 -(void)prepareArticleInBackground{
     @try {
-        czzArticle* newArticle = [[czzArticle alloc] initWithJSONData:receivedData];
-        if (newArticle)
-            [self.delegate articleDownloaded:newArticle withArticleID:self.articleID success:YES];
-        else
-            [self.delegate articleDownloaded:nil withArticleID:self.articleID success:NO];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            czzArticle* newArticle = [[czzArticle alloc] initWithJSONData:receivedData];
+            if (newArticle) {
+                [self.delegate articleDownloaded:newArticle withArticleID:self.articleID success:YES];
+                processor = [[czzArticleProcessor alloc] initWithArticle:newArticle andHTMLBody:newArticle.htmlBody andDelegate:self];
+                NSLog(@"processing article: %@", processor.description);
+            }
+            else
+                [self.delegate articleDownloaded:nil withArticleID:self.articleID success:NO];
+        });
     }
     @catch (NSException *exception) {
         NSLog(@"%@", exception);
@@ -89,6 +96,8 @@
 
 -(void)stop{
     [urlConn cancel];
+    if (processor)
+        processor.shouldStop = YES;
 }
 
 #pragma mark - UIAlertView delegate
@@ -100,6 +109,11 @@
             [self.delegate articleDownloaded:nil withArticleID:self.articleID success:NO];
         }
     }
+}
+
+#pragma mark - czzArticleProcessorDelegate
+-(void)articleUpdated:(czzArticle *)article isFinished:(BOOL)finished {
+    [self.delegate articleProcessUpdated:article finished:finished];
 }
 
 @end

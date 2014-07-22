@@ -123,7 +123,6 @@
     //this view has being poped from navigation controller, stop all downloaders
     if ([viewController isKindOfClass:[czzArticleListViewController class]]){
         if (articleDownloader) {
-            [articleDownloader.articleProcessor cancel];
             [articleDownloader stop];
         }
         //stop all image downloader

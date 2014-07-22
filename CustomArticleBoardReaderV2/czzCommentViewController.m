@@ -56,9 +56,9 @@ typedef enum ScrollDirection {
     if ([[[UIDevice currentDevice] systemVersion] doubleValue] >= 7.0) {
         self.navigationController.toolbar.hidden = YES;
     }
-#if !DEBUG
-    self.navigationController.toolbar.hidden = YES;
-#endif
+//#ifndef DEBUG
+//    self.navigationController.toolbar.hidden = YES;
+//#endif
 }
 
 -(void)refreshComments{

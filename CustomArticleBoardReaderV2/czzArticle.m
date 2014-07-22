@@ -72,14 +72,14 @@
     self.tags = [dataDict objectForKey:@"tags"];
     self.category = [dataDict objectForKey:@"category"];
     self.htmlBody = [dataDict objectForKey:@"txt"];
-    if (self.htmlBody){
-        if (YES)//[[NSUserDefaults standardUserDefaults] boolForKey:@"shouldUseExperimentalBrowser"]) {
-        {    NSArray *fragments = [self prepareHTMLForFragments:[dataDict objectForKey:@"txt"]];
-            [self.htmlFragments addObjectsFromArray:fragments];
-        } else {
-            self.htmlBody = [self prepareHTMLForBetterVisual:self.htmlBody];
-        }
-    }
+//    if (self.htmlBody ){
+//        if (YES)//[[NSUserDefaults standardUserDefaults] boolForKey:@"shouldUseExperimentalBrowser"]) {
+//        {    NSArray *fragments = [self prepareHTMLForFragments:[dataDict objectForKey:@"txt"]];
+//            [self.htmlFragments addObjectsFromArray:fragments];
+//        } else {
+//            self.htmlBody = [self prepareHTMLForBetterVisual:self.htmlBody];
+//        }
+//    }
 }
 
 #pragma mark - prepareHTMLForBetterVisual will remove the old formatting, and re-apply some simple html format for better visual on a mobile device

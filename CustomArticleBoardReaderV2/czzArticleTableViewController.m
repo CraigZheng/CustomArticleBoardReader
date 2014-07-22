@@ -29,6 +29,8 @@
 @property NSString *libraryFolder;
 @property NSMutableArray *heightsForRow;
 @property NSMutableArray *heightsForHorizontalRows;
+@property NSDate *lastUpdateTime;
+@property BOOL isProcessed;
 @end
 
 @implementation czzArticleTableViewController
@@ -43,6 +45,8 @@
 @synthesize heightsForRow;
 @synthesize failedImageDownload;
 @synthesize fisrtVisibleCellIndex;
+@synthesize lastUpdateTime;
+@synthesize isProcessed;
 
 - (void)viewDidLoad
 {
@@ -57,10 +61,12 @@
         czzArticle* cachedArticle = [self readArticleFromCache:myArticle];
         if (cachedArticle) {
             [self setMyArticle:cachedArticle];
+            isProcessed = YES;
         }
         if (myArticle.htmlFragments.count == 0) {
             self.title = [NSString stringWithFormat:@"AcID:%d", myArticle.acId];
             [self startDownloadingArticle];
+            isProcessed = NO;
         }
     }
     else {
@@ -143,8 +149,6 @@
         if (articleDownloader)
             [articleDownloader stop];
         [imageCentre stopAllDownloader];
-        [self saveHeightsToCache:myArticle];
-        [self performSelectorInBackground:@selector(saveArticleToCache:) withObject:self.myArticle];
     }
     navigationController.delegate = nil;
 }
@@ -157,6 +161,7 @@
 #pragma mark - Table view data source
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
+    
     return myArticle.htmlFragments.count + 1;
 }
 
@@ -253,18 +258,22 @@
             preferHeight = tableView.rowHeight;
         }
     } else {
-        UITextView *newHiddenTextView = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, width, 1)];
-        [self.view addSubview:newHiddenTextView];
+        @autoreleasepool {
+            UITextView *newHiddenTextView = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, width, 1)];
+            if (newHiddenTextView.superview)
+                [newHiddenTextView removeFromSuperview];
+            [self.view addSubview:newHiddenTextView];
+            
+            newHiddenTextView.hidden = YES;
+            newHiddenTextView.font = [UIFont systemFontOfSize:16];
+            
+            newHiddenTextView.text = [htmlFragment description];
+            preferHeight = [newHiddenTextView sizeThatFits:CGSizeMake(newHiddenTextView.frame.size.width, MAXFLOAT)].height;
+            preferHeight = MAX(tableView.rowHeight, preferHeight);
+            
+            [newHiddenTextView removeFromSuperview];
 
-        newHiddenTextView.hidden = YES;
-        newHiddenTextView.font = [UIFont systemFontOfSize:16];
-
-        newHiddenTextView.text = [htmlFragment description];
-        preferHeight = [newHiddenTextView sizeThatFits:CGSizeMake(newHiddenTextView.frame.size.width, MAXFLOAT)].height;
-        preferHeight = MAX(tableView.rowHeight, preferHeight);
-        
-        [newHiddenTextView removeFromSuperview];
-
+        }
     }
     if (indexPath.row < heightsArray.count)
         [heightsArray replaceObjectAtIndex:indexPath.row withObject:[NSNumber numberWithFloat:preferHeight]];
@@ -383,11 +392,29 @@
 #pragma mark - czzArticleDownloaderDelegate
 -(void)articleDownloaded:(czzArticle *)article withArticleID:(NSInteger)articleID success:(BOOL)success{
     [[[czzAppDelegate sharedAppDelegate] window] hideToastActivity];
+    lastUpdateTime = nil;
     if (success) {
         [self setMyArticle:article];
     } else {
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"出错啦" message:@"无法下载文章，请重试！" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles: nil];
         [alertView show];
+    }
+}
+
+
+-(void)articleProcessUpdated:(czzArticle *)article finished:(BOOL)finished {
+    if (!lastUpdateTime || [[NSDate new] timeIntervalSinceDate:lastUpdateTime] > 5 || finished) {
+        lastUpdateTime = [NSDate new];
+        NSLog(@"update article");
+    } else
+        return;
+    NSIndexPath *lastVisibleCellIndexPath = self.tableView.indexPathsForVisibleRows.lastObject;
+    [self.tableView reloadData];
+    [self.tableView scrollToRowAtIndexPath:lastVisibleCellIndexPath atScrollPosition:UITableViewScrollPositionNone animated:YES];
+    if (finished)
+    {
+        [self saveHeightsToCache:myArticle];
+        [self performSelectorInBackground:@selector(saveArticleToCache:) withObject:self.myArticle];
     }
 }
 
