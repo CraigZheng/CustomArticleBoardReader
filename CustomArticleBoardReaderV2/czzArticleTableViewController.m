@@ -260,8 +260,7 @@
     } else {
         @autoreleasepool {
             UITextView *newHiddenTextView = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, width, 1)];
-            if (newHiddenTextView.superview)
-                [newHiddenTextView removeFromSuperview];
+            
             [self.view addSubview:newHiddenTextView];
             
             newHiddenTextView.hidden = YES;
@@ -272,7 +271,7 @@
             preferHeight = MAX(tableView.rowHeight, preferHeight);
             
             [newHiddenTextView removeFromSuperview];
-
+            newHiddenTextView = nil;
         }
     }
     if (indexPath.row < heightsArray.count)
@@ -408,9 +407,11 @@
         NSLog(@"update article");
     } else
         return;
-    NSIndexPath *lastVisibleCellIndexPath = self.tableView.indexPathsForVisibleRows.lastObject;
-    [self.tableView reloadData];
-    [self.tableView scrollToRowAtIndexPath:lastVisibleCellIndexPath atScrollPosition:UITableViewScrollPositionNone animated:YES];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSIndexPath *lastVisibleCellIndexPath = self.tableView.indexPathsForVisibleRows.lastObject;
+        [self.tableView reloadData];
+        [self.tableView scrollToRowAtIndexPath:lastVisibleCellIndexPath atScrollPosition:UITableViewScrollPositionNone animated:YES];
+    });
     if (finished)
     {
         [self saveHeightsToCache:myArticle];
