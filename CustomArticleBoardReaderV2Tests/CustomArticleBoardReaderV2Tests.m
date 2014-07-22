@@ -7,12 +7,17 @@
 //
 
 #import <XCTest/XCTest.h>
+#import "czzArticle.h"
+#import "czzArticleProcessor.h"
 
-@interface CustomArticleBoardReaderV2Tests : XCTestCase
-
+@interface CustomArticleBoardReaderV2Tests : XCTestCase<czzArticleProcessorDelegate>
+@property BOOL done;
+@property czzArticle *articleToUpdate;
 @end
 
 @implementation CustomArticleBoardReaderV2Tests
+@synthesize done;
+@synthesize articleToUpdate;
 
 - (void)setUp
 {
@@ -26,9 +31,40 @@
     [super tearDown];
 }
 
-- (void)testExample
+- (void)testArticleProcessor
 {
-    XCTFail(@"No implementation for \"%s\"", __PRETTY_FUNCTION__);
+    done = NO;
+    NSError *error;
+    NSString *filePath = [[NSBundle bundleForClass:[self class]] pathForResource:@"receivedHTMLBody" ofType:@"txt"];
+    NSString *htmlBody = [[NSString alloc] initWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:&error];
+    if (error) {
+        NSLog(@"%@", error);
+    } else {
+        NSLog(@"Ready completed, %ld characters", (unsigned long)htmlBody.length);
+    }
+    articleToUpdate = [czzArticle new];
+    czzArticleProcessor *processor = [[czzArticleProcessor alloc] initWithArticle:articleToUpdate andHTMLBody:htmlBody andDelegate:self];
+    
+    [self waitForCompletion: 3 * 60];
+    XCTAssertNotEqual(articleToUpdate.htmlFragments.count, 0, @"HTML FRAGMENTS ARRAY EMPTY!");
 }
 
+- (BOOL)waitForCompletion:(NSTimeInterval)timeoutSecs {
+    NSDate *timeoutDate = [NSDate dateWithTimeIntervalSinceNow:timeoutSecs];
+    
+    do {
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:timeoutDate];
+        if([timeoutDate timeIntervalSinceNow] < 0.0)
+            break;
+    } while (!done);
+    
+    return done;
+}
+
+#pragma mark - czzArticleProcessorDelegate
+-(void)articleUpdated:(czzArticle *)article isFinished:(BOOL)finished {
+    NSLog(@"article updated: %d fragments, isFinished: %hhd", articleToUpdate.htmlFragments.count, finished);
+    NSLog(@"last html fragment: %@", [articleToUpdate.htmlFragments.lastObject description]);
+    done = finished;
+}
 @end

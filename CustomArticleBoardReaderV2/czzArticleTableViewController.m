@@ -272,6 +272,10 @@
     return preferHeight;
 }
 
+-(CGFloat)tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return UITableViewAutomaticDimension;
+}
+
 #pragma mark - UITableViewDelegate
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     //the first row is description row
@@ -411,12 +415,16 @@
             [heightsForHorizontalRows addObject:[NSNull null]];
         };
         [self readHeightsBackToArrays:myArticle];
-        [self performSelectorOnMainThread:@selector(refreshTableView) withObject:nil waitUntilDone:YES];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self refreshTableView];
+        });
+//        [self performSelectorOnMainThread:@selector(refreshTableView) withObject:nil waitUntilDone:YES];
     }
 }
 
 -(void)refreshTableView{
     [self.tableView reloadData];
+    [[czzAppDelegate sharedAppDelegate].window hideToastActivity];
 }
 
 - (IBAction)favouriteAction:(id)sender {
