@@ -408,9 +408,9 @@
     } else
         return;
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSIndexPath *lastVisibleCellIndexPath = self.tableView.indexPathsForVisibleRows.lastObject;
+//        NSIndexPath *lastVisibleCellIndexPath = self.tableView.indexPathsForVisibleRows.firstObject;
         [self.tableView reloadData];
-        [self.tableView scrollToRowAtIndexPath:lastVisibleCellIndexPath atScrollPosition:UITableViewScrollPositionNone animated:YES];
+//        [self.tableView scrollToRowAtIndexPath:lastVisibleCellIndexPath atScrollPosition:UITableViewScrollPositionNone animated:YES];
     });
     if (finished)
     {
