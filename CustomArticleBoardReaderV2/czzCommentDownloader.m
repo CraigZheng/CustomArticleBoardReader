@@ -99,6 +99,7 @@
                 czzComment *previousComment = [comments objectAtIndex:j];
                 if ([previousComment referredToComment:currentComment]) {
                     czzComment *placeboComment = [czzComment new];
+                    placeboComment.floorIndex = 0;
                     placeboComment.renderedContent = [[NSAttributedString alloc] initWithString:@"* 重复引用的回复已省略 *"];
                     NSArray *placeboArray;
                     //hide duplicate comments when ref comment has more than 2 comments

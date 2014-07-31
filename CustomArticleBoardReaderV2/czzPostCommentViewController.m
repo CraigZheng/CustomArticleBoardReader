@@ -50,9 +50,11 @@
     //check the current date against the expiry of currently login user
     czzMySelf *currentLoginUser = [[czzAppDelegate sharedAppDelegate] currentLoginUser];
     if (!currentLoginUser || [currentLoginUser.access_token_expiry_date compare:[NSDate new]] == NSOrderedAscending){
-        //not login or access token expired
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"登录" message:@"你还没有登录ACFun，你想现在登入吗？" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-        [alertView show];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            //not login or access token expired
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"登录" message:@"你还没有登录ACFun，你想现在登入吗？" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
+            [alertView show];
+        });
     }
 }
 

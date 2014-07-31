@@ -24,13 +24,12 @@
 @property czzArticleDescriptionViewController *descViewController;
 @property NSMutableSet *failedImageDownload;
 @property czzImageCentre *imageCentre;
-@property NSIndexPath *fisrtVisibleCellIndex;
+@property NSIndexPath *firstVisibleCellIndex;
 @property NSInteger lastContentOffsetY;
 @property NSString *libraryFolder;
 @property NSMutableArray *heightsForRow;
 @property NSMutableArray *heightsForHorizontalRows;
 @property NSDate *lastUpdateTime;
-@property BOOL isProcessed;
 @end
 
 @implementation czzArticleTableViewController
@@ -44,9 +43,8 @@
 @synthesize heightsForHorizontalRows;
 @synthesize heightsForRow;
 @synthesize failedImageDownload;
-@synthesize fisrtVisibleCellIndex;
+@synthesize firstVisibleCellIndex;
 @synthesize lastUpdateTime;
-@synthesize isProcessed;
 
 - (void)viewDidLoad
 {
@@ -61,12 +59,10 @@
         czzArticle* cachedArticle = [self readArticleFromCache:myArticle];
         if (cachedArticle) {
             [self setMyArticle:cachedArticle];
-            isProcessed = YES;
         }
         if (myArticle.htmlFragments.count == 0) {
             self.title = [NSString stringWithFormat:@"AcID:%d", myArticle.acId];
             [self startDownloadingArticle];
-            isProcessed = NO;
         }
     }
     else {
@@ -81,8 +77,9 @@
 
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    [self.tableView reloadData];
-
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self refreshTableView];
+    });
 }
 
 -(void)viewDidAppear:(BOOL)animated{
@@ -306,18 +303,15 @@
 
 #pragma mark - download image
 -(void)downloadImage:(NSString*)imageURLString andReloadIndexPath:(NSIndexPath*)indexPath{
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
-        [imageCentre downloadImageWithURL:imageURLString];
-        [failedImageDownload removeObject:imageURLString];
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (indexPath && [self.tableView.indexPathsForVisibleRows containsObject:indexPath]) {
-                [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-            }
-        });
-
+    [imageCentre downloadImageWithURL:imageURLString];
+    [failedImageDownload removeObject:imageURLString];
+    
+    [UIView setAnimationsEnabled:NO];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self refreshTableView];
     });
-
+    [UIView setAnimationsEnabled:YES];
+//    [self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionNone animated:YES];
 }
 
 #pragma mark - UIScrollView delegate
@@ -373,13 +367,15 @@
             [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"图片下载失败!"];
             [failedImageDownload addObject: [((czzImageDownloader*)[notification.userInfo objectForKey:@"ImageDownloader"]) imageURLString]];
         }
-        NSMutableArray *indexArray = [NSMutableArray new];
-        for (UITableViewCell *cell in [self.tableView visibleCells]) {
-            NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
-            [indexArray addObject:indexPath];
-        }
+        firstVisibleCellIndex = self.tableView.indexPathsForVisibleRows.firstObject;
+//        NSMutableArray *indexArray = [NSMutableArray new];
+//        for (UITableViewCell *cell in [self.tableView visibleCells]) {
+//            NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
+//            [indexArray addObject:indexPath];
+//        }
         dispatch_async(dispatch_get_main_queue(), ^{
-            [self.tableView reloadRowsAtIndexPaths:indexArray withRowAnimation:UITableViewRowAnimationAutomatic];
+            [self refreshTableView];
+            [self.tableView scrollToRowAtIndexPath:firstVisibleCellIndex atScrollPosition:UITableViewScrollPositionNone animated:NO];
         });
     }
     @catch (NSException *exception) {
@@ -408,9 +404,7 @@
     } else
         return;
     dispatch_async(dispatch_get_main_queue(), ^{
-//        NSIndexPath *lastVisibleCellIndexPath = self.tableView.indexPathsForVisibleRows.firstObject;
-        [self.tableView reloadData];
-//        [self.tableView scrollToRowAtIndexPath:lastVisibleCellIndexPath atScrollPosition:UITableViewScrollPositionNone animated:YES];
+        [self refreshTableView];
     });
     if (finished)
     {
@@ -446,7 +440,6 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             [self refreshTableView];
         });
-//        [self performSelectorOnMainThread:@selector(refreshTableView) withObject:nil waitUntilDone:YES];
     }
 }
 
@@ -464,7 +457,7 @@
 - (IBAction)shareAction:(id)sender {
     NSLog(@"shareButton pressed");
     
-    NSString *texttoshare = [myArticle.desc stringByAppendingFormat:@"... http://www.acfun.com/a/ac%ld", (long)myArticle.acId]; //this is your text string to share
+    NSString *texttoshare = [myArticle.desc stringByAppendingFormat:@"... http://www.acfun.tv/a/ac%ld", (long)myArticle.acId]; //this is your text string to share
 //    UIImage *imagetoshare = _img; //this is your image to share
     NSArray *activityItems = @[texttoshare];//, imagetoshare];
     UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:nil];
@@ -476,12 +469,12 @@
 #pragma mark - rotation
 -(void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration{
     [descViewController willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
-    fisrtVisibleCellIndex = self.tableView.indexPathsForVisibleRows.firstObject;
+    firstVisibleCellIndex = self.tableView.indexPathsForVisibleRows.firstObject;
 }
 
 -(void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
     [descViewController didRotateFromInterfaceOrientation:fromInterfaceOrientation];
-    [self.tableView scrollToRowAtIndexPath:fisrtVisibleCellIndex atScrollPosition:UITableViewScrollPositionNone animated:YES];
+    [self.tableView scrollToRowAtIndexPath:firstVisibleCellIndex atScrollPosition:UITableViewScrollPositionNone animated:YES];
 }
 
 
