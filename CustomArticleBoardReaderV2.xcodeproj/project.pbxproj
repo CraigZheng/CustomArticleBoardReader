@@ -88,6 +88,8 @@
 		44CE923C197DE45800F9E10F /* receivedHTMLBody.txt in Resources */ = {isa = PBXBuildFile; fileRef = 44CE923B197DE45800F9E10F /* receivedHTMLBody.txt */; };
 		44CE9240197DE48300F9E10F /* czzArticleProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 44CE923F197DE48300F9E10F /* czzArticleProcessor.m */; };
 		44F66FA918B6E63E0053EAF1 /* czzArticleTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 44F66FA818B6E63E0053EAF1 /* czzArticleTableViewController.m */; };
+		44FEA09819EF8A5000CACEA2 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 44FEA09719EF8A5000CACEA2 /* CoreLocation.framework */; };
+		44FEA09919EF8AD300CACEA2 /* libDartCrowdSourcingLib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 44FEA09219EF8A3000CACEA2 /* libDartCrowdSourcingLib.a */; };
 		5A57C57619644B71008CA2FD /* BugSense-iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5A57C57419644B71008CA2FD /* BugSense-iOS.framework */; };
 		5A57C57719644B71008CA2FD /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 5A57C57519644B71008CA2FD /* LICENSE */; };
 		5A57C57919644CBE008CA2FD /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5A57C57819644CBE008CA2FD /* libz.dylib */; };
@@ -168,6 +170,27 @@
 			proxyType = 1;
 			remoteGlobalIDString = 442FFE7F18A78A1D001ECDAA;
 			remoteInfo = CustomArticleBoardReaderV2;
+		};
+		44FEA09119EF8A3000CACEA2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 44FEA08919EF8A2F00CACEA2 /* DartCrowdSourcingLib.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 44783809194A80F70067C454;
+			remoteInfo = DartCrowdSourcingLib;
+		};
+		44FEA09319EF8A3000CACEA2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 44FEA08919EF8A2F00CACEA2 /* DartCrowdSourcingLib.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 44783819194A80F70067C454;
+			remoteInfo = DartCrowdSourcingLibTests;
+		};
+		44FEA09519EF8A3000CACEA2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 44FEA08919EF8A2F00CACEA2 /* DartCrowdSourcingLib.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 44F9349E19EB7FFB007DBB8C;
+			remoteInfo = DartCrowdSourcingFramework;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -281,6 +304,8 @@
 		44CE923F197DE48300F9E10F /* czzArticleProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = czzArticleProcessor.m; sourceTree = "<group>"; };
 		44F66FA718B6E63E0053EAF1 /* czzArticleTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = czzArticleTableViewController.h; sourceTree = "<group>"; };
 		44F66FA818B6E63E0053EAF1 /* czzArticleTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = czzArticleTableViewController.m; sourceTree = "<group>"; };
+		44FEA08919EF8A2F00CACEA2 /* DartCrowdSourcingLib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = DartCrowdSourcingLib.xcodeproj; path = ../../dart/Clients/iOS/prototypes/DartCrowdSourcingLib/DartCrowdSourcingLib.xcodeproj; sourceTree = "<group>"; };
+		44FEA09719EF8A5000CACEA2 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		5A57C57419644B71008CA2FD /* BugSense-iOS.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = "BugSense-iOS.framework"; sourceTree = "<group>"; };
 		5A57C57519644B71008CA2FD /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		5A57C57819644CBE008CA2FD /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
@@ -404,10 +429,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				44FEA09919EF8AD300CACEA2 /* libDartCrowdSourcingLib.a in Frameworks */,
+				44FEA09819EF8A5000CACEA2 /* CoreLocation.framework in Frameworks */,
+				442FFEE918A8457A001ECDAA /* CoreTelephony.framework in Frameworks */,
 				5A57C57919644CBE008CA2FD /* libz.dylib in Frameworks */,
 				5A9425981949DE4A00450742 /* QuartzCore.framework in Frameworks */,
 				5AE09F3718D87B9F00A9A591 /* StoreKit.framework in Frameworks */,
-				442FFEE918A8457A001ECDAA /* CoreTelephony.framework in Frameworks */,
 				44CCB76C18B7223D0024CBDB /* CoreData.framework in Frameworks */,
 				44CCB76A18B721180024CBDB /* MediaPlayer.framework in Frameworks */,
 				442FFEEF18A8458E001ECDAA /* SystemConfiguration.framework in Frameworks */,
@@ -458,6 +485,7 @@
 		442FFE8218A78A1D001ECDAA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				44FEA09719EF8A5000CACEA2 /* CoreLocation.framework */,
 				5A57C57819644CBE008CA2FD /* libz.dylib */,
 				5A57C57419644B71008CA2FD /* BugSense-iOS.framework */,
 				5A57C57519644B71008CA2FD /* LICENSE */,
@@ -485,6 +513,7 @@
 		442FFE8918A78A1D001ECDAA /* CustomArticleBoardReaderV2 */ = {
 			isa = PBXGroup;
 			children = (
+				44FEA08919EF8A2F00CACEA2 /* DartCrowdSourcingLib.xcodeproj */,
 				442FFE9218A78A1D001ECDAA /* czzAppDelegate.h */,
 				442FFE9318A78A1D001ECDAA /* czzAppDelegate.m */,
 				442FFE9518A78A1D001ECDAA /* Main.storyboard */,
@@ -741,6 +770,16 @@
 			name = czzArticleProcessor;
 			sourceTree = "<group>";
 		};
+		44FEA08A19EF8A2F00CACEA2 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				44FEA09219EF8A3000CACEA2 /* libDartCrowdSourcingLib.a */,
+				44FEA09419EF8A3000CACEA2 /* DartCrowdSourcingLibTests.xctest */,
+				44FEA09619EF8A3000CACEA2 /* DartCrowdSourcingFramework.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		5A57C5C3196575A3008CA2FD /* icon */ = {
 			isa = PBXGroup;
 			children = (
@@ -991,6 +1030,9 @@
 					442FFE7F18A78A1D001ECDAA = {
 						DevelopmentTeam = 9EBE9MWW9X;
 						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
 							com.apple.InAppPurchase = {
 								enabled = 0;
 							};
@@ -1012,6 +1054,12 @@
 			mainGroup = 442FFE7718A78A1D001ECDAA;
 			productRefGroup = 442FFE8118A78A1D001ECDAA /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 44FEA08A19EF8A2F00CACEA2 /* Products */;
+					ProjectRef = 44FEA08919EF8A2F00CACEA2 /* DartCrowdSourcingLib.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				442FFE7F18A78A1D001ECDAA /* CustomArticleBoardReaderV2 */,
@@ -1019,6 +1067,30 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		44FEA09219EF8A3000CACEA2 /* libDartCrowdSourcingLib.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libDartCrowdSourcingLib.a;
+			remoteRef = 44FEA09119EF8A3000CACEA2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		44FEA09419EF8A3000CACEA2 /* DartCrowdSourcingLibTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = DartCrowdSourcingLibTests.xctest;
+			remoteRef = 44FEA09319EF8A3000CACEA2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		44FEA09619EF8A3000CACEA2 /* DartCrowdSourcingFramework.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = DartCrowdSourcingFramework.framework;
+			remoteRef = 44FEA09519EF8A3000CACEA2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		442FFE7E18A78A1D001ECDAA /* Resources */ = {
@@ -1262,7 +1334,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
-				VALID_ARCHS = "armv7 armv7s";
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../dart/Clients/iOS/prototypes/DartCrowdSourcingLib/DartCrowdSourcingLib/**";
+				VALID_ARCHS = "armv7 armv7s arm64";
 			};
 			name = Debug;
 		};
@@ -1298,8 +1371,9 @@
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				SDKROOT = iphoneos;
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../dart/Clients/iOS/prototypes/DartCrowdSourcingLib/DartCrowdSourcingLib/**";
 				VALIDATE_PRODUCT = YES;
-				VALID_ARCHS = "armv7 armv7s";
+				VALID_ARCHS = "armv7 armv7s arm64";
 			};
 			name = Release;
 		};
@@ -1318,7 +1392,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "CustomArticleBoardReaderV2/CustomArticleBoardReaderV2-Prefix.pch";
 				INFOPLIST_FILE = "CustomArticleBoardReaderV2/CustomArticleBoardReaderV2-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/Users/CraigZheng/Developer/customarticleboardreaderv2/CustomArticleBoardReaderV2,
@@ -1329,7 +1403,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "";
+				USER_HEADER_SEARCH_PATHS = "$(inherited)";
 				VALID_ARCHS = "armv7 armv7s";
 				WRAPPER_EXTENSION = app;
 			};
@@ -1350,7 +1424,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "CustomArticleBoardReaderV2/CustomArticleBoardReaderV2-Prefix.pch";
 				INFOPLIST_FILE = "CustomArticleBoardReaderV2/CustomArticleBoardReaderV2-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					/Users/CraigZheng/Developer/customarticleboardreaderv2/CustomArticleBoardReaderV2,
@@ -1360,7 +1434,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "";
+				USER_HEADER_SEARCH_PATHS = "$(inherited)";
 				VALID_ARCHS = "armv7 armv7s";
 				WRAPPER_EXTENSION = app;
 			};

@@ -9,6 +9,8 @@
 #import "czzAppDelegate.h"
 #import "Toast+UIView.h"
 #import "czzArticleListDownloader.h"
+#import "DartCrowdSourcingLib.h"
+
 #import <BugSense-iOS/BugSenseController.h>
 
 @implementation czzAppDelegate
@@ -22,6 +24,10 @@
     //bugsense
     [BugSenseController sharedControllerWithBugSenseAPIKey:@"067f8aa9"];
     [BugSenseController setUserIdentifier:[UIDevice currentDevice].identifierForVendor.UUIDString];
+    //Dart intergration
+    [DartCrowdSourcingConstants setEnableGPS:YES];
+    [DartCrowdSourcingConstants setEnableBackgroundGPS:NO];
+    [DartCrowdSourcingLib initWithApiKey:@"CustomArticleBoardReader" Version:@"V2" UploadURL:nil TesterID:@"MyDearestUsers@Craig.com"];
     
     [self checkStorages];
     [self checkUserDefaults];
@@ -196,6 +202,12 @@
     [animation setTimingFunction:[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut]];
     [[incomingView layer] addAnimation:animation forKey:kCATransition];
     incomingView.hidden = NO;
+}
+
+-(void)application:(UIApplication *)application performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
+    [DartCrowdSourcingLib performBackgroundLoggingWithCompletionHandler:nil andResult:UIBackgroundFetchResultNewData];
+    completionHandler(UIBackgroundFetchResultNoData);
+    //TODO: download a list of article in the background
 }
 
 @end

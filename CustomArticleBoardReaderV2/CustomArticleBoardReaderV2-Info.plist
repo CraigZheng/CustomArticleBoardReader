@@ -47,6 +47,14 @@
 	<string>1.0.2</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>提供GPS信息以帮助我们改进服务</string>
+	<key>NSLocationUsageDescription</key>
+	<string>提供GPS信息以帮助我们改进服务</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+	</array>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UIRequiredDeviceCapabilities</key>

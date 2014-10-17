@@ -27,8 +27,6 @@
 @property NSIndexPath *fisrtVisibleCellIndex;
 @property NSInteger lastContentOffsetY;
 @property NSString *libraryFolder;
-@property NSMutableArray *heightsForRow;
-@property NSMutableArray *heightsForHorizontalRows;
 @property NSDate *lastUpdateTime;
 @property BOOL isProcessed;
 @end
@@ -41,8 +39,6 @@
 @synthesize imageCentre;
 @synthesize lastContentOffsetY;
 @synthesize libraryFolder;
-@synthesize heightsForHorizontalRows;
-@synthesize heightsForRow;
 @synthesize failedImageDownload;
 @synthesize fisrtVisibleCellIndex;
 @synthesize lastUpdateTime;
@@ -105,18 +101,6 @@
     }
 }
 
--(void)saveHeightsToCache:(czzArticle*)article{
-    NSString *cacheFolder = [libraryFolder stringByAppendingPathComponent:@"Cache"];
-    NSString *heightsFile = [cacheFolder stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld.vht", (long)article.acId]];
-    NSString *horizontalHeightsFile = [cacheFolder stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld.hht", (long)article.acId]];
-    if (heightsForRow.count > 0) {
-        [NSKeyedArchiver archiveRootObject:heightsForRow toFile:heightsFile];
-    }
-    if (heightsForHorizontalRows.count > 0) {
-        [NSKeyedArchiver archiveRootObject:heightsForHorizontalRows toFile:horizontalHeightsFile];
-    }
-}
-
 -(czzArticle*)readArticleFromCache:(czzArticle*)article{
     @try {
         NSString *cacheFolder = [libraryFolder stringByAppendingPathComponent:@"Cache"];
@@ -127,20 +111,6 @@
         NSLog(@"%@", exception);
     }
     return nil;
-}
-
--(void)readHeightsBackToArrays:(czzArticle*)article {
-    NSString *cacheFolder = [libraryFolder stringByAppendingPathComponent:@"Cache"];
-    NSString *heightsFile = [cacheFolder stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld.vht", (long)article.acId]];
-    NSString *horizontalHeightsFile = [cacheFolder stringByAppendingPathComponent:[NSString stringWithFormat:@"%ld.hht", (long)article.acId]];
-    NSMutableArray *cachedHeights = [NSKeyedUnarchiver unarchiveObjectWithFile:heightsFile];
-    NSMutableArray *cachedHorizontalHeights = [NSKeyedUnarchiver unarchiveObjectWithFile:horizontalHeightsFile];
-    if (cachedHeights) {
-        heightsForRow = [NSMutableArray arrayWithArray:cachedHeights];
-    }
-    if (cachedHorizontalHeights) {
-        heightsForHorizontalRows = [NSMutableArray arrayWithArray:cachedHorizontalHeights];
-    }
 }
 
 #pragma mark - UINavigationController delegate
@@ -222,24 +192,7 @@
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
     CGFloat preferHeight = tableView.rowHeight;
-    NSMutableArray *heightsArray;
     CGFloat width = self.view.frame.size.width;
-    if (UIInterfaceOrientationIsPortrait(self.interfaceOrientation))
-        heightsArray = heightsForRow;
-    else {
-        heightsArray = heightsForHorizontalRows;
-        width = [UIScreen mainScreen].bounds.size.height;
-    }
-    
-    /* 3 criteria: 
-        1: index not out of bound
-        2: is not equals to default height
-        3: is not null
-     */
-    if (indexPath.row < heightsArray.count && [heightsArray objectAtIndex:indexPath.row] != [NSNull null] && [[heightsArray objectAtIndex:indexPath.row] floatValue] != tableView.rowHeight){
-        preferHeight = [[heightsArray objectAtIndex:indexPath.row] floatValue];
-        return preferHeight;
-    }
     
     id htmlFragment = [myArticle.htmlFragments objectAtIndex:indexPath.row - 1];
     if ([htmlFragment isKindOfClass:[NSURL class]]){
@@ -249,7 +202,7 @@
         NSString *filePath = [basePath stringByAppendingPathComponent:[(NSURL*)htmlFragment absoluteString].lastPathComponent];
         UIImage *image = [[UIImage alloc] initWithContentsOfFile:filePath];
         if (image) {
-            if (image.size.width > width){
+            if (image.size.width > width){reg
                 preferHeight = image.size.height * (width / image.size.width);
             } else {
                 preferHeight = image.size.height;
@@ -274,8 +227,6 @@
             newHiddenTextView = nil;
         }
     }
-    if (indexPath.row < heightsArray.count)
-        [heightsArray replaceObjectAtIndex:indexPath.row withObject:[NSNumber numberWithFloat:preferHeight]];
 
     return preferHeight;
 }
@@ -414,7 +365,6 @@
     });
     if (finished)
     {
-        [self saveHeightsToCache:myArticle];
         [self performSelectorInBackground:@selector(saveArticleToCache:) withObject:self.myArticle];
     }
 }
@@ -428,21 +378,7 @@
     descViewController.myArticle = myArticle;
     descViewController.parentViewController = self;
     
-//    heightsForRow = [NSMutableArray arrayWithObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
-//    heightsForHorizontalRows = [NSMutableArray arrayWithObject:[NSNumber numberWithFloat:self.tableView.rowHeight]];
-    heightsForRow = [NSMutableArray arrayWithObject:[NSNull null]];
-    heightsForHorizontalRows = [NSMutableArray arrayWithObject:[NSNull null]];
-    if (descViewController) {
-        [heightsForRow replaceObjectAtIndex:0 withObject:[NSNumber numberWithFloat:descViewController.view.frame.size.height]];
-        [heightsForHorizontalRows replaceObjectAtIndex:0 withObject:[NSNumber numberWithFloat:descViewController.view.frame.size.height]];
-    }
-
     if (myArticle.htmlFragments.count > 0){
-        for (int i = 0; i < myArticle.htmlFragments.count; i++) {
-            [heightsForRow addObject:[NSNull null]];
-            [heightsForHorizontalRows addObject:[NSNull null]];
-        };
-        [self readHeightsBackToArrays:myArticle];
         dispatch_async(dispatch_get_main_queue(), ^{
             [self refreshTableView];
         });

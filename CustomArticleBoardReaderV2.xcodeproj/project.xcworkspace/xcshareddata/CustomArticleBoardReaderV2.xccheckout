@@ -10,24 +10,36 @@
 	<string>CustomArticleBoardReaderV2</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
+		<key>13061E581257331CC36861D3B6931EC80892EFFD</key>
+		<string>https://github.com/CraigZheng/CustomArticleBoardReader.git</string>
 		<key>7E0985CC-96C0-4049-979E-1FEB1A9D5EF1</key>
 		<string>https://github.com/CraigZheng/CustomArticleBoardReader.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>CustomArticleBoardReaderV2.xcodeproj/project.xcworkspace</string>
+	<string>CustomArticleBoardReaderV2.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>7E0985CC-96C0-4049-979E-1FEB1A9D5EF1</key>
+		<key>13061E581257331CC36861D3B6931EC80892EFFD</key>
 		<string>../..</string>
+		<key>7E0985CC-96C0-4049-979E-1FEB1A9D5EF1</key>
+		<string>../../../customarticleboardreaderv2</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
 	<string>https://github.com/CraigZheng/CustomArticleBoardReader.git</string>
 	<key>IDESourceControlProjectVersion</key>
-	<integer>110</integer>
+	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>7E0985CC-96C0-4049-979E-1FEB1A9D5EF1</string>
+	<string>13061E581257331CC36861D3B6931EC80892EFFD</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>13061E581257331CC36861D3B6931EC80892EFFD</string>
+			<key>IDESourceControlWCCName</key>
+			<string>CustomArticleBoardReader</string>
+		</dict>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
