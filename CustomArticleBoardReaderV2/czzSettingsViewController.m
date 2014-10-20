@@ -12,6 +12,7 @@
 #import "czzLoginViewController.h"
 #import "czzMySelf.h"
 #import "czzAppDelegate.h"
+#import "czzImageCentre.h"
 
 @interface czzSettingsViewController ()<UIActionSheetDelegate, UIAlertViewDelegate>
 @property NSMutableArray *commands;
@@ -57,7 +58,7 @@
     }
     commands = [[NSMutableArray alloc] initWithObjects:@"自动下载图片", /*@"使用实验性的浏览器",*/
                 articleOrderingCommand,
-                @"图片缓存", @"清空图片缓存", @"清空文章缓存", [NSString stringWithFormat:@"版本号: %@", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"]], /*loginStatus, */nil];
+                @"图片缓存", @"清空图片缓存", @"清空文章缓存", [NSString stringWithFormat:@"版本号: %@", [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleShortVersionString"]], loginStatus, nil];
     [self.tableView reloadData];
 }
 
@@ -177,6 +178,8 @@
             NSString *filePath = [imageFolder stringByAppendingPathComponent:file];
             [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
         }
+        czzImageCentre *imgCentre = [czzImageCentre sharedInstance];
+        [imgCentre scanCurrentLocalImages];
         [[[czzAppDelegate sharedAppDelegate] window] makeToast:@"缓存已清空"];
     } else if ([alertView.title isEqualToString:@"退出登陆？"]) {
         NSString *userFile = [libraryFolder stringByAppendingPathComponent:@"currentLoginUser.dat"];
