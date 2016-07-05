@@ -199,7 +199,7 @@
         NSString *filePath = [basePath stringByAppendingPathComponent:[(NSURL*)htmlFragment absoluteString].lastPathComponent];
         UIImage *image = [[UIImage alloc] initWithContentsOfFile:filePath];
         if (image) {
-            if (image.size.width > width){reg
+            if (image.size.width > width){
                 preferHeight = image.size.height * (width / image.size.width);
             } else {
                 preferHeight = image.size.height;

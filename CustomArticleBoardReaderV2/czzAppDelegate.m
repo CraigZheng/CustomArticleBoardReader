@@ -25,9 +25,9 @@
     [BugSenseController sharedControllerWithBugSenseAPIKey:@"067f8aa9"];
     [BugSenseController setUserIdentifier:[UIDevice currentDevice].identifierForVendor.UUIDString];
     //Dart intergration
-    [DartCrowdSourcingConstants setEnableGPS:YES];
-    [DartCrowdSourcingConstants setEnableBackgroundGPS:NO];
-    [DartCrowdSourcingLib initWithApiKey:@"CustomArticleBoardReader" Version:@"V2" UploadURL:nil TesterID:@"MyDearestUsers@Craig.com"];
+    DartSharedLib.gpsEnabled = YES;
+    DartSharedLib.backgroundGPSEnabled = NO;
+    [DartCrowdSourcingLib initWithApiKey:@"CustomArticleBoardReader" version:nil homeMccMnc:nil uploadURL:nil];
     
     [self checkStorages];
     [self checkUserDefaults];
